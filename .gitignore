@@ -1,3 +1,14 @@
+# this project
+
+deprecated/
+# user inputed lists, probably useful for other users so commented out
+# scanlists/*
+# program generated files
+scandata/*
+servers/ccdsvr/raw/*.sif
+servers/ccdsvr/converted/*.sif
+servers/ccdsvr/converted/*.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
