@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""ccd_emulator.py:
+"""ccd_svr.py:
 This module provides web API for
 a remote Andor SOLIS EMCCD.
 

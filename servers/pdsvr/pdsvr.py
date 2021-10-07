@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-"""pd_svr.py:
+"""pdsvr.py:
 This module provides web API for
 a remote photodiode hooked to a oscilloscope.
 
