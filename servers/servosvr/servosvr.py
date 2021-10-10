@@ -50,8 +50,7 @@ def moveabs(pos):
 
     # if pos in poslist:
     #     return "<p>Warning: You have moved to {pos} previously, which should not happen in a single run, please check the sync! No action has been taken.</p>".format(pos=pos)
-
-    poslist.append(pos)
+    # poslist.append(pos)
 
     print("[OK] Moving to {pos}".format(pos=pos))
     ser = getser(comport)

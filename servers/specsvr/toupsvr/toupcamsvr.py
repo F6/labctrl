@@ -58,6 +58,8 @@ class ToupCamera:
             self.setTrigMode()
         else:
             self.setVideoMode()
+        # set camera temp to 0
+        toupcam.Toupcam.put_Temperature(self.hcam, 0)
 
         self.setExposureTime(self.exposure)
         # use raw data mode
