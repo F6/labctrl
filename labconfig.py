@@ -7,7 +7,7 @@ instruments and experiment configurations.
 
 __author__ = "Zhi Zi"
 __email__ = "x@zzi.io"
-__version__ = "20211003"
+__version__ = "20211010"
 
 import json
 import time
@@ -122,6 +122,7 @@ class LabConfig(metaclass=Singleton):
         self.toupcamera["SignalUpper"] = 500
         self.toupcamera["ReferenceLower"] = 1000
         self.toupcamera["ReferenceUpper"] = 1500
+        self.toupcamera["SpectralWidth"] = 25  # nm
 
         # endregion
 

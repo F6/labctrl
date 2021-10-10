@@ -12,14 +12,15 @@ In such experiments, a "white" laser pulse is prepared via
  white light.
 """
 
+__author__ = "Zhi Zi"
+__email__ = "x@zzi.io"
+__version__ = "20211010"
 
+import matplotlib.pyplot as plt
 from remoteAPIs.touptek_camera import remote_ToupCam_settrigmode
 from main_doc import doc
 from spectrometer import callback_update_toupcam_figure
 from remoteAPIs.touptek_camera import remote_ToupCam_setExposureTime, remote_ToupCam_get_signal
-__author__ = "Zhi Zi"
-__email__ = "x@zzi.io"
-__version__ = "20211003"
 
 import time
 import numpy as np
@@ -30,55 +31,11 @@ from bokeh.models.widgets import Button
 from labconfig import lcfg
 from expmsg import expmsg
 from expdata import ExpData
+from general_setting import scan_rounds
 
-from spectrometer import remote_ToupCam_open, remote_ToupCam_close, remote_ToupCam_trig, callback_update_monochromer_pos_div
-from remoteAPIs.monochromer import remote_monochromer_get_position, remote_monochromer_moveto
+from spectrometer import remote_ToupCam_open, remote_ToupCam_close, remote_ToupCam_trig, scan_monochromer
+
 from spectrometer import monocalib
-from ir_mod_fluorescence import scan_delay
-
-
-def scan_rounds(func, meta=''):
-    """scan rounds for func"""
-    def iterate(meta=dict()):
-        for i, rd in enumerate(range(lcfg.scan_rounds)):
-            expmsg("Scanning Round No.{}".format(rd))
-            meta["Round"] = rd
-            meta["iRound"] = i
-            func(meta=meta)
-
-    return iterate
-
-
-def scan_monochromer(func, meta=''):
-    """scan monochromer for func"""
-    def iterate(meta=dict()):
-        if lcfg.monochromer["Mode"] == "Range" or lcfg.monochromer["Mode"] == "ExtFile":
-            for i, wl in enumerate(lcfg.monochromer["ScanList"]):
-                expmsg("Setting monochromer to {} nm".format(wl))
-                target_abs_pos = monocalib.lut(wl)
-                response = remote_monochromer_moveto(target_abs_pos)
-                expmsg("Monochromer Remote: " + response)
-                expmsg("Waiting for remote to change wavelength...")
-                # the delay line is set to move at 20mm/s
-                while True:
-                    time.sleep(0.2)
-                    response = remote_monochromer_get_position()
-                    doc.add_next_tick_callback(
-                        partial(callback_update_monochromer_pos_div, response))
-                    if response == target_abs_pos + lcfg.monochromer["ZeroAbsPos"]:
-                        break
-                expmsg("Monochromer wavelength setting done")
-                meta["Mono"] = wl
-                meta["iMono"] = i
-                func(meta=meta)
-        else:
-            expmsg(
-                "Monochromer wavelength is set manually, so no action has been taken")
-            meta["Mono"] = "ManualMono"
-            meta["iMono"] = 0
-            func(meta=meta)
-
-    return iterate
 
 
 @scan_rounds
@@ -102,6 +59,9 @@ def __wls_take_sample(meta=dict()):
     expmsg("Adding latest signal to dataset...")
 
     edata.sig[meta["iMono"]] = sig
+    edata.simsum[meta["iMono"]] += sig
+    edata.ref[meta["iMono"]] = ref
+    edata.refsum[meta["iMono"]] += ref
 
     # todo: add bg subtraction and other meta
     doc.add_next_tick_callback(
@@ -149,3 +109,17 @@ def __callback_start_wls_button():
 
 button_start_wls = Button(label='Start WLS', button_type='success')
 button_start_wls.on_click(__callback_start_wls_button)
+
+
+def ass_spectrum(edata: ExpData):
+    """assemble full spectrum from segmented spectrum"""
+    for i, spec in enumerate(edata.sig):
+        wl = lcfg.monochromer["ScanList"][i]
+        xlen = len(spec)
+        xwidth = lcfg.toupcamera["SpectralWidth"]
+        xleft = wl - xwidth/2
+        xright = wl + xwidth/2
+        x = np.linspace(xleft, xright, xlen)
+        plt.plot(x, spec)
+
+    plt.savefig("spectrum.jpg", dpi=600)

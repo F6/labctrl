@@ -7,7 +7,7 @@ testing and controlling shutter mode
 
 __author__ = "Zhi Zi"
 __email__ = "x@zzi.io"
-__version__ = "20211003"
+__version__ = "20211010"
 
 from labconfig import lcfg
 from bokeh.models.widgets import RadioButtonGroup, Button
@@ -68,3 +68,34 @@ def __callback_change_shutter_button():
 
 button_change_shutter = Button(label='Change shutter')
 button_change_shutter.on_click(__callback_change_shutter_button)
+
+
+def shutter_background(func):
+    """if use shutter background, then the same thing is done twice with
+     shutter open and closed. If do not use shutter background, then
+     just leave the shutter status as is but mark shutter status as ON
+     for our convenience.
+     """
+    def iterate(meta=dict()):
+        if lcfg.shutter["UseShutterBackground"]:
+            expmsg("Background is required, turning OFF shutter")
+            response = remote_shutter_set_state(False)
+            expmsg("Shutter Remote: " + response)
+            meta["Shutter"] = "ShutterOff"
+            func(meta=meta)
+            expmsg("Background is taken, turning ON shutter")
+            response = remote_shutter_set_state(True)
+            expmsg("Shutter Remote: " + response)
+            meta["Shutter"] = "ShutterOn"
+            func(meta=meta)
+        else:
+            # this is wrong, because the shutter can be manually closed
+            #  and we did not varify that before this assertion.
+            # But this is fine because if the shutter is closed manually,
+            #  then it is intentional for optical component tweaking.
+            # The main task will always make sure that shutter is open
+            #  before the experiment begins.
+            meta["Shutter"] = "ShutterOn"
+            func(meta=meta)
+
+    return iterate

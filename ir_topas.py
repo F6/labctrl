@@ -7,13 +7,13 @@ testing and controlling the IR(ps) topas parameters
 
 __author__ = "Zhi Zi"
 __email__ = "x@zzi.io"
-__version__ = "20211003"
+__version__ = "20211010"
 
 import base64
 from bokeh.models.widgets import RadioButtonGroup, Button, TextInput, FileInput
 
 from expmsg import expmsg
-
+from unitconversion import wavenumber_to_nanometer
 from labconfig import lcfg
 from remoteAPIs.topas_REST import Topas4Emulator, Topas4Controller
 from remoteAPIs.configs import ir_topas_serial_number
@@ -58,7 +58,6 @@ def __callback_ir_topas_mode_rbg(attr, old, new):
         ti_ir_topas_stop.visible = False
         fi_ir_topas_list.visible = True
     lcfg.refresh_config()
-
 
 
 #title="ir_topas Scan Mode",
@@ -124,3 +123,24 @@ def __callback_ir_topas_list_file_input(attr, old, new):
 
 fi_ir_topas_list = FileInput(accept=".txt")
 fi_ir_topas_list.on_change('value', __callback_ir_topas_list_file_input)
+
+
+def scan_ir(func):
+    """scan ir for func"""
+    def iterate(meta=dict()):
+        if lcfg.ir_topas["Mode"] == "Range" or lcfg.ir_topas["Mode"] == "ExtFile":
+            for i, wn in enumerate(lcfg.ir_topas["ScanList"]):
+                expmsg("Setting wavelength to {wn} cm-1".format(wn=wn))
+                irtopas.setWavelength(
+                    irtopas.interactions[2], wavenumber_to_nanometer(wn))
+                meta["IR"] = wn
+                meta["iIR"] = i
+                func(meta=meta)
+        else:
+            expmsg(
+                "IR wavelength is set manually, so no action has been taken")
+            meta["IR"] = "ManualIR"
+            meta["iIR"] = 0
+            func(meta=meta)
+
+    return iterate

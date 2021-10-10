@@ -7,7 +7,7 @@ the data generated in experiment.
 
 __author__ = "Zhi Zi"
 __email__ = "x@zzi.io"
-__version__ = "20211003"
+__version__ = "20211010"
 
 
 from labconfig import LabConfig
@@ -174,7 +174,7 @@ class ExpData:
                     v=self.lcfg.visible_topas["ScanList"][j])
                 np.savetxt(
                     filename, self.sigsum[i, j, :, :] - self.bgsum[i, j, :, :], delimiter=',')
-    
+
     def __init_wls(self):
         """allocate space for white light spectrum test experiment.
         There's 2 dimensions for such experiment: monochromer central wavelength
@@ -191,7 +191,17 @@ class ExpData:
         #  so a seperate space needs to be allocated for the summed results
         self.sigsum = np.zeros(
             (len_mono, self.lcfg.toupcamera["Width"]), dtype=np.int64)
+        self.ref = np.zeros(
+            (len_mono, self.lcfg.toupcamera["Width"]), dtype=np.int64)
+        self.refsum = np.zeros(
+            (len_mono, self.lcfg.toupcamera["Width"]), dtype=np.int64)
 
     def __export_wls(self, filestem: str) -> None:
         filename = filestem + "-Signal.csv"
         np.savetxt(filename, self.sig, delimiter=',')
+        filename = filestem + "-Sum-Signal.csv"
+        np.savetxt(filename, self.sigsum, delimiter=',')
+        filename = filestem + "-Reference.csv"
+        np.savetxt(filename, self.ref, delimiter=',')
+        filename = filestem + "-Sum-Reference.csv"
+        np.savetxt(filename, self.refsum, delimiter=',')

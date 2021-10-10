@@ -8,10 +8,11 @@ generic experiment hyperparams like experiment rounds, etc.
 
 __author__ = "Zhi Zi"
 __email__ = "x@zzi.io"
-__version__ = "20211003"
+__version__ = "20211010"
 
 
 from labconfig import lcfg
+from expmsg import expmsg
 from bokeh.models.widgets import TextInput
 
 
@@ -43,3 +44,15 @@ ti_scan_rounds = TextInput(
     title='Scan Rounds', value=str(lcfg.scan_rounds))
 ti_scan_rounds.on_change(
     'value', __callback_scan_rounds_text_input)
+
+
+def scan_rounds(func, meta=''):
+    """scan rounds for func"""
+    def iterate(meta=dict()):
+        for i, rd in enumerate(range(lcfg.scan_rounds)):
+            expmsg("Scanning Round No.{}".format(rd))
+            meta["Round"] = rd
+            meta["iRound"] = i
+            func(meta=meta)
+
+    return iterate

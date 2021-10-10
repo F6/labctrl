@@ -7,9 +7,10 @@ testing and controlling the linear stage parameters
 
 __author__ = "Zhi Zi"
 __email__ = "x@zzi.io"
-__version__ = "20211003"
+__version__ = "20211010"
 
 import base64
+import time
 from bokeh.models.widgets import RadioButtonGroup, Button, TextInput, FileInput
 
 from remoteAPIs.linear_stage import remote_stage_online, remote_stage_moveabs
@@ -158,3 +159,28 @@ def __callback_delay_list_file_input(attr, old, new):
 
 fi_delay_list = FileInput(accept=".txt")
 fi_delay_list.on_change('value', __callback_delay_list_file_input)
+
+
+def scan_delay(func, meta=''):
+    """decorator, when applied to fun, scan delays for func"""
+    def iterate(meta=dict()):
+        if lcfg.delay_line["Mode"] == "Range" or lcfg.delay_line["Mode"] == "ExtFile":
+            for i, dl in enumerate(lcfg.delay_line["ScanList"]):
+                expmsg("Setting delay to {dl} ps".format(dl=dl))
+                target_abs_pos = lcfg.delay_line["ZeroAbsPos"] + ps_to_mm(dl)
+                response = remote_stage_moveabs(target_abs_pos)
+                expmsg("Stage Remote: " + response)
+                expmsg("Waiting for remote to change delay...")
+                # the delay line is set to move at 20mm/s
+                time.sleep(abs(ps_to_mm(dl)/20) + 0.1)
+                meta["Delay"] = dl
+                meta["iDelay"] = i
+                func(meta=meta)
+        else:
+            expmsg(
+                "Delay is set manually, so no action has been taken")
+            meta["Delay"] = "ManualDelay"
+            meta["iDelay"] = 0
+            func(meta=meta)
+
+    return iterate

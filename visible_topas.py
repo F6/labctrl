@@ -7,7 +7,7 @@ testing and controlling the visible(fs) topas parameters
 
 __author__ = "Zhi Zi"
 __email__ = "x@zzi.io"
-__version__ = "20211003"
+__version__ = "20211010"
 
 import base64
 from bokeh.models.widgets import RadioButtonGroup, Button, TextInput, FileInput
@@ -126,3 +126,23 @@ def __callback_visible_topas_list_file_input(attr, old, new):
 fi_visible_topas_list = FileInput(accept=".txt")
 fi_visible_topas_list.on_change(
     'value', __callback_visible_topas_list_file_input)
+
+
+def scan_visible(func):
+    """scan visibles for func"""
+    def iterate(meta=dict()):
+        if lcfg.visible_topas["Mode"] == "Range" or lcfg.visible_topas["Mode"] == "ExtFile":
+            for i, wl in enumerate(lcfg.visible_topas["ScanList"]):
+                expmsg("Setting wavelength to {wl} nm".format(wl=wl))
+                vistopas.setWavelength(vistopas.interactions[11], wl)
+                meta["Visible"] = wl
+                meta["iVisible"] = i
+                func(meta=meta)
+        else:
+            expmsg(
+                "Visible wavelength is set manually, so no action has been taken")
+            meta["Visible"] = "ManualVisible"
+            meta["iVisible"] = 0
+            func(meta=meta)
+
+    return iterate

@@ -15,7 +15,7 @@ from remoteAPIs.touptek_camera import remote_ToupCam_open, remote_ToupCam_close,
 from remoteAPIs.touptek_camera import remote_ToupCam_get_signal
 __author__ = "Zhi Zi"
 __email__ = "x@zzi.io"
-__version__ = "20211003"
+__version__ = "20211010"
 
 from functools import partial
 from bokeh.plotting import figure
@@ -24,6 +24,7 @@ from bokeh.models.widgets import Button, TextInput, Div, Spinner, RadioButtonGro
 from tornado import gen
 
 import base64
+import time
 import numpy as np
 
 from expmsg import expmsg
@@ -76,13 +77,14 @@ button_stop_mono.on_click(__callback_button_stop_monochromer)
 
 div_mono_pos = Div(text='<pre>Monochromer Pos:</pre>')
 
+
 def callback_update_monochromer_pos_div(p):
     div_mono_pos.text = '<pre>Monochromer Pos: {p}</pre>'.format(p=p)
+
 
 def __callback_button_get_mono_pos():
     p = remote_monochromer_get_position()
     doc.add_next_tick_callback(partial(callback_update_monochromer_pos_div, p))
-
 
 
 button_get_mono_pos = Button(label="get monochromer pos")
@@ -189,8 +191,6 @@ mono_calib_table = DataTable(
     source=mono_calib_source, columns=columns, width=400, height=280)
 
 
-
-
 class MonoCalibration:
     def __init__(self, calibration_table: dict, model: str) -> None:
         # calibration table: k - wavelength, v - steps
@@ -210,7 +210,9 @@ class MonoCalibration:
         self.lut = lut
         return lut
 
-monocalib = MonoCalibration(lcfg.monochromer["CalibrationTable"], lcfg.monochromer["CalibrationModel"])
+
+monocalib = MonoCalibration(
+    lcfg.monochromer["CalibrationTable"], lcfg.monochromer["CalibrationModel"])
 monocalib.getlut()
 
 # endregion
@@ -367,3 +369,35 @@ ti_toupcam_exposure_time.on_change(
     'value', __callback_ti_toupcam_exposure_time)
 
 # endregion
+
+
+def scan_monochromer(func, meta=''):
+    """scan monochromer for func"""
+    def iterate(meta=dict()):
+        if lcfg.monochromer["Mode"] == "Range" or lcfg.monochromer["Mode"] == "ExtFile":
+            for i, wl in enumerate(lcfg.monochromer["ScanList"]):
+                expmsg("Setting monochromer to {} nm".format(wl))
+                target_abs_pos = monocalib.lut(wl)
+                response = remote_monochromer_moveto(target_abs_pos)
+                expmsg("Monochromer Remote: " + response)
+                expmsg("Waiting for remote to change wavelength...")
+                # the delay line is set to move at 20mm/s
+                while True:
+                    time.sleep(0.2)
+                    response = remote_monochromer_get_position()
+                    doc.add_next_tick_callback(
+                        partial(callback_update_monochromer_pos_div, response))
+                    if response == target_abs_pos + lcfg.monochromer["ZeroAbsPos"]:
+                        break
+                expmsg("Monochromer wavelength setting done")
+                meta["Mono"] = wl
+                meta["iMono"] = i
+                func(meta=meta)
+        else:
+            expmsg(
+                "Monochromer wavelength is set manually, so no action has been taken")
+            meta["Mono"] = "ManualMono"
+            meta["iMono"] = 0
+            func(meta=meta)
+
+    return iterate
