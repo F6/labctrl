@@ -149,7 +149,7 @@ class LabConfig(metaclass=Singleton):
 
     def save_config(self, filename: str) -> None:
         with open(filename, 'w') as f:
-            json.dump(self.__dict__, f)
+            json.dump(self.__dict__, f, indent=4)
 
     def generate_scanlist(self, device: dict) -> list:
         """After experiment settings are changed, scanlists need to be automatically
