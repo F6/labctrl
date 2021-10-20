@@ -40,3 +40,9 @@ def moveabs(pos):
     pos = float(pos)
     stage.moveabs(pos)
     return "[OK] Moving to {pos}".format(pos=pos)
+
+@app.route("/autohome")
+def autohome():
+    stage.autohome()
+    return "[OK] Moving to home"
+

@@ -226,10 +226,11 @@ class LabConfig(metaclass=Singleton):
         for device in enabled_devices:
             scan_len *= len(device["ScanList"])
         # each sample will cost exposure time to be taken
-        if self.experiment_type == "IMFS":
-            t_each_sample = self.andor_camera["ExposureTime"]
-        elif self.experiment_type == "WLS":
-            t_each_sample = self.toupcamera["ExposureTime"]
+        # if self.experiment_type == "IMFS":
+        #     t_each_sample = self.andor_camera["ExposureTime"]
+        # elif self.experiment_type == "WLS":
+        #     t_each_sample = self.toupcamera["ExposureTime"]
+        t_each_sample = 1
         # because network latency, add 1 second to exposure for a more precise estimation
         t_each_sample = t_each_sample + 1
         # if a shutter is used to take background for each param, the time required is doubled

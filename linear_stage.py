@@ -165,14 +165,16 @@ def scan_delay(func, meta=''):
     """decorator, when applied to fun, scan delays for func"""
     def iterate(meta=dict()):
         if lcfg.delay_line["Mode"] == "Range" or lcfg.delay_line["Mode"] == "ExtFile":
+            last_dl = lcfg.delay_line["ScanList"][0]
             for i, dl in enumerate(lcfg.delay_line["ScanList"]):
                 expmsg("Setting delay to {dl} ps".format(dl=dl))
                 target_abs_pos = lcfg.delay_line["ZeroAbsPos"] + ps_to_mm(dl)
                 response = remote_stage_moveabs(target_abs_pos)
                 expmsg("Stage Remote: " + response)
                 expmsg("Waiting for remote to change delay...")
-                # the delay line is set to move at 20mm/s
-                time.sleep(abs(ps_to_mm(dl)/20) + 0.1)
+                # the delay line is set to move at 2mm/s
+                # time.sleep(abs(ps_to_mm(dl-last_dl)/2) + 0.1)
+                last_dl = dl
                 meta["Delay"] = dl
                 meta["iDelay"] = i
                 func(meta=meta)

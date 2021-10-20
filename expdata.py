@@ -12,7 +12,7 @@ __version__ = "20211010"
 
 from labconfig import LabConfig
 import numpy as np
-
+from scipy import signal
 
 from andor_camera import ANDOR_CCD_PIXELS_WIDTH
 
@@ -32,6 +32,8 @@ class ExpData:
             self.__init_imfs()
         elif lcfg.experiment_type == "WLS":
             self.__init_wls()
+        elif lcfg.experiment_type == "IPVP":
+            self.__init_ipvp()
 
     def __init_imfs(self) -> None:
         """allocate space for IR Modulated Fluorescence Spectroscopy experiment.
@@ -73,6 +75,8 @@ class ExpData:
             self.__export_imfs(filestem)
         elif self.lcfg.experiment_type == "WLS":
             self.__export_wls(filestem)
+        elif self.lcfg.experiment_type == "IPVP":
+            self.__export_ipvp(filestem)
 
     def __export_imfs(self, filestem: str) -> None:
         """export data for IMFS scans"""
@@ -205,3 +209,54 @@ class ExpData:
         np.savetxt(filename, self.ref, delimiter=',')
         filename = filestem + "-Sum-Reference.csv"
         np.savetxt(filename, self.refsum, delimiter=',')
+
+
+    def __init_ipvp(self):
+        """allocate space for IR Pump Visible Probe experiment.
+        There's 3 dimensions for such experiment: IR delay, monochromer central wavelength
+         and white light spectrum.
+        1 signal is measured for each monochromer wavelength:
+            sig   : The white light spectrum at this wavelength
+        """
+        len_delay = len(self.lcfg.delay_line["ScanList"])
+        len_mono = len(self.lcfg.monochromer["ScanList"])
+
+        self.sig = np.zeros(
+            (len_mono, len_delay, self.lcfg.toupcamera["Width"]), dtype=np.int64)
+
+        # The results from different rounds are summed and previewed on-the-fly,
+        #  so a seperate space needs to be allocated for the summed results
+        self.sigsum = np.zeros(
+            (len_mono, len_delay, self.lcfg.toupcamera["Width"]), dtype=np.int64)
+        self.ref = np.zeros(
+            (len_mono, len_delay, self.lcfg.toupcamera["Width"]), dtype=np.int64)
+        self.refsum = np.zeros(
+            (len_mono, len_delay, self.lcfg.toupcamera["Width"]), dtype=np.int64)
+
+    def __export_ipvp(self, filestem: str) -> None:
+        for i in range(len(self.lcfg.monochromer["ScanList"])):
+            filename = filestem + "-{d}nm-Signal.csv".format(
+                d=self.lcfg.monochromer["ScanList"][i])
+            tosave = self.sig[i, :, :]
+            # tosave = signal.savgol_filter(tosave, 161, 3)
+            np.savetxt(filename, tosave, delimiter=',')
+            filename = filestem + "-{d}nm-Sum-Signal.csv".format(
+                d=self.lcfg.monochromer["ScanList"][i])
+            tosave = self.sigsum[i, :, :]
+            # tosave = signal.savgol_filter(tosave, 161, 3)
+            np.savetxt(filename, tosave, delimiter=',')
+            filename = filestem + "-{d}nm-Reference.csv".format(
+                d=self.lcfg.monochromer["ScanList"][i])
+            tosave = self.ref[i, :, :]
+            # tosave = signal.savgol_filter(tosave, 161, 3)
+            np.savetxt(filename, tosave, delimiter=',')
+            filename = filestem + "-{d}nm-Sum-Reference.csv".format(
+                d=self.lcfg.monochromer["ScanList"][i])
+            tosave = self.refsum[i, :, :]
+            # tosave = signal.savgol_filter(tosave, 161, 3)
+            np.savetxt(filename, tosave, delimiter=',')
+            filename = filestem + "-{d}nm-Ratio.csv".format(
+                d=self.lcfg.monochromer["ScanList"][i])
+            tosave = np.divide(self.sigsum[i, :, :], self.refsum[i, :, :])
+            # tosave = signal.savgol_filter(tosave, 161, 3)
+            np.savetxt(filename, tosave, delimiter=',')

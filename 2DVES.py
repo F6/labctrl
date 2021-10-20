@@ -41,12 +41,14 @@ from bokeh.models.widgets import Div
 
 DEV_TEST = True
 
+from pumpprobe import button_start_ipvp
 from white_light_spectrum import button_start_wls
 
 c_expst1 = column(
     ti_file_stem,
     ti_scan_rounds,
     button_start_wls,
+    button_start_ipvp,
     Div(text='<h3>Shutter Setup</h3>'),
     rbg_shutter_background,
     Div(text='<h3>PD Setup</h3>'),

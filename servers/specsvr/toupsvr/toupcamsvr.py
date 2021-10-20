@@ -59,7 +59,7 @@ class ToupCamera:
         else:
             self.setVideoMode()
         # set camera temp to 0
-        toupcam.Toupcam.put_Temperature(self.hcam, 0)
+        # toupcam.Toupcam.put_Temperature(self.hcam, 0)
 
         self.setExposureTime(self.exposure)
         # use raw data mode
@@ -175,6 +175,7 @@ def get_signal(b):
     siglower, sigupper, reflower, refupper = map(int, b.split())
     img = cam.getimg()
     rgbsum = np.sum(np.asarray(img), axis=2)
+    print(rgbsum.max())
     sig = np.sum(rgbsum[siglower:sigupper], axis=0)
     ref = np.sum(rgbsum[reflower:refupper], axis=0)
     return base64.b64encode(np.array((sig, ref), dtype=np.uint32))

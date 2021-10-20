@@ -1,15 +1,8 @@
 # -*- coding: utf-8 -*-
 
-"""white_light_spectrum.py:
-This module implements the white light spectrum test procedure.
+"""pumpprobe.py:
+This module implements the IR Pump Visible Probe experiment procedure.
 
-In such experiments, a "white" laser pulse is prepared via
- supercontinuum generation. The pulse spectrum spans over
- a broad range of uv-visible-ir light. The pulse is sent to
- a monochromer and measured with camera to determine its
- spectrum, and the monochromer scans over and over again for
- for several hours to check the stability of the generated 
- white light.
 """
 
 __author__ = "Zhi Zi"
@@ -32,7 +25,7 @@ from labconfig import lcfg
 from expmsg import expmsg
 from expdata import ExpData
 from general_setting import scan_rounds
-
+from linear_stage import scan_delay
 from spectrometer import remote_ToupCam_open, remote_ToupCam_close, remote_ToupCam_trig, scan_monochromer
 
 from spectrometer import monocalib
@@ -40,13 +33,14 @@ from spectrometer import monocalib
 
 @scan_rounds
 @scan_monochromer
-def __wls_take_sample(meta=dict()):
+@scan_delay
+def __ipvp_take_sample(meta=dict()):
     edata = meta["ExpData"]
     expmsg("Calling remote ToupCam to take signal...")
     response = remote_ToupCam_trig()
     expmsg("ToupCam Remote: " + response +
            ", waiting for remote to take signal...")
-    time.sleep(lcfg.toupcamera["ExposureTime"]/1000000 + 1)
+    time.sleep(lcfg.toupcamera["ExposureTime"]/1000000 + 0.3)
     expmsg("Calling remote ToupCam to convert signal...")
     expmsg("Retriving signal from remote ToupTek Camera")
     sig, ref = remote_ToupCam_get_signal(
@@ -58,22 +52,21 @@ def __wls_take_sample(meta=dict()):
 
     expmsg("Adding latest signal to dataset...")
 
-    edata.sig[meta["iMono"]] = sig
-    edata.sigsum[meta["iMono"]] += sig
-    edata.ref[meta["iMono"]] = ref
-    edata.refsum[meta["iMono"]] += ref
+    edata.sig[meta["iMono"], meta["iDelay"]] = sig
+    edata.sigsum[meta["iMono"], meta["iDelay"]] += sig
+    edata.ref[meta["iMono"], meta["iDelay"]] = ref
+    edata.refsum[meta["iMono"], meta["iDelay"]] += ref
 
     # todo: add bg subtraction and other meta
     doc.add_next_tick_callback(
         partial(callback_update_toupcam_figure, sig, ref))
-    # if this the end of IR scan, call export
-    if meta["iMono"] + 1 == len(lcfg.monochromer["ScanList"]):
+    # if this the end of delay scan, call export
+    if meta["iDelay"] + 1 == len(lcfg.delay_line["ScanList"]):
         edata.export("scandata/" + lcfg.file_stem +
                      "-Round{rd}".format(rd=meta["iRound"]))
-        ass_spectrum(edata)
 
 
-def __wls_task():
+def __ipvp_task():
     """
     Implements the thread task for IR Modulated Fluorescence spectroscopy
     """
@@ -91,49 +84,29 @@ def __wls_task():
 
     time.sleep(1)
 
-    time.sleep(3)
 
     meta = dict()
     meta["ExpData"] = edata
-    __wls_take_sample(meta=meta)
+    __ipvp_take_sample(meta=meta)
 
     expmsg("Scanning done. Closing remote toupcam")
     response = remote_ToupCam_close(max_retry)
     expmsg("ToupCam Remote: " + response)
 
 
-def __callback_start_wls_button():
-    lcfg.experiment_type = "WLS"
-    thread = Thread(target=__wls_task)
+def __callback_start_ipvp_button():
+    lcfg.experiment_type = "IPVP"
+    thread = Thread(target=__ipvp_task)
     thread.start()
 
 
-button_start_wls = Button(label='Start WLS', button_type='success')
-button_start_wls.on_click(__callback_start_wls_button)
+button_start_ipvp = Button(label='Start PumpProbe', button_type='success')
+button_start_ipvp.on_click(__callback_start_ipvp_button)
 
 
 def ass_spectrum(edata: ExpData):
     """assemble full spectrum from segmented spectrum"""
-    # for i, spec in enumerate(edata.sig):
-    #     wl = lcfg.monochromer["ScanList"][i]
-    #     xlen = len(spec)
-    #     xwidth = lcfg.toupcamera["SpectralWidth"]
-    #     xleft = wl - xwidth/2
-    #     xright = wl + xwidth/2
-    #     x = np.linspace(xleft, xright, xlen)
-    #     plt.plot(x, spec)
-    #
-    # for i, spec in enumerate(edata.ref):
-    #     wl = lcfg.monochromer["ScanList"][i]
-    #     xlen = len(spec)
-    #     xwidth = lcfg.toupcamera["SpectralWidth"]
-    #     xleft = wl - xwidth/2
-    #     xright = wl + xwidth/2
-    #     x = np.linspace(xleft, xright, xlen)
-    #     plt.plot(x, spec)
-    for i, spec in enumerate(edata.ref):
-        sig = edata.sig[i]
-        spec = np.divide(sig, spec)
+    for i, spec in enumerate(edata.sig):
         wl = lcfg.monochromer["ScanList"][i]
         xlen = len(spec)
         xwidth = lcfg.toupcamera["SpectralWidth"]

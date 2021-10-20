@@ -226,7 +226,7 @@ figure_toup_camera_sig = figure(title="Signal", x_axis_label="Detector Pixel",
 figure_toup_camera_ref = figure(title="Reference", x_axis_label="Detector Pixel",
                                 y_axis_label="Intensity", plot_width=500, plot_height=310, tools=spectrum_tools)
 
-figure_toup_camera_delta = figure(title="Delta", x_axis_label="Detector Pixel",
+figure_toup_camera_delta = figure(title="Ratio", x_axis_label="Detector Pixel",
                                   y_axis_label="Intensity", plot_width=500, plot_height=310, tools=spectrum_tools)
 
 
@@ -251,7 +251,7 @@ def callback_update_toupcam_figure(sig, ref):
     new_data = dict()
     new_data['signals'] = sig
     new_data['refs'] = ref
-    new_data['deltas'] = sig-ref
+    new_data['deltas'] = np.divide(sig, ref)
     new_data['rawdata_x'] = rawdata_x
     waveform_data_source.data = new_data
 
