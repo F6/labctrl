@@ -40,4 +40,18 @@ PD_base_address = "http://{}:5003/".format(PD_ip)
 monochromer_base_address = "http://{}:5004/".format(monochromer_ip)
 toupcam_base_address = "http://{}:5005/".format(toupcam_ip)
 
+
+ports = {
+    "EMCCD": 5000,  # Electron multiplying CCD at Andor SOLIS
+    "CDHD2": 5001,  # The flat linear stage for IR topas delay line
+    "Shutter": 5002,  # Shutter controller
+    "RigolOscilloscope": 5003,  # Rigol oscilloscope (the black one)
+    "Monochromer": 5004,  # The black one at A304
+    "ToupCam": 5005,  # ToupTek USB Cameras
+    # 5006 is taken by bokeh server
+    "USB1020": 5007,  # Motion controller, the short one now for pumpprobe
+    "PMC48MT6": 5008,  # Motion controller, the 3500ps one for visible topas
+}
+
+
 # endregion
