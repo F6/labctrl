@@ -1,17 +1,24 @@
 # -*- coding: utf-8 -*-
 
-"""backend.py:
-This module assembles the Bokeh UI for experiment
+"""2DVES.py:
+This module assembles the Bokeh UI for 
+Two-dimensional electronic–vibrational spectroscopy (2DVES)
+
+The experiment is essentially IR Pump Visible Probe experiment.
 """
+__author__ = "Zhi Zi"
+__email__ = "x@zzi.io"
+__version__ = "20211003"
+
+
+from white_light_spectrum import button_start_wls
+from pumpprobe import button_start_ipvp
 
 from spectrometer import rbg_monochromer_mode
 from spectrometer import figure_toup_camera_sig, figure_toup_camera_ref, figure_toup_camera_delta
 from spectrometer import button_toupcam_getsignal, button_start_toupcam, button_stop_toupcam, spinner_siglower, spinner_sigupper, spinner_reflower, spinner_refupper, rbg_toupcam_mode, button_toupcam_trig, ti_toupcam_exposure_time
 from spectrometer import button_test_monochromer_online, ti_monochromer_target, button_stop_mono, button_get_mono_pos, div_mono_pos
 from spectrometer import ti_monochromer_start, ti_monochromer_step, ti_monochromer_stop, fi_monochromer_list
-__author__ = "Zhi Zi"
-__email__ = "x@zzi.io"
-__version__ = "20211003"
 
 from andor_camera import ti_exposure_time
 from photodiode import rbg_pd_reference
@@ -41,8 +48,6 @@ from bokeh.models.widgets import Div
 
 DEV_TEST = True
 
-from pumpprobe import button_start_ipvp
-from white_light_spectrum import button_start_wls
 
 c_expst1 = column(
     ti_file_stem,

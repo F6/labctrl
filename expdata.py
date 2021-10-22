@@ -34,6 +34,18 @@ class ExpData:
             self.__init_wls()
         elif lcfg.experiment_type == "IPVP":
             self.__init_ipvp()
+        elif lcfg.experiment_type == "TRPL":
+            self.__init_trpl()
+
+    def export(self, filestem: str) -> None:
+        if self.lcfg.experiment_type == "IMFS":  # IR Modulated Fluorescence Spectroscopy
+            self.__export_imfs(filestem)
+        elif self.lcfg.experiment_type == "WLS":
+            self.__export_wls(filestem)
+        elif self.lcfg.experiment_type == "IPVP":
+            self.__export_ipvp(filestem)
+        elif self.lcfg.experiment_type == "TRPL":
+            self.__export_trpl(filestem)
 
     def __init_imfs(self) -> None:
         """allocate space for IR Modulated Fluorescence Spectroscopy experiment.
@@ -69,14 +81,6 @@ class ExpData:
             (len_delay, len_vis, len_ir), dtype=np.float32)
         self.bgrefsum = np.zeros(
             (len_delay, len_vis, len_ir), dtype=np.float32)
-
-    def export(self, filestem: str) -> None:
-        if self.lcfg.experiment_type == "IMFS":  # IR Modulated Fluorescence Spectroscopy
-            self.__export_imfs(filestem)
-        elif self.lcfg.experiment_type == "WLS":
-            self.__export_wls(filestem)
-        elif self.lcfg.experiment_type == "IPVP":
-            self.__export_ipvp(filestem)
 
     def __export_imfs(self, filestem: str) -> None:
         """export data for IMFS scans"""
@@ -210,7 +214,6 @@ class ExpData:
         filename = filestem + "-Sum-Reference.csv"
         np.savetxt(filename, self.refsum, delimiter=',')
 
-
     def __init_ipvp(self):
         """allocate space for IR Pump Visible Probe experiment.
         There's 3 dimensions for such experiment: IR delay, monochromer central wavelength
@@ -260,3 +263,25 @@ class ExpData:
             tosave = np.divide(self.sigsum[i, :, :], self.refsum[i, :, :])
             # tosave = signal.savgol_filter(tosave, 161, 3)
             np.savetxt(filename, tosave, delimiter=',')
+
+    def __init_trpl(self):
+        """allocate space for Kerr Gating Time-resolved Photoluminescence 
+        Spectroscopy experiment.
+        There's only 1 dimension for such experiment: signal strength over
+        time delay.
+        1 signal is measured for each time delay:
+            sig   : The intensity at this time delay
+        """
+        len_delay = len(self.lcfg.delay_line["ScanList"])
+
+        self.sig = np.zeros(len_delay, dtype=np.int64)
+
+        # The results from different rounds are summed and previewed on-the-fly,
+        #  so a seperate space needs to be allocated for the summed results
+        self.sigsum = np.zeros(len_delay, dtype=np.int64)
+
+    def __export_trpl(self, filestem: str) -> None:
+        filename = filestem + "-Signal.csv"
+        np.savetxt(filename, self.sig, delimiter=',')
+        filename = filestem + "-Sum-Signal.csv"
+        np.savetxt(filename, self.sigsum, delimiter=',')

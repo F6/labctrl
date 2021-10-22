@@ -8,7 +8,6 @@ __author__ = "Zhi Zi"
 __email__ = "x@zzi.io"
 __version__ = "20211020"
 
-
 __docformat__ = "restructuredtext"
 
 # Begin preamble for Python v(3, 2)
@@ -816,7 +815,11 @@ del loaderclass
 
 add_library_search_dirs([])
 
-# No libraries
+# Begin libraries
+_libs[".\Adhon_PMC_48MT6"] = load_library(".\Adhon_PMC_48MT6")
+
+# 1 libraries
+# End libraries
 
 # No modules
 

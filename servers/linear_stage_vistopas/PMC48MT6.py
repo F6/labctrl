@@ -21,15 +21,22 @@ import Adhon_PMC_48MT6 as lib
 class PMC48MT6:
     def __init__(self) -> None:
         self.comport = 4
+        print("Opening serial port ", self.comport)
         r = lib.PMC_OpenSericalPort(self.comport)
+        print("Initializing PMC driver")
         r = lib.PMC_GlobalInit()
         self.addr = ctypes.c_ubyte()
         r = lib.PMC_GetControllerAddr(ctypes.byref(self.addr))
-        r = lib.PMC_GetControllerVersion(self.addr)
+        print("Controller Address: ", self.addr.value)
+        self.controller_version = ctypes.c_ulong()
+        r = lib.PMC_GetControllerVersion(self.addr, ctypes.byref(self.controller_version))
+        print("Controller Version: ", self.controller_version.value)
         # r = lib.PMC_SetMotorMaxSpeed(self.addr, lib.AXIS_X, 1000)
 
     def __del__(self) -> None:
+        print("Releasing PMC driver")
         r = lib.PMC_GlobalRelease()
+        print("Closing serial port")
         r = lib.PMC_CloseSericalPort()
 
     def setp(self, pos: float, block=False) -> None:

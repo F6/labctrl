@@ -27,6 +27,8 @@ class LabConfig(metaclass=Singleton):
         # region Default Settings
         # IMFS: IR Modulated Fluorescence
         # WLS: White light spectrum test
+        # IPVP: IR Pump Visible Probe
+        # TRPL: Time-resolved Photoluminescence (Kerr Gating)
         self.experiment_type = "IMFS"
         self.file_stem = "NewSample"
         self.scan_rounds = 10
@@ -123,6 +125,31 @@ class LabConfig(metaclass=Singleton):
         self.toupcamera["ReferenceLower"] = 1000
         self.toupcamera["ReferenceUpper"] = 1500
         self.toupcamera["SpectralWidth"] = 25  # nm
+
+        # Demodulator: The Lock-in amplifier demodulates the signal amplitude and
+        #              phase from carrier
+        # BoxcarAverager: Use Boxcar Averager to recover signal
+        self.lockin_modes = ("Demodulator", "BoxcarAverager")
+        self.ziUHF = dict()
+        self.ziUHF["Name"] = "ZurichInstrumentsUHF"
+        self.ziUHF["DeviceID"] = 'dev2480'
+        self.ziUHF["ServerHost"] = "localhost"
+        self.ziUHF["ServerPort"] = 8004
+        self.ziUHF["APILevel"] = 6
+        self.ziUHF["Mode"] = "Boxcar"
+        self.ziUHF["Boxcar"] = dict() # params for boxcar averager
+        self.ziUHF["Boxcar"]["out_channel"] = 0
+        self.ziUHF["Boxcar"]["in_channel"] = 0
+        self.ziUHF["Boxcar"]["osc_index"] = 0
+        self.ziUHF["Boxcar"]["frequency"] = 400e3
+        self.ziUHF["Boxcar"]["boxcar_index"] = 0
+        self.ziUHF["Boxcar"]["inputpwa_index"] = 0
+        self.ziUHF["Boxcar"]["amplitude"] = 0.5
+        self.ziUHF["Boxcar"]["frequency"] = 9.11e6
+        self.ziUHF["Boxcar"]["windowstart"] = 75
+        self.ziUHF["Boxcar"]["windowsize"] = 3e-9
+        self.ziUHF["Boxcar"]["periods"] = 512
+
 
         # endregion
 

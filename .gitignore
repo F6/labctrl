@@ -9,6 +9,9 @@ servers/ccdsvr/raw/*.sif
 servers/ccdsvr/converted/*.sif
 servers/ccdsvr/converted/*.txt
 
+# portable python(32bit)
+servers/linear_stage_vistopas/python
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
