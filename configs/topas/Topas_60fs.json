@@ -1,0 +1,14 @@
+{
+    "Name": "Topas_60fs",
+    "Comment": "The Topas at A304, now for Visible pump generation",
+    "Host": "192.168.1.9",
+    "Port": "5019",
+    "Unit": "nm",
+    "Mode": "Range",
+    "Start": 450,
+    "Step": 5,
+    "Stop": 470,
+    "ExternalList": [],
+    "ManualTarget": 450,
+    "ManualStep": 1.0
+}

@@ -1,0 +1,16 @@
+{
+    "Name": "fsTopasExit",
+    "Comment": "The shutter at fsTopas exit (not the built-in one)",
+    "Host": "127.0.0.1",
+    "Port": 5012,
+    "NumberOfShutter": 2,
+    "SelectedShutter": "1",
+    "Shutters" : {
+        "1": {
+            "UseShutterBackground": false
+        },
+        "2": {
+            "UseShutterBackground": false
+        }
+    }
+}

@@ -1,0 +1,15 @@
+{
+    "Name": "CDHD2",
+    "Comment": "The long delay line now for psTopas at A304",
+    "Host": "127.0.0.1",
+    "Port": 5002,
+    "Unit": "ps",
+    "Mode": "Range",
+    "Start": -5.0,
+    "Step": 0.2,
+    "Stop": 5.0,
+    "ExternalList": [],
+    "ZeroAbsPos": 228.883,
+    "ManualPos": 228.963,
+    "ManualStep": 1.0
+}

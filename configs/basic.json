@@ -1,0 +1,7 @@
+{
+    "ExperimentType": "THz",
+    "FileStem": "NewSample",
+    "ScanRounds": 3,
+    "Mode": "SimpleRepetition",
+    "ScanModes": ["SimpleRepetition", "AdaptiveSearch"]
+}

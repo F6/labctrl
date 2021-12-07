@@ -1,0 +1,14 @@
+{
+    "Name": "Topas_ps",
+    "Comment": "The Topas at A304, now for IR pump generation",
+    "Host": "192.168.1.9",
+    "Port": "5018",
+    "Unit": "cm-1",
+    "Mode": "Range",
+    "Start": 1300,
+    "Step": 5,
+    "Stop": 3500,
+    "ExternalList": [],
+    "ManualTarget": 1618,
+    "ManualStep": 1.0
+}

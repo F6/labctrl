@@ -1,246 +1,266 @@
 {
-    "experiment_type": "IPVP",
-    "file_stem": "MeO480",
-    "scan_rounds": 100,
-    "andor_camera": {
-        "ExposureTime": 1.0,
-        "ManualSignalNo": 0
+    "basic": {
+        "ExperimentType": "THz",
+        "FileStem": "testbs",
+        "ScanRounds": 3,
+        "Mode": "SimpleRepetition",
+        "ScanModes": [
+            "SimpleRepetition",
+            "AdaptiveSearch"
+        ]
     },
-    "shutter": {
-        "UseShutterBackground": false
-    },
-    "photodiode": {
-        "TakePhotodiodeReference": false
-    },
-    "scan_modes": [
-        false,
-        "Range",
-        "ExtFile"
-    ],
-    "visible_topas": {
-        "Name": "VisibleTopas",
-        "Unit": "nm",
-        "Mode": false,
-        "Start": 440.0,
-        "Step": 5.0,
-        "Stop": 471.0,
-        "ScanList": [
-            null
-        ],
-        "ExternalList": []
-    },
-    "ir_topas": {
-        "Name": "IRTopas",
-        "Unit": "cm-1",
-        "Mode": false,
-        "Start": 1400.0,
-        "Step": 5.0,
-        "Stop": 1501.0,
-        "ScanList": [
-            null
-        ],
-        "ExternalList": []
-    },
-    "delay_line": {
-        "Name": "DelayLine",
-        "Unit": "ps",
-        "Mode": "ExtFile",
-        "Start": -50.0,
-        "Step": 0.5,
-        "Stop": 20.0,
-        "ScanList": [
-            -400.0,
-            -300.0,
-            -250.0,
-            -200.0,
-            -150.0,
-            -100.0,
-            -95.0,
-            -90.0,
-            -85.0,
-            -80.0,
-            -75.0,
-            -70.0,
-            -65.0,
-            -60.0,
-            -55.0,
-            -50.0,
-            -45.0,
-            -40.0,
-            -35.0,
-            -30.0,
-            -25.0,
-            -24.0,
-            -23.0,
-            -22.0,
-            -21.0,
-            -20.0,
-            -19.0,
-            -18.0,
-            -17.0,
-            -16.0,
-            -15.0,
-            -14.0,
-            -13.0,
-            -12.0,
-            -11.0,
-            -10.0,
-            -9.0,
-            -8.0,
-            -7.0,
-            -6.0,
-            -5.0,
-            -4.0,
-            -3.0,
-            -2.5,
-            -2.0,
-            -1.5,
-            -1.0,
-            -0.5,
-            -0.3,
-            -0.2,
-            -0.1,
-            0.0,
-            0.1,
-            0.2,
-            0.3,
-            0.5,
-            1.0,
-            1.5,
-            2.0,
-            2.5,
-            3.0,
-            4.0,
-            5.0,
-            6.0,
-            8.0,
-            10.0,
-            20.0,
-            30.0,
-            50.0
-        ],
-        "ExternalList": [
-            -400.0,
-            -300.0,
-            -250.0,
-            -200.0,
-            -150.0,
-            -100.0,
-            -95.0,
-            -90.0,
-            -85.0,
-            -80.0,
-            -75.0,
-            -70.0,
-            -65.0,
-            -60.0,
-            -55.0,
-            -50.0,
-            -45.0,
-            -40.0,
-            -35.0,
-            -30.0,
-            -25.0,
-            -24.0,
-            -23.0,
-            -22.0,
-            -21.0,
-            -20.0,
-            -19.0,
-            -18.0,
-            -17.0,
-            -16.0,
-            -15.0,
-            -14.0,
-            -13.0,
-            -12.0,
-            -11.0,
-            -10.0,
-            -9.0,
-            -8.0,
-            -7.0,
-            -6.0,
-            -5.0,
-            -4.0,
-            -3.0,
-            -2.5,
-            -2.0,
-            -1.5,
-            -1.0,
-            -0.5,
-            -0.3,
-            -0.2,
-            -0.1,
-            0.0,
-            0.1,
-            0.2,
-            0.3,
-            0.5,
-            1.0,
-            1.5,
-            2.0,
-            2.5,
-            3.0,
-            4.0,
-            5.0,
-            6.0,
-            8.0,
-            10.0,
-            20.0,
-            30.0,
-            50.0
-        ],
-        "ZeroAbsPos": 56.542,
-        "ManualPos": 86.5122547
-    },
-    "monochromer": {
-        "Name": "7IMSU",
-        "UnitRaw": "step",
-        "Unit": "nm",
-        "Mode": false,
-        "Start": 450.0,
-        "Step": 5.0,
-        "Stop": 750.0,
-        "ScanList": [
-            null
-        ],
-        "ExternalList": [
-            500.0,
-            510.0,
-            520.0
-        ],
-        "ZeroAbsPos": 1680,
-        "ManualRawPos": 0,
-        "ManualCalibratedPos": 0,
-        "CalibrationTable": {
-            "Wavelength": [
-                0,
-                662
+    "linear_stages": {
+        "AeroTech_NView": {
+            "Name": "AeroTech_NView",
+            "Comment": "The long delay line now for 120fs at A304",
+            "Host": "127.0.0.1",
+            "Port": 5004,
+            "Unit": "ps",
+            "Mode": "ExternalFile",
+            "Start": -5.0,
+            "Step": 0.2,
+            "Stop": 5.0,
+            "ExternalList": [
+                -10.0,
+                -9.0,
+                -8.0,
+                -7.0,
+                -6.0,
+                -5.0,
+                -4.5,
+                -4.0,
+                -3.5,
+                -3.0,
+                -2.5,
+                -2.0,
+                -1.5,
+                -1.0,
+                -0.5,
+                0.0,
+                0.5,
+                1.0,
+                1.5,
+                2.0,
+                2.5,
+                3.0,
+                3.5,
+                4.0,
+                4.5,
+                5.0,
+                6.0,
+                7.0,
+                8.0,
+                9.0,
+                10.0,
+                11.0,
+                12.0,
+                13.0,
+                14.0,
+                15.0,
+                16.0,
+                17.0,
+                18.0,
+                19.0,
+                10.0
             ],
-            "Step": [
-                0,
-                160000
+            "ZeroAbsPos": 229.0,
+            "ManualPos": 228.963,
+            "ManualStep": 1.0,
+            "ScanModes": [
+                "Manual",
+                "Range",
+                "ExternalFile"
             ]
         },
-        "CalibrationModel": "Linear",
-        "UnitCalibrated": "nm"
+        "AeroTech_THz": {
+            "Name": "AeroTech_THz",
+            "Comment": "AeroTech Ensemble",
+            "Host": "127.0.0.1",
+            "Port": 5003,
+            "Unit": "ps",
+            "Mode": "Range",
+            "Start": -5.0,
+            "Step": 0.2,
+            "Stop": 5.0,
+            "ExternalList": [],
+            "ZeroAbsPos": 228.883,
+            "ManualPos": 228.963,
+            "ManualStep": 1.0,
+            "ScanModes": [
+                "Manual",
+                "Range",
+                "ExternalFile"
+            ]
+        },
+        "CDHD2": {
+            "Name": "CDHD2",
+            "Comment": "The long delay line now for psTopas at A304",
+            "Host": "127.0.0.1",
+            "Port": 5002,
+            "Unit": "ps",
+            "Mode": "Range",
+            "Start": -5.0,
+            "Step": 0.2,
+            "Stop": 5.0,
+            "ExternalList": [],
+            "ZeroAbsPos": 228.883,
+            "ManualPos": 228.963,
+            "ManualStep": 1.0,
+            "ScanModes": [
+                "Manual",
+                "Range",
+                "ExternalFile"
+            ]
+        },
+        "CRD507": {
+            "Name": "CRD507",
+            "Comment": "Sigma Koki Rotator",
+            "Host": "192.168.1.9",
+            "Port": 5005,
+            "Unit": "ps",
+            "Mode": "Range",
+            "Start": -5.0,
+            "Step": 0.2,
+            "Stop": 5.0,
+            "ExternalList": [],
+            "ZeroAbsPos": 228.883,
+            "ManualPos": 228.963,
+            "ManualStep": 1.0,
+            "ScanModes": [
+                "Manual",
+                "Range",
+                "ExternalFile"
+            ]
+        },
+        "PMC48MT6": {
+            "Name": "PMC48MT6",
+            "Comment": "The long delay line with 2 retroreflectors installed at A304",
+            "Host": "192.168.1.9",
+            "Port": 5000,
+            "Unit": "ps",
+            "Mode": "Range",
+            "Start": -5.0,
+            "Step": 0.2,
+            "Stop": 5.0,
+            "ExternalList": [],
+            "ZeroAbsPos": 228.883,
+            "ManualPos": 228.963,
+            "ManualStep": 1.0,
+            "ScanModes": [
+                "Manual",
+                "Range",
+                "ExternalFile"
+            ]
+        },
+        "USB1020": {
+            "Name": "USB1020",
+            "Comment": "The short one",
+            "Host": "127.0.0.1",
+            "Port": 5001,
+            "Unit": "ps",
+            "Mode": "Range",
+            "Start": -5.0,
+            "Step": 0.2,
+            "Stop": 5.0,
+            "ExternalList": [],
+            "ZeroAbsPos": 228.883,
+            "ManualPos": 228.963,
+            "ManualStep": 1.0,
+            "ScanModes": [
+                "Manual",
+                "Range",
+                "ExternalFile"
+            ]
+        }
     },
-    "camera_modes": [
-        "Video",
-        "SoftwareTrigger",
-        "ExternalTrigger"
-    ],
-    "toupcamera": {
-        "Name": "ToupTekCamera",
-        "Mode": "SoftwareTrigger",
-        "Width": 4640,
-        "Height": 3506,
-        "ExposureTime": 100000,
-        "TargetTemperature": 0,
-        "SignalLower": 1754,
-        "SignalUpper": 3506,
-        "ReferenceLower": 0,
-        "ReferenceUpper": 1753,
-        "SpectralWidth": 25
+    "lockin_and_boxcars": {
+        "ziUHF": {
+            "Name": "ziUHF",
+            "Comment": "The white lock-in amplifier (600MHz)",
+            "Host": "127.0.0.1",
+            "Port": 5013
+        }
+    },
+    "shutter_controllers": {
+        "fsTopasExit": {
+            "Name": "fsTopasExit",
+            "Comment": "The shutter at fsTopas exit (not the built-in one)",
+            "Host": "127.0.0.1",
+            "Port": 5012,
+            "NumberOfShutter": 2,
+            "SelectedShutter": "1",
+            "Shutters": {
+                "1": {
+                    "UseShutterBackground": false
+                },
+                "2": {
+                    "UseShutterBackground": false
+                }
+            }
+        },
+        "psTopasExit": {
+            "Name": "fsTopasExit",
+            "Comment": "The shutter at fsTopas exit (not the built-in one)",
+            "Host": "127.0.0.1",
+            "Port": 5011,
+            "NumberOfShutter": 2,
+            "SelectedShutter": "1",
+            "Shutters": {
+                "1": {
+                    "UseShutterBackground": false
+                },
+                "2": {
+                    "UseShutterBackground": false
+                }
+            }
+        }
+    },
+    "topas": {
+        "Topas_60fs": {
+            "Name": "Topas_60fs",
+            "Comment": "The Topas at A304, now for Visible pump generation",
+            "Host": "192.168.1.9",
+            "Port": "5019",
+            "Unit": "nm",
+            "Mode": "Range",
+            "Start": 450,
+            "Step": 5,
+            "Stop": 470,
+            "ExternalList": [],
+            "ManualTarget": 450,
+            "ManualStep": 1.0,
+            "ScanModes": [
+                "Manual",
+                "Range",
+                "ExternalFile"
+            ],
+            "Units": [
+                "nm",
+                "cm-1"
+            ]
+        },
+        "Topas_ps": {
+            "Name": "Topas_ps",
+            "Comment": "The Topas at A304, now for IR pump generation",
+            "Host": "192.168.1.9",
+            "Port": "5018",
+            "Unit": "cm-1",
+            "Mode": "Range",
+            "Start": 1300,
+            "Step": 5,
+            "Stop": 3500,
+            "ExternalList": [],
+            "ManualTarget": 1618,
+            "ManualStep": 1.0,
+            "ScanModes": [
+                "Manual",
+                "Range",
+                "ExternalFile"
+            ],
+            "Units": [
+                "nm",
+                "cm-1"
+            ]
+        }
     }
 }

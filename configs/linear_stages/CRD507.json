@@ -1,0 +1,15 @@
+{
+    "Name": "CRD507",
+    "Comment": "Sigma Koki Rotator",
+    "Host": "192.168.1.9",
+    "Port": 5005,
+    "Unit": "ps",
+    "Mode": "Range",
+    "Start": -5.0,
+    "Step": 0.2,
+    "Stop": 5.0,
+    "ExternalList": [],
+    "ZeroAbsPos": 228.883,
+    "ManualPos": 228.963,
+    "ManualStep": 1.0
+}

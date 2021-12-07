@@ -1,0 +1,6 @@
+{
+    "Name": "ziUHF",
+    "Comment": "The white lock-in amplifier (600MHz)",
+    "Host": "127.0.0.1",
+    "Port": 5013
+}
