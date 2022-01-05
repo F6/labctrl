@@ -1,191 +1,221 @@
+# -*- coding: utf-8 -*-
 
+"""CRD507.py:
+This module provides simple controlling class for
+the 5-phase stepper motor driver CRD507-KD from Oriental Motor
+"""
 
-import win32ui
-import win32api
-import win32con
+__author__ = "Zhi Zi"
+__email__ = "x@zzi.io"
+__version__ = "20220105"
+
 import time
-
-# Giant dictonary to hold key name and VK value
-VK_CODE = {
-    'backspace': 0x08,
-    'tab': 0x09,
-    'clear': 0x0C,
-    'enter': 0x0D,
-    'shift': 0x10,
-    'ctrl': 0x11,
-    'alt': 0x12,
-    'pause': 0x13,
-    'caps_lock': 0x14,
-    'esc': 0x1B,
-    'spacebar': 0x20,
-    'page_up': 0x21,
-    'page_down': 0x22,
-    'end': 0x23,
-    'home': 0x24,
-    'left_arrow': 0x25,
-    'up_arrow': 0x26,
-    'right_arrow': 0x27,
-    'down_arrow': 0x28,
-    'select': 0x29,
-    'print': 0x2A,
-    'execute': 0x2B,
-    'print_screen': 0x2C,
-    'ins': 0x2D,
-    'del': 0x2E,
-    'help': 0x2F,
-    '0': 0x30,
-    '1': 0x31,
-    '2': 0x32,
-    '3': 0x33,
-    '4': 0x34,
-    '5': 0x35,
-    '6': 0x36,
-    '7': 0x37,
-    '8': 0x38,
-    '9': 0x39,
-    'a': 0x41,
-    'b': 0x42,
-    'c': 0x43,
-    'd': 0x44,
-    'e': 0x45,
-    'f': 0x46,
-    'g': 0x47,
-    'h': 0x48,
-    'i': 0x49,
-    'j': 0x4A,
-    'k': 0x4B,
-    'l': 0x4C,
-    'm': 0x4D,
-    'n': 0x4E,
-    'o': 0x4F,
-    'p': 0x50,
-    'q': 0x51,
-    'r': 0x52,
-    's': 0x53,
-    't': 0x54,
-    'u': 0x55,
-    'v': 0x56,
-    'w': 0x57,
-    'x': 0x58,
-    'y': 0x59,
-    'z': 0x5A,
-    'numpad_0': 0x60,
-    'numpad_1': 0x61,
-    'numpad_2': 0x62,
-    'numpad_3': 0x63,
-    'numpad_4': 0x64,
-    'numpad_5': 0x65,
-    'numpad_6': 0x66,
-    'numpad_7': 0x67,
-    'numpad_8': 0x68,
-    'numpad_9': 0x69,
-    'multiply_key': 0x6A,
-    'add_key': 0x6B,
-    'separator_key': 0x6C,
-    'subtract_key': 0x6D,
-    'decimal_key': 0x6E,
-    'divide_key': 0x6F,
-    'F1': 0x70,
-    'F2': 0x71,
-    'F3': 0x72,
-    'F4': 0x73,
-    'F5': 0x74,
-    'F6': 0x75,
-    'F7': 0x76,
-    'F8': 0x77,
-    'F9': 0x78,
-    'F10': 0x79,
-    'F11': 0x7A,
-    'F12': 0x7B,
-    'F13': 0x7C,
-    'F14': 0x7D,
-    'F15': 0x7E,
-    'F16': 0x7F,
-    'F17': 0x80,
-    'F18': 0x81,
-    'F19': 0x82,
-    'F20': 0x83,
-    'F21': 0x84,
-    'F22': 0x85,
-    'F23': 0x86,
-    'F24': 0x87,
-    'num_lock': 0x90,
-    'scroll_lock': 0x91,
-    'left_shift': 0xA0,
-    'right_shift ': 0xA1,
-    'left_control': 0xA2,
-    'right_control': 0xA3,
-    'left_menu': 0xA4,
-    'right_menu': 0xA5,
-    'browser_back': 0xA6,
-    'browser_forward': 0xA7,
-    'browser_refresh': 0xA8,
-    'browser_stop': 0xA9,
-    'browser_search': 0xAA,
-    'browser_favorites': 0xAB,
-    'browser_start_and_home': 0xAC,
-    'volume_mute': 0xAD,
-    'volume_Down': 0xAE,
-    'volume_up': 0xAF,
-    'next_track': 0xB0,
-    'previous_track': 0xB1,
-    'stop_media': 0xB2,
-    'play/pause_media': 0xB3,
-    'start_mail': 0xB4,
-    'select_media': 0xB5,
-    'start_application_1': 0xB6,
-    'start_application_2': 0xB7,
-    'attn_key': 0xF6,
-    'crsel_key': 0xF7,
-    'exsel_key': 0xF8,
-    'play_key': 0xFA,
-    'zoom_key': 0xFB,
-    'clear_key': 0xFE,
-    '+': 0xBB,
-    ',': 0xBC,
-    '-': 0xBD,
-    '.': 0xBE,
-    '/': 0xBF,
-    '`': 0xC0,
-    ';': 0xBA,
-    '[': 0xDB,
-    '\\': 0xDC,
-    ']': 0xDD,
-    "'": 0xDE,
-    '`': 0xC0
-}
+import pymodbus
+from pymodbus.pdu import ModbusRequest
+from pymodbus.client.sync import ModbusSerialClient as ModbusClient
+from pymodbus.transaction import ModbusRtuFramer
+from pymodbus.exceptions import ModbusIOException
 
 
-def press(*args):
-    '''
-    one press, one release.
-    accepts as many arguments as you want. e.g. press('left_arrow', 'a','b').
-    '''
-    for i in args:
-        win32api.keybd_event(VK_CODE[i], 0, 0, 0)
-        time.sleep(0.05)
-        win32api.keybd_event(VK_CODE[i], 0, win32con.KEYEVENTF_KEYUP, 0)
+class CRD507ConnectionFail(Exception):
+    pass
 
 
-
-class NViewHooker:
+class CRD507:
     def __init__(self) -> None:
-        self.hwndMain = win32ui.FindWindow(0, "NViewMMI")
-        self.hwndMain.SetForeground()
+        self.address = 0x2
+        # for rotators
+        self.steps_per_degree = 2000
+        # for linear stages
+        self.steps_per_mm = 2000
+        # try to connect to device
+        self.client = ModbusClient(
+            method='rtu',
+            port="COM6",
+            baudrate=115200,
+            parity='E',
+            timeout=0.1
+        )
+        connection = self.client.connect()
+        if connection:
+            pass
+        else:
+            raise CRD507ConnectionFail
+        # try to load previous position record since last power off
+        try:
+            with open('curr_pos.txt', 'r') as f:
+                self.curr_pos = int(f.read())
+        except (FileNotFoundError, ValueError) as e:
+            print("Init Warning: No previous position record find, or data is corrupted. Did the device or program shut down gracefully last time? The position information cannot be resumed because it operates in open loop mode, autohome is required for the program to find zero position again.")
+            print("I'm automatically autohoming for you, if this is not desired, you can manually create the curr_pos.txt file, be aware of potentially corrupting other people's experiment configurations since this sets the device zero to arbitrary position.")
+            self.autohome()
 
-    def cmd(self, cmds:str):
-        for c in cmds:
-            press(c)
-            time.sleep(0.05)
-        press('enter')
+        self.__init_params()
 
-    def set_absolute_mode(self):
-        self.cmd('absolute')
+    def retry_for_modbus_io_exception(func):
+        def ret(*args, **kwargs):
+            for i in range(10):
+                time.sleep(0.1)
+                result = func(*args, **kwargs)
+                if type(result) is ModbusIOException:
+                    print(
+                        "Modbus IO Exception raised during command, retrying command again")
+                else:
+                    break
+            return result
+        return ret
 
-    def moveabs(self, pos:float):
-        self.cmd('linear x{:.6f}'.format(pos))
+    @retry_for_modbus_io_exception
+    def __init_params(self):
+        # 0x0204 = C-ON logic configuration, always reset this to make sure start command exec correctly
+        result = self.client.write_register(0x0204, 0, unit=self.address)
+
+    # the original CRD507-KD can store up to 63 sets of data for contineous
+    # opearation or simple programmed operations, but because we are always online,
+    # only the first registers are used
+    @retry_for_modbus_io_exception
+    def set_deceleration(self, pos: int):
+        # 1 - 1000000, default = 30000
+        upper = (pos & 0xFFFF0000) >> 16
+        lower = pos & 0x0000FFFF
+        return self.client.write_registers(0x0A02, (upper, lower), unit=self.address)
+
+    @retry_for_modbus_io_exception
+    def set_acceleration(self, pos: int):
+        # 1 - 1000000, default = 30000
+        upper = (pos & 0xFFFF0000) >> 16
+        lower = pos & 0x0000FFFF
+        return self.client.write_registers(0x0902, (upper, lower), unit=self.address)
+
+    @retry_for_modbus_io_exception
+    def set_speed(self, pos: int):
+        # 1 - 500000, default = 1000
+        upper = (pos & 0xFFFF0000) >> 16
+        lower = pos & 0x0000FFFF
+        return self.client.write_registers(0x0502, (upper, lower), unit=self.address)
+
+    @retry_for_modbus_io_exception
+    def __set_position(self, pos: int):
+        # incremental, not absolute position (the driver cannot remember current position, we have to keep track of if by ourselves)
+        # -2^23 ~ 2^23-1 (8388607)
+        upper = (pos & 0xFFFF0000) >> 16
+        lower = pos & 0x0000FFFF
+        return self.client.write_registers(0x0402, (upper, lower), unit=self.address)
+
+    def __start(self):
+        """
+        COMMAND1 address is 0x001E, 2 bytes to write
+
+        Byte    Bit7    Bit6    Bit5    Bit4    Bit3    Bit2    Bit1    Bit0
+        Upper    -       -      C-ON    STOP    HOME    RVS     FWD     START
+        Lower    -       -      M5      M4      M3      M2      M1      M0
+
+        Signal name     Description                         Setting range               Initial value
+
+        M0 to M5        Specify the operation da
+                        ta number using six bits.           0 to 63: Operation data     No. 0
+
+        START           Perform positioning operation.      0: No action
+                                                            1: Start operation          0
+
+        FWD             Perform continuous operation        0: Deceleration stop
+                        in the forward direction.           1: Operation                0
+
+        RVS             Perform continuous operation 
+                        in the reverse direction.                                       0
+
+        HOME            Perform return-to-home operation.   0: No action
+                                                            1: Start operation          0
+
+        STOP            Stop the motor.                     0: No action
+                                                            1: Stop                     0
+
+        C-ON            Switch the motor excitation         0: Motor is not excited *
+                        setting (excited/not excited).      1: Motor is excited *       0
+
+            *: When the "C-ON logic configuration" parameter is set to "0"
+        """
+        self.__set_start()
+        self.__reset_start()
+
+    @retry_for_modbus_io_exception
+    def __set_start(self):
+        # set C-ON=1, START=1, M0=1, after this, START_R should read 1.
+        command = 0b0010000100000001
+        return self.client.write_register(0x001E, command, unit=self.address)
+
+    @retry_for_modbus_io_exception
+    def __reset_start(self):
+        # reset START register for next operation. This does not stop the motor, if stop is needed, set STOP
+        command = 0b0010000000000001
+        result = self.client.write_register(0x001E, command, unit=self.address)
+
+    def __log_position(self, pos: int):
+        """log current position so that the open loop system can roughly know the current pos"""
+        self.curr_pos = pos
+        with open('curr_pos.txt', 'w') as f:
+            f.write(str(self.curr_pos))
+
+    def __wait_for_moving(self):
+        """read register until MOVE is reset"""
+        while True:
+            status = self.parse_status(self.get_status())
+            if not status["MOVE"]:
+                break
+            time.sleep(0.1)
+
+    @retry_for_modbus_io_exception
+    def get_status(self):
+        return self.client.read_holding_registers(0x0133, 2, unit=self.address)
+
+    def parse_status(self, status_result):
+        status = dict()
+        # result.registers[0]
+        status["MOVE"] = status_result.registers[1] & 0b0000000000000001
+        return status
+
+    def setpos(self, pos: int):
+        inc = int(pos - self.curr_pos)
+        dir = 1 if inc >= 0 else -1
+        # the driver supports only 2^23 steps for a single start
+        self.__set_position(8388607 * dir)
+        while abs(inc) > 8388607:
+            self.__start()
+            self.__wait_for_moving()
+            self.__log_position(pos)
+            inc -= 8388607 * dir
+        self.__set_position(inc)
+        self.__start()
+        self.__wait_for_moving()
+        self.__log_position(pos)
+
+    def clear_fault(self):
+        self.client.write_register(0x0040, 1, unit=self.address)
+        time.sleep(0.1)
+        self.client.write_register(0x0040, 0, unit=self.address)
+        time.sleep(0.1)
 
     def autohome(self):
-        self.moveabs(0.0)
+        """[TODO]"""
+        self.curr_pos = 0
 
-stage = NViewHooker()
+    def moveabs(self, pos_mm):
+        target = int(pos_mm * self.steps_per_mm)
+        self.setpos(target)
+
+    def rotateabs(self, pos_deg, backlash_compensation=0.2):
+        target = int(pos_deg * self.steps_per_degree)
+        if backlash_compensation:
+            if target >= self.curr_pos: # rotating forward, no need to compensate
+                self.setpos(target)
+            else:
+                # Rotators, especially worm drive type rotators, suffer from backlash when rotate backwards.
+                # A simple way to compesate is when rotating backwords, rotate a bit more, then rotate back 
+                target = int((pos_deg-backlash_compensation) * self.steps_per_degree)
+                self.setpos(target)
+                target = int(pos_deg * self.steps_per_degree)
+                self.setpos(target)
+        else:
+            self.setpos(target)
+
+stage = CRD507()

@@ -1,20 +1,18 @@
 # -*- coding: utf-8 -*-
 
-"""Aerotech_server.py:
+"""CRD507_server.py:
 This module provides web RESTful API for
-a remote linear stage
-
-The linear stage is now installed at A304 for TR experiment
+a remote linear stage or rotator
 """
 
 __author__ = "Zhi Zi"
 __email__ = "x@zzi.io"
-__version__ = "20211130"
+__version__ = "20220105"
 
 import json
 from flask import Flask, Response
 
-from Aerotech import stage
+from CRD507 import stage
 
 app = Flask(__name__)
 
@@ -24,8 +22,8 @@ def online():
     res = dict()
     res['success'] = True
     res['message'] = "The server is ONLINE"
-    res['name'] = 'AeroTech_NView'
-    res['methods'] = ["moveabs", "autohome"]
+    res['name'] = 'CRD507'
+    res['methods'] = ["moveabs", "autohome", "rotateabs"]
     res = json.dumps(res)
     return Response(res, status=200, mimetype='application/json')
 
@@ -38,6 +36,18 @@ def moveabs(pos):
     res['success'] = True
     res['message'] = "Moved to target position"
     res['target'] = pos
+    res = json.dumps(res)
+    return Response(res, status=200, mimetype='application/json')
+
+
+@app.route("/rotateabs/<deg>")
+def rotateabs(deg):
+    deg = float(deg)
+    stage.rotateabs(deg)
+    res = dict()
+    res['success'] = True
+    res['message'] = "Rotated to target position"
+    res['target'] = deg
     res = json.dumps(res)
     return Response(res, status=200, mimetype='application/json')
 

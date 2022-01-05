@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-"""Aerotech_emulator.py:
+"""CRD507_emulator.py:
 This module provides web API for
-development emulation of Aeritech_server.py
+development emulation of CRD507_server.py
 
 The behaviour of these APIs should be identical
 to the corresponding server app, except that they don't do
@@ -38,6 +38,17 @@ def moveabs(pos):
     res['success'] = True
     res['message'] = "Moved to target position"
     res['target'] = pos
+    res = json.dumps(res)
+    return Response(res, status=200, mimetype='application/json')
+
+
+@app.route("/rotateabs/<deg>")
+def rotateabs(deg):
+    deg = float(deg)
+    res = dict()
+    res['success'] = True
+    res['message'] = "Rotated to target position"
+    res['target'] = deg
     res = json.dumps(res)
     return Response(res, status=200, mimetype='application/json')
 
