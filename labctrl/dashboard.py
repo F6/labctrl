@@ -5,7 +5,7 @@ from functools import partial
 from main_doc import doc
 
 task_template = """
-<div class="accordion" id="accordionTaskOverview">
+<div id="accordionTaskOverview">
   <div class="accordion-item">
     <div class="accordion-header" id="headingOne">
       <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
@@ -67,7 +67,7 @@ class TasksOverview:
             finished=0,
             failed=0
             )
-        self.div = Div(text=self.html, sizing_mode="stretch_width")
+        self.div = Div(text=self.html, css_classes=["accordion"])
 
     def update(self, running, queued, finished, failed):
         self.html = self.template.format(

@@ -3,6 +3,15 @@
 """CRD507.py:
 This module provides simple controlling class for
 the 5-phase stepper motor driver CRD507-KD from Oriental Motor
+
+Before use, check the switches on the driver:
+    SW1 -> do not select 1, select any from 2~F, change CRD507.address to your selection
+    SW2 -> 1-4: OFF OFF ON ON, meaning use RS-485 communication and baudrate=115200
+    SW3 -> ON if only 1 driver is connected, or this device is the terminating device
+        (This is the 120 Ohms terminating resistor for RS-485, refer to doc)
+
+Then connect RS-485 cable to the RJ45 port on the driver and power up the driver. 
+    (Note that only GND, TR+, TR- is used.)
 """
 
 __author__ = "Zhi Zi"
@@ -31,7 +40,7 @@ class CRD507:
         # try to connect to device
         self.client = ModbusClient(
             method='rtu',
-            port="COM6",
+            port="COM5",
             baudrate=115200,
             parity='E',
             timeout=0.1
@@ -51,6 +60,7 @@ class CRD507:
             self.autohome()
 
         self.__init_params()
+        
 
     def retry_for_modbus_io_exception(func):
         def ret(*args, **kwargs):
@@ -66,9 +76,26 @@ class CRD507:
         return ret
 
     @retry_for_modbus_io_exception
-    def __init_params(self):
+    def __set_start_input(self):
+        # 0x0200 = input START via RS-485
+        result = self.client.write_register(0x0200, 0, unit=self.address)
+
+    @retry_for_modbus_io_exception
+    def __set_c_on_logic(self):
         # 0x0204 = C-ON logic configuration, always reset this to make sure start command exec correctly
         result = self.client.write_register(0x0204, 0, unit=self.address)
+
+    @retry_for_modbus_io_exception
+    def __set_enable_input(self):
+        # 0x020B = enable motor via RS-485
+        result = self.client.write_register(0x020B, 0, unit=self.address)
+
+    def __init_params(self):
+        self.__set_start_input()
+        self.__set_c_on_logic()
+        self.__set_enable_input()
+        self.set_speed(2000)
+
 
     # the original CRD507-KD can store up to 63 sets of data for contineous
     # opearation or simple programmed operations, but because we are always online,
@@ -89,7 +116,7 @@ class CRD507:
 
     @retry_for_modbus_io_exception
     def set_speed(self, pos: int):
-        # 1 - 500000, default = 1000
+        # 1 - 500000, default = 1000, max around 5000 for sgsp60yaw
         upper = (pos & 0xFFFF0000) >> 16
         lower = pos & 0x0000FFFF
         return self.client.write_registers(0x0502, (upper, lower), unit=self.address)

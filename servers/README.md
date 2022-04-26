@@ -30,6 +30,7 @@ The "port" section in configs also needs to be changed if the server port has be
         AeroTech_THz        5003
         AeroTech_NView      5004
         CRD507              5005
+        ETHGASN             5048
 
     <!-- 5006 used by bokeh server -->
 
@@ -150,7 +151,7 @@ The "port" section in configs also needs to be changed if the server port has be
 
 * Flowmeters:
 
-        RS485Flow1          5046
+        dropmeter           5046
 
 * Digital Pumps:
 

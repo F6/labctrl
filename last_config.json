@@ -181,6 +181,48 @@
             "Port": 5013
         }
     },
+    "methods": {
+        "Fluorescence2D": {
+            "ExperimentType": "Fluorescence2D",
+            "FileStem": "FLS-Sample",
+            "ScanRounds": 3,
+            "Mode": "SimpleRepetition",
+            "ScanModes": [
+                "SimpleRepetition",
+                "AdaptiveSearch"
+            ]
+        },
+        "IRPumpVisibleProbe": {
+            "ExperimentType": "IRPumpVisibleProbe",
+            "FileStem": "PumpProbe-Sample",
+            "ScanRounds": 3,
+            "Mode": "SimpleRepetition",
+            "ScanModes": [
+                "SimpleRepetition",
+                "AdaptiveSearch"
+            ]
+        },
+        "KerrGate": {
+            "ExperimentType": "KerrGate",
+            "FileStem": "KerrGateSample",
+            "ScanRounds": 3,
+            "Mode": "SimpleRepetition",
+            "ScanModes": [
+                "SimpleRepetition",
+                "AdaptiveSearch"
+            ]
+        },
+        "THz": {
+            "ExperimentType": "THz",
+            "FileStem": "THzSample",
+            "ScanRounds": 3,
+            "Mode": "SimpleRepetition",
+            "ScanModes": [
+                "SimpleRepetition",
+                "AdaptiveSearch"
+            ]
+        }
+    },
     "shutter_controllers": {
         "fsTopasExit": {
             "Name": "fsTopasExit",
