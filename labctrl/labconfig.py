@@ -22,12 +22,12 @@ from .singleton import Singleton
 from .labstat import lstat
 
 
-class ExperimentType(Enum):
-    IMFS = "IR Modulated Fluorescence"
-    WLS = "White Light Spectrum Test"
-    IPVP = "IR Pump Visible Probe"
-    TRPL = "Time-resolved Photoluminescence (Kerr Gating)"
-    THz = "Vis/IR Pump THz Probe"
+# class ExperimentType(Enum):
+#     IMFS = "IR Modulated Fluorescence"
+#     WLS = "White Light Spectrum Test"
+#     IPVP = "IR Pump Visible Probe"
+#     TRPL = "Time-resolved Photoluminescence (Kerr Gating)"
+#     THz = "Vis/IR Pump THz Probe"
 
 
 class LabConfig(metaclass=Singleton):

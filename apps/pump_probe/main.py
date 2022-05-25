@@ -1,67 +1,63 @@
 # -*- coding: utf-8 -*-
 
-"""kerr_gating.py:
+"""main.py:
 This module implements the
-Kerr Gating Time-resolved Photoluminescence Spectroscopy
+Pump-Probe transcient absorption spectroscopy
 technic
 
-The balanced Kerr gate spectroscopy can measure the ultrafast dynamics
-of light emission from molecules with very weak fluorescence or phosphorescence,
-for example the fluorescence from 2-dimensional materials, ACQ systems
-or single molecule systems.
+In such experiment, an Optical Parametric Amplifier(OPA) is deployed
+to selectively amplify a beam of supercontinuum white light to generate
+an arbitrary wavelength laser pulse, which is called the pump pulse.
+Another beam of supercontinuum white light generated with the same
+seed pulse, which is weaker but spectrally wider, is called the probe pulse.
 
-In such experiments, an ultrafast laser pulse excites the sample to
-higher electronic excited states, then the fluorescence and
-phosphorescence from the decay of the electronic excited
-states are collected with reflective objectives, then sent into a 
-Kerr gate and detected with balanced detector. A chopper chops the
-excitation pulse train into 50% duty cycle, the sync TTL of the chopper
-and the balanced signal are sent into a boxcar averager to recover 
-the lifetime signal by shot-to-shot subtraction of backgrounds.
-Another synchronized beam of ultrafast laser pulse and a delay 
-line is used to set the opening time window of the Kerr gate. 
+The pump pulse and probe pulse is aligned to simultaneously arrive at the
+same spot on the sample at zero point. A delay line is put into the probe
+pulse path to delay the probe pulse, typically about 10 fs to 10 ns, so the
+pump pulse is first absorbed by the sample and excites the sample to its
+excited state, then the probe pulse arrives and is absorbed by both ground
+state sample molecules and excited state ones. The probe pulse is then
+collected and analysed with spectrometer.
 
-Reflective objectives are prefered over regular microscope objectives
-because this type of objective introduces minimum distortion of
-wavepacket-front in the geometric space, which will significantly decrease 
-the Kerr gating efficiency and make it hard to detect the already weak
-signal.
+A chopper chops the pump pulse in sync with half of the laser repetition
+frequency, so half of time the sample is pumped and probed, half of time
+the sample is not pumped but probed. Subtracting the later from the previous
+results in the optical absorption change (delta O. D.), which is correlated
+with change of population in excited states and ground state over time. 
 
-For single wavelength TRPL measurements, a notch filter is inserted
-before the detector. For multi wavelength measurements, typically an array
-of notch filter is used. Note that the instrument introduces dispersion
-to the original signal, so dispersion correction from standard samples
-must be applied for multi-wavelength time zeros.
-
-the Zurich Instruments UHF is used as the boxcar integrator.
 """
+
 __author__ = "Zhi Zi"
 __email__ = "x@zzi.io"
-__version__ = "20211130"
+__version__ = "20220525"
 
 
 import time
-import numpy as np
-from threading import Thread
-from functools import partial
+
 from bokeh.layouts import column, row
-from bokeh.models.widgets import Button
+from bokeh.models.widgets import Button, Div
+from bokeh.models import Panel, Tabs
 
-from .figure import FactoryFigure1D
-from .generic import BundleGenericMethods, FactoryGenericMethods
+from labctrl.labconfig import lcfg
+from labctrl.labstat import lstat
+from labctrl.components.linear_stages.factory import FactoryLinearStage
+from labctrl.main_doc import doc
+from labctrl.dashboard import taskoverview
+from labctrl.methods.generic import FactoryGenericMethods
+from labctrl.methods.figure import FactoryFigure1D
+
+doc.template_variables["app_name"] = "pump_probe"
+
+factory = FactoryLinearStage()
+linear_stage = factory.generate_bundle(
+    lcfg.config["linear_stages"]["USB1020"], lcfg, lstat)
+
+factory = FactoryGenericMethods()
+gschedule = factory.generate(lcfg, lstat)
 
 
 
-"""
-Kerr Gating 
-    delay line: AeroTech_NView
-    boxcar: ziUHF
-"""
-dlname = "AeroTech_NView"
-bxname = "ziUHF"
-
-
-class KerrGatePreviewFig:
+class PumpProbePreviewFigure:
     def __init__(self) -> None:
         factory = FactoryFigure1D()
         self.signal = factory.generate_fig1d(
@@ -206,3 +202,57 @@ class FactoryKerrGating:
 
         return bundle
 
+
+
+
+# roots: ["dashboard", "setup", "params", "schedule", "reports", "messages"]
+# messages are directly put at labstat, so dismissed here
+# ================ dashboard ================
+dashboard_tab1 = Panel(child=taskoverview.div, title="Tasks")
+dashboard_tabs = Tabs(tabs=[dashboard_tab1], name="dashboard")
+doc.add_root(dashboard_tabs)
+
+# ================ params ================
+foo = column(
+    linear_stage.scan_mode,
+    linear_stage.scan_zero,
+    linear_stage.scan_start,
+    linear_stage.scan_stop,
+    linear_stage.scan_step,
+    linear_stage.scan_file
+)
+param_tab1 = Panel(child=foo, title="Linear Stage")
+param_tabs = Tabs(tabs=[param_tab1], name="param")
+doc.add_root(param_tabs)
+
+# ================ manual ================
+foo = column(
+    linear_stage.test_online,
+    linear_stage.manual_position,
+    linear_stage.manual_move,
+    linear_stage.manual_step,
+    linear_stage.manual_step_forward,
+    linear_stage.manual_step_backward,
+)
+manual_tab1 = Panel(child=foo, title="Linear Stage")
+manual_tabs = Tabs(tabs=[manual_tab1], name="manual")
+doc.add_root(manual_tabs)
+
+# ================ schedule ================
+foo = column(
+    gschedule.filestem,
+    gschedule.scanrounds,
+    kerrgate.start,
+    kerrgate.terminate
+)
+schedule_tab1 = Panel(child=foo, title="Kerr Gate")
+schedule_tabs = Tabs(tabs=[schedule_tab1], name="schedule")
+doc.add_root(schedule_tabs)
+
+# ================ reports ================
+foo = column(
+    kerrgate.preview.signal.fig
+)
+reports_tab1 = Panel(child=foo, title="Kerr Gate")
+reports_tabs = Tabs(tabs=[reports_tab1], name="reports")
+doc.add_root(reports_tabs)
