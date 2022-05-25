@@ -33,6 +33,10 @@ __version__ = "20220525"
 
 
 import time
+import numpy as np
+
+from functools import partial
+from threading import Thread
 
 from bokeh.layouts import column, row
 from bokeh.models.widgets import Button, Div
@@ -41,6 +45,7 @@ from bokeh.models import Panel, Tabs
 from labctrl.labconfig import lcfg
 from labctrl.labstat import lstat
 from labctrl.components.linear_stages.factory import FactoryLinearStage
+from labctrl.components.linear_image_sensors.factory import FactoryLinearImageSensor
 from labctrl.main_doc import doc
 from labctrl.dashboard import taskoverview
 from labctrl.methods.generic import FactoryGenericMethods
@@ -48,9 +53,16 @@ from labctrl.methods.figure import FactoryFigure1D
 
 doc.template_variables["app_name"] = "pump_probe"
 
+
+# META SETTINGS
+delay_stage = 'USB1020'
+spectrometer_sensor = 'FX2000'
+
 factory = FactoryLinearStage()
-linear_stage = factory.generate_bundle(
-    lcfg.config["linear_stages"]["USB1020"], lcfg, lstat)
+linear_stage = factory.generate_bundle(delay_stage, lcfg, lstat)
+
+factory = FactoryLinearImageSensor()
+sensor = factory.generate_bundle(spectrometer_sensor, lcfg, lstat)
 
 factory = FactoryGenericMethods()
 gschedule = factory.generate(lcfg, lstat)
@@ -61,10 +73,13 @@ class PumpProbePreviewFigure:
     def __init__(self) -> None:
         factory = FactoryFigure1D()
         self.signal = factory.generate_fig1d(
-            "Kerr Gate Scan", "Time (ps)", "Boxcar Delta (V)", 40)
+            "Real Time Spectrum", "Wavelength (nm)", "Intensity (counts)", 2048)
+        self.delay = factory.generate_fig1d(
+            "Time-Domain Pump-Probe Signal", "Time Delay (ps)", "Intensity (counts)", 40
+        )
 
 
-class KerrGateExpData:
+class PumpProbeExpData:
     """Holds all temporary data generated in the experiment.
     The data memory are reallocated according to labconfig just before experiment
      starts. So it is necessary for the init to read the labconfig.
@@ -75,9 +90,16 @@ class KerrGateExpData:
         # instances are always lazy generated just before experiment starts,
         #  so no need to bother copying lcfg
         self.lcfg = lcfg
-        self.delays = lstat.stat[dlname]["ScanList"]
-        self.sig = np.zeros(len(self.delays), dtype=np.float64)
-        self.sigsum = np.zeros(len(self.delays), dtype=np.float64)
+        self.delays = lstat.stat[delay_stage]["ScanList"]
+        self.npixels = lcfg.config["linear_image_sensors"][spectrometer_sensor]["NumberOfPixels"]
+        self.sig = np.zeros((len(self.delays), self.npixels), dtype=np.float64)
+        self.sigsum = np.zeros((len(self.delays), self.npixels), dtype=np.float64)
+        self.flags = {
+            "RUNNING": False,
+            # "PAUSE": False,
+            "TERMINATE": False,
+            "FINISH": False,
+        }
 
     def export(self, filestem: str) -> None:
         filename = filestem + "-Signal.csv"
@@ -90,29 +112,19 @@ class KerrGateExpData:
         tosave = np.array(self.delays)
         np.savetxt(filename, tosave, delimiter=',')
 
-class BundleKerrGating:
+
+class PumpProbeExperiment:
     """
     this holds all the UI widgets, unit operations and thread 
     tasks for the experiment
     """
     def __init__(self) -> None:
         init_str = 'Initialize at {}'.format(self)
-        self.start = Button(label="Start Kerr Gate Scan", button_type='success')
+        self.start = Button(label="Start Pump Probe Scan", button_type='success')
         # self.pause = Button(label="Pause Kerr Gate Scan", button_type='warning')
-        self.terminate = Button(label="Terminate Kerr Gate Scan", button_type='warning')
-        self.preview = KerrGatePreviewFig()
-        self.generic = None
-        self.delayline = None
-        self.boxcar = None
-        self.data = None
-        self.unit_operation = None
-        self.task = None
-        self.flags = {
-            "RUNNING": False,
-            # "PAUSE": False,
-            "TERMINATE": False,
-            "FINISH": False,
-        }
+        self.terminate = Button(label="Terminate Pump Probe Scan", button_type='warning')
+        self.preview = PumpProbePreviewFigure()
+        self.data = PumpProbeExpData(lcfg, lstat)
 
     def quick_control_group(self):
         return row(
@@ -126,83 +138,55 @@ class BundleKerrGating:
             self.preview.signal.fig,
         )
 
-class FactoryKerrGating:
-    def __init__(self) -> None:
-        pass
+pp = PumpProbeExperiment()
 
-    def generate(self, bundle_linearstage, bundle_boxcar, lcfg, lstat) -> BundleKerrGating:
-        """
-        requires:
-            bundle_linearstage -> must implement @scan_delay decorator
-            bundle_boxcar -> must implement get_value function for single point detection
-        """
+@gschedule.scan_round
+@linear_stage.scan_delay
+def unit_operation(meta=dict()):
+    if pp.flags["TERMINATE"]:
+        meta["TERMINATE"] = True
+        lstat.expmsg("kerr_gating received signal TERMINATE, trying graceful Thread exit")
+        return
+    lstat.expmsg("Retriving signal from Lock-in amplifier data server")
+    sig = sensor.get_image()
+    lstat.expmsg("Adding latest signal to dataset...")
+    stat = lstat.stat[delay_stage]
+    pp.data.sig[stat["iDelay"], :] = sig
+    pp.data.sigsum[stat["iDelay"], :] += sig
+    lstat.doc.add_next_tick_callback(
+        partial(pp.preview.signal.callback_update, stat["ScanList"], sig))
+    # if this the end of delay scan, call export
+    if stat["iDelay"] + 1 == len(stat["ScanList"]):
+        pp.data.export("scandata/" + lcfg.config["basic"]["FileStem"] +
+                    "-Round{rd}".format(rd=lstat.stat["basic"]["iRound"]))
 
-        bundle = BundleKerrGating()
-        bundle.delayline = bundle_linearstage
-        bundle.boxcar = bundle_boxcar
+def task():
+    lstat.expmsg("Allocating memory for experiment")
+    pp.data = PumpProbeExpData(lcfg, lstat)
+    lstat.expmsg("Starting experiment")
+    meta = dict()
+    meta["TERMINATE"] = False
+    unit_operation(meta=meta)
+    pp.data.flags["FINISH"] = True
+    pp.data.flags["RUNNING"] = False
+    lstat.expmsg("Experiment done")
 
-        factory = FactoryGenericMethods()
-        bundle.generic = factory.generate(lcfg, lstat)
+def __callback_start():
+    pp.data.flags["TERMINATE"] = False
+    pp.data.flags["FINISH"] = False
+    pp.data.flags["RUNNING"] = True
+    thread = Thread(target=task)
+    thread.start()
 
-        scan_round = bundle.generic.scan_round
-        scan_delay = bundle.delayline.scan_delay
+pp.start.on_click(__callback_start)
 
+def __callback_terminate():
+    lstat.expmsg("Terminating current job")
+    pp.data.flags["TERMINATE"] = True
+    pp.data.flags["FINISH"] = False
+    pp.data.flags["RUNNING"] = False
 
-        @scan_round
-        @scan_delay
-        def unit_operation(meta=dict()):
-            if bundle.flags["TERMINATE"]:
-                meta["TERMINATE"] = True
-                lstat.expmsg("kerr_gating received signal TERMINATE, trying graceful Thread exit")
-                return
-            lstat.expmsg("Retriving signal from Lock-in amplifier data server")
-            sig = bundle.boxcar.get_value()
-            lstat.expmsg("Adding latest signal to dataset...")
-            stat = lstat.stat[dlname]
-            bundle.data.sig[stat["iDelay"]] = sig
-            bundle.data.sigsum[stat["iDelay"]] += sig
-            lstat.doc.add_next_tick_callback(
-                partial(bundle.preview.signal.callback_update, stat["ScanList"], bundle.data.sig))
-            # if this the end of delay scan, call export
-            if stat["iDelay"] + 1 == len(stat["ScanList"]):
-                bundle.data.export("scandata/" + lcfg.config["basic"]["FileStem"] +
-                            "-Round{rd}".format(rd=lstat.stat["basic"]["iRound"]))
-
-        bundle.unit_operation = unit_operation
-
-        def task():
-            lstat.expmsg("Allocating memory for experiment")
-            bundle.data = KerrGateExpData(lcfg, lstat)
-            lstat.expmsg("Starting experiment")
-            meta = dict()
-            meta["TERMINATE"] = False
-            bundle.unit_operation(meta=meta)
-            bundle.flags["FINISH"] = True
-            bundle.flags["RUNNING"] = False
-            lstat.expmsg("Experiment done")
-
-        bundle.task = task
-
-        def __callback_start():
-            bundle.flags["TERMINATE"] = False
-            bundle.flags["FINISH"] = False
-            bundle.flags["RUNNING"] = True
-            thread = Thread(target=bundle.task)
-            thread.start()
-
-        bundle.start.on_click(__callback_start)
-
-        def __callback_terminate():
-            lstat.expmsg("Terminating current job")
-            bundle.flags["TERMINATE"] = True
-            bundle.flags["FINISH"] = False
-            bundle.flags["RUNNING"] = False
-
-        bundle.terminate.on_click(__callback_terminate)
-
-        return bundle
-
-
+pp.terminate.on_click(__callback_terminate)
 
 
 # roots: ["dashboard", "setup", "params", "schedule", "reports", "messages"]
@@ -242,17 +226,18 @@ doc.add_root(manual_tabs)
 foo = column(
     gschedule.filestem,
     gschedule.scanrounds,
-    kerrgate.start,
-    kerrgate.terminate
+    pp.start,
+    pp.terminate
 )
-schedule_tab1 = Panel(child=foo, title="Kerr Gate")
+schedule_tab1 = Panel(child=foo, title="Pump Probe")
 schedule_tabs = Tabs(tabs=[schedule_tab1], name="schedule")
 doc.add_root(schedule_tabs)
 
 # ================ reports ================
 foo = column(
-    kerrgate.preview.signal.fig
+    pp.preview.signal.fig,
+    pp.preview.delay.fig
 )
-reports_tab1 = Panel(child=foo, title="Kerr Gate")
+reports_tab1 = Panel(child=foo, title="Pump Probe")
 reports_tabs = Tabs(tabs=[reports_tab1], name="reports")
 doc.add_root(reports_tabs)

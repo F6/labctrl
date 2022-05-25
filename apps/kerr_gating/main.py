@@ -58,8 +58,7 @@ from labctrl.dashboard import taskoverview
 doc.template_variables["app_name"] = "kerr_gating"
 
 factory = FactoryLinearStage()
-linear_stage = factory.generate_bundle(
-    lcfg.config["linear_stages"]["AeroTech_NView"], lcfg, lstat)
+linear_stage = factory.generate_bundle("AeroTech_NView", lcfg, lstat)
 
 factory = FactoryZiUHF()
 ziUHF = factory.generate_bundle(lcfg, lstat)

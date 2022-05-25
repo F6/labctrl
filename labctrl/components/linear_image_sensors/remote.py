@@ -2,18 +2,18 @@
 
 """remote.py:
 This module provides methods to communicate with a remote 
-ziUHF proxy.
+Linear Image Sensor.
 """
 
 __author__ = "Zhi Zi"
 __email__ = "x@zzi.io"
-__version__ = "20211130"
+__version__ = "20220525"
 
 
 import requests
 import json
 
-class ProxiedUHF():
+class RemoteLinearImageSensor():
     def __init__(self, config, max_retry=3) -> None:
         self.host = config["Host"]
         self.port = config["Port"]
@@ -38,5 +38,5 @@ class ProxiedUHF():
         Does not test if the remote server actually works, however."""
         return self.apicall('')
 
-    def get_value(self):
-        return self.apicall('get_value')
+    def get_image(self):
+        return self.apicall('get_image')

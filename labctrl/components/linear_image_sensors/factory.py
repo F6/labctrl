@@ -2,34 +2,34 @@
 
 """factory.py:
 This module provides the Factory class for Bokeh UI widgets for 
-testing and controlling the ziUHF lock-in amplifier
+testing and controlling linear image sensors
 """
 
 __author__ = "Zhi Zi"
 __email__ = "x@zzi.io"
-__version__ = "20211130"
+__version__ = "20220525"
 
 
 
 from functools import wraps
 from bokeh.models.widgets import RadioButtonGroup, Button, TextInput, FileInput
 from bokeh.layouts import column
-from .remote import ProxiedUHF
+from .remote import RemoteLinearImageSensor
 from .utils import ignore_connection_error
 
-class BundleZiUHF:
+class BundleLinearImageSensor:
     """
     This class is responsible for holding references to the Bokeh UI Widgets
-    of a single ziUHF lock-in amplifier.
+    of a single linear image sensor.
     """
 
     def __init__(self) -> None:
         init_str = 'Initialize at {}'.format(self)
-        self.test_online = Button(label="Test ziUHF online")
+        self.test_online = Button(label="Test sensor online")
         # self.select_mode = RadioButtonGroup(labels=[init_str, init_str])
         # self.sample_size = TextInput(title=init_str)
         self.manual_take_sample = Button(label='Take Sample', button_type='warning')
-        self.get_value = None
+        self.get_image = None
 
 
     def quick_control_group(self):
@@ -42,15 +42,15 @@ class BundleZiUHF:
         return column(*widget_list)
 
 
-class FactoryZiUHF:
+class FactoryLinearImageSensor:
     def __init__(self) -> None:
         pass
 
-    def generate_bundle(self, lcfg, lstat):
-        bundle = BundleZiUHF()
+    def generate_bundle(self, name, lcfg, lstat):
+        bundle = BundleLinearImageSensor()
 
-        config = lcfg.config["lockin_and_boxcars"]["ziUHF"]
-        remote = ProxiedUHF(config)
+        config = lcfg.config["linear_image_sensors"][name]
+        remote = RemoteLinearImageSensor(config)
 
         def __callback_test_online():
             try:
@@ -64,15 +64,14 @@ class FactoryZiUHF:
 
         @ignore_connection_error
         def __callback_manual_take_sample():
-            lstat.fmtmsg(remote.get_value())
+            lstat.fmtmsg(remote.get_image())
         
         bundle.manual_take_sample.on_click(__callback_manual_take_sample)
 
-        def __get_value():
-            value = remote.get_value()
-            value = value["value"]
-            return float(value)
+        def __get_image():
+            result = remote.get_image()
+            return result
 
-        bundle.get_value = __get_value
+        bundle.get_image = __get_image
 
         return bundle

@@ -1,0 +1,8 @@
+{
+    "Name": "FX2000",
+    "Comment": "IdeaOptics FX2000 fiber coupled USB spectrometer",
+    "Host": "127.0.0.1",
+    "Port": 5028,
+    "NumberOfPixels": 2048,
+    "MaxLinesPerSecond": 10
+}

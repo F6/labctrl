@@ -9,6 +9,16 @@
             "AdaptiveSearch"
         ]
     },
+    "linear_image_sensors": {
+        "FX2000": {
+            "Name": "FX2000",
+            "Comment": "IdeaOptics FX2000 fiber coupled USB spectrometer",
+            "Host": "127.0.0.1",
+            "Port": 5028,
+            "NumberOfPixels": 2048,
+            "MaxLinesPerSecond": 10
+        }
+    },
     "linear_stages": {
         "AeroTech_NView": {
             "Name": "AeroTech_NView",
@@ -117,6 +127,26 @@
             "Comment": "Sigma Koki Rotator",
             "Host": "192.168.1.9",
             "Port": 5005,
+            "Unit": "ps",
+            "Mode": "Range",
+            "Start": -5.0,
+            "Step": 0.2,
+            "Stop": 5.0,
+            "ExternalList": [],
+            "ZeroAbsPos": 228.883,
+            "ManualPos": 228.963,
+            "ManualStep": 1.0,
+            "ScanModes": [
+                "Manual",
+                "Range",
+                "ExternalFile"
+            ]
+        },
+        "ETHGASN": {
+            "Name": "ETHGASN",
+            "Comment": "Taobao Bopai Controller, the black one over ethernet",
+            "Host": "127.0.0.1",
+            "Port": 5048,
             "Unit": "ps",
             "Mode": "Range",
             "Start": -5.0,

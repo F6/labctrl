@@ -90,7 +90,7 @@ The "port" section in configs also needs to be changed if the server port has be
     
 * Spectrometers:
 
-        OceanOptics         5028
+        FX2000              5028
     
 * OpticalPowerMeters:
 

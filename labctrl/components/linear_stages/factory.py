@@ -71,19 +71,20 @@ class FactoryLinearStage:
     def __init__(self) -> None:
         pass
 
-    def generate_bundle(self, config, lcfg, lstat):
+    def generate_bundle(self, name, lcfg, lstat):
         """
         actually generates the bundle
-            config: the config for the linear stage
+            name:   the name of the linear stage
             lcfg:   the global configure object to bind to
             lstat:  the stat object to bind to
         """
 
-        remote = RemoteLinearStage(config)
 
         update_config = lcfg.update_config
 
-        name = config["Name"]
+        config = lcfg.config["linear_stages"][name]
+        
+        remote = RemoteLinearStage(config)
 
         bundle = BundleLinearStage()
 
