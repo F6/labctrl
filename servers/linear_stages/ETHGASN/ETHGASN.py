@@ -1,21 +1,61 @@
-# -*- coding: utf-8 -*-
-
-"""ETHGASN.py:
-This module implements class ETHGASN to access
-Dongguan Bopai Tech ETH_GAS_N motion controllers
-
-The controller output is connected to a Yaskawa SGDV-1R6A05A
-servo driver. The servo driver needs seperate setting to work, please 
-refer to the corresponding doc.
-
-Only the axis 1 is controlled and only 1 card is installed.
-For more complicated controls, use functions in Multicard.py
-"""
-
-__author__ = "Zhi Zi"
-__email__ = "x@zzi.io"
-__version__ = "20220106"
-
+import ctypes
+from ctypes import Structure, c_double, c_short
 import time
-import MultiCard as lib
+from MultiCard import TrapPrm
 
+gas = ctypes.CDLL("GAS.dll")
+
+
+class ETHGASN:
+    def __init__(self) -> None:
+        self.pos = 0 # TEMPORARY!!!!! update this
+        self.pulse_per_mm = 640
+        self.ip = '192.168.0.1'
+        print("Opening ETHGASN Card...")
+        res = 0
+        res += gas.GA_SetCardNo(1)
+        res += gas.GA_Open(0, self.ip)
+        # res += gas.GA_Reset()
+        print("Return Code: ", res)
+        print("Enabling Axis 1...")
+        res += gas.GA_AxisOn(1)
+        print("Return Code: ", res)
+        print("Setting up Axis 1 params...")
+        res += gas.GA_PrfTrap(1)
+
+        self.tpm = TrapPrm()
+        self.tpm.acc = 0.5
+        self.tpm.dec = 0.5
+        self.tpm.velStart = 0
+        self.tpm.smoothTime = 0
+
+        res += gas.GA_SetTrapPrm(1, self.tpm)
+        res += gas.GA_SetVel(1, c_double(10.0))
+
+        print("Return Code: ", res)
+
+    def setpos(self, pos):
+        delta = self.pos - pos
+        self.pos = pos
+        res = 0
+        # res += gas.GA_SetTrapPrm(1, self.tpm)
+        # res += gas.GA_SetVel(1, 10)
+        res += gas.GA_SetPos(1, pos)
+        res += gas.GA_Update(0xFF)
+        print("Moving, ETHGASN Return: ", res)
+        tts = abs(delta/10000)
+        time.sleep(tts)
+    
+    def moveabs(self, pos):
+        pos = float(pos)
+        tpos = int(pos * self.pulse_per_mm)
+        self.setpos(tpos)
+
+    def autohome(self):
+        self.setpos(0)
+
+
+stage = ETHGASN()
+# for i in range(3):
+#     stage.setpos(1000)
+#     stage.setpos(0)

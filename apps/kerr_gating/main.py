@@ -101,7 +101,7 @@ foo = column(
     ziUHF.manual_take_sample,
 )
 manual_tab2 = Panel(child=foo, title="ziUHF")
-manual_tab2.disabled = True
+# manual_tab2.disabled = True
 manual_tabs = Tabs(tabs=[manual_tab1, manual_tab2], name="manual")
 doc.add_root(manual_tabs)
 
