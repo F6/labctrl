@@ -1,12 +1,12 @@
 
-from singleton import Singleton
+from .singleton import Singleton
 from datetime import datetime
 
 from functools import partial
 from tornado import gen
 from bokeh.models.widgets import PreText
 
-from main_doc import doc
+from .main_doc import doc
 
 import json
 

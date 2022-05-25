@@ -2,7 +2,7 @@ from bokeh.models.widgets import Div
 from tornado import gen
 from functools import partial
 
-from main_doc import doc
+from .main_doc import doc
 
 task_template = """
 <div id="accordionTaskOverview">

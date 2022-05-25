@@ -18,8 +18,8 @@ from datetime import datetime
 from enum import Enum
 from functools import wraps
 
-from singleton import Singleton
-from labstat import lstat
+from .singleton import Singleton
+from .labstat import lstat
 
 
 class ExperimentType(Enum):

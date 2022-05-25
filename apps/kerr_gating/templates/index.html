@@ -2,7 +2,7 @@
 
 {% block preamble %}
 
-<link href="labctrl/static/css/bootstrap.min.css" rel="stylesheet">
+<link href="{{ app_name }}/static/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
   .bd-placeholder-img {
@@ -20,7 +20,7 @@
   }
 </style>
 
-<link href="labctrl/static/css/dashboard.css" rel="stylesheet">
+<link href="{{ app_name }}/static/css/dashboard.css" rel="stylesheet">
 
 {% endblock %}
 
@@ -145,8 +145,8 @@
 </div>
 
 
-<script src="labctrl/static/js/bootstrap.js"></script>
-<script src="labctrl/static/js/feather.min.js"></script>
-<script src="labctrl/static/js/dashboard.js"></script>
+<script src="{{ app_name }}/static/js/bootstrap.js"></script>
+<script src="{{ app_name }}/static/js/feather.min.js"></script>
+<script src="{{ app_name }}/static/js/dashboard.js"></script>
 
 {% endblock %}
