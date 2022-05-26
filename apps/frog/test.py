@@ -11,7 +11,7 @@ import sys
 import matplotlib.pyplot as plt
 
 
-fx_base_address = "http://127.0.0.1:5002/"
+fx_base_address = "http://127.0.0.1:5028/"
 linstage_base_address = "http://127.0.0.1:5001/"
 
 requests.get(fx_base_address + "setIntegrationTime/10")
@@ -28,7 +28,7 @@ def get_spectrum():
 
 wavelengths = get_spectrum()[0]
 
-nsp = 400
+nsp = 40
 
 scanlist = np.linspace(-400, 400, nsp)
 

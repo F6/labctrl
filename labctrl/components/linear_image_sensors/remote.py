@@ -12,6 +12,8 @@ __version__ = "20220525"
 
 import requests
 import json
+import base64
+import numpy as np
 
 class RemoteLinearImageSensor():
     def __init__(self, config, max_retry=3) -> None:
@@ -39,4 +41,6 @@ class RemoteLinearImageSensor():
         return self.apicall('')
 
     def get_image(self):
-        return self.apicall('get_image')
+        image = self.apicall('getImage')
+        image = np.frombuffer(base64.b64decode(image["image"]), dtype=np.float64)
+        return image

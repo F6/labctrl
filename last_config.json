@@ -1,7 +1,7 @@
 {
     "basic": {
         "ExperimentType": "THz",
-        "FileStem": "testbs",
+        "FileStem": "test_frog",
         "ScanRounds": 3,
         "Mode": "SimpleRepetition",
         "ScanModes": [
@@ -189,12 +189,12 @@
             "Port": 5001,
             "Unit": "ps",
             "Mode": "Range",
-            "Start": -5.0,
-            "Step": 0.2,
-            "Stop": 5.0,
+            "Start": -0.4,
+            "Step": 0.004,
+            "Stop": 0.4,
             "ExternalList": [],
-            "ZeroAbsPos": 228.883,
-            "ManualPos": 228.963,
+            "ZeroAbsPos": 27.65,
+            "ManualPos": 28.249405094000004,
             "ManualStep": 1.0,
             "ScanModes": [
                 "Manual",

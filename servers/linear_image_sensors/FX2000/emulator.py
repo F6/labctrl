@@ -2,22 +2,37 @@
 
 """FX_server.py:
 This module provides web API for
-a remote FX(ideaoptics) spectrometer
+linear image sensor emulator (for dev)
 """
 
 __author__ = "Zhi Zi"
 __email__ = "x@zzi.io"
-__version__ = "20220522"
+__version__ = "20220525"
 
 
 import json
+import time
 import base64
 import numpy as np
 from flask import Flask, Response
-from FX import spectrometer
 
 app = Flask(__name__)
 
+
+def fake_data_generator():
+    xmin = 0
+    xmax = 4 * np.pi
+    phases = np.linspace(xmin, xmax, 64)
+    while True:
+        for i in phases:
+            if i > xmax:
+                i = xmin
+            i = i + 0.5 * np.pi
+            x = np.sin(np.linspace(xmin + i, xmax + i, 2048)) + np.random.rand(2048) * 0.2
+            yield x
+
+
+fake_data = fake_data_generator()
 
 @app.route("/")
 def online():
@@ -36,7 +51,8 @@ def get_image():
     To unify dev, getImage method is implemented for all linear image sensor like devices.
     You may have heard of ducks.
     """
-    spectrum = spectrometer.get_spectrum()
+    spectrum = next(fake_data)
+    time.sleep(0.1)
     res = dict()
     res['success'] = True
     res['message'] = "Spectrum Taken"
@@ -47,8 +63,9 @@ def get_image():
 
 @app.route("/getspectrum")
 def getspectrum():
-    wavelengths = spectrometer.wavelengths
-    spectrum = spectrometer.get_spectrum()
+    wavelengths = np.linspace(185.2, 1302.3, 2048)
+    spectrum = next(fake_data)
+    time.sleep(0.1)
     # print(wavelengths)
     # print(spectrum)
     res = dict()
@@ -63,7 +80,6 @@ def getspectrum():
 @app.route("/setIntegrationTime/<t>")
 def set_integration_time(t):
     t = int(t)
-    spectrometer.set_integration_time(t)
     res = dict()
     res['success'] = True
     res['message'] = "Integration Time Set"
@@ -74,7 +90,6 @@ def set_integration_time(t):
 @app.route("/setAverageTimes/<n>")
 def set_average_times(n):
     n = int(n)
-    spectrometer.set_average_times(n)
     res = dict()
     res['success'] = True
     res['message'] = "Average Times Set"
@@ -86,7 +101,6 @@ def set_average_times(n):
 @app.route("/setBoxcarWidth/<n>")
 def set_boxcar_width(n):
     n = int(n)
-    spectrometer.set_boxcar_width(n)
     res = dict()
     res['success'] = True
     res['message'] = "Boxcar Width Set"

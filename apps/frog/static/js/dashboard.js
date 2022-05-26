@@ -1,7 +1,7 @@
 /* globals feather:false */
 
 function close_window() {
-  if (confirm("Close Window? Currently running tasks will halt, current round data will lost.")) {
+  if (confirm("Close Window? Currently running tasks will continue to run in the backend until finish, you will not lose your configs or saved data. If you need to terminate currently running tasks, use Terminate buttons, or simply kill the server.")) {
     close();
   }
 }
