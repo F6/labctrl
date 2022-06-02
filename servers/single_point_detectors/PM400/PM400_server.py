@@ -12,6 +12,7 @@ __version__ = "20220601"
 
 import json
 import time
+import base64
 import numpy as np
 from flask import Flask, Response
 from PM400 import pm
@@ -52,7 +53,7 @@ def get_sample(count):
     res = dict()
     res['success'] = True
     res['message'] = "Sample retrived"
-    res['sample'] = r
+    res['sample'] = base64.b64encode(r).decode()
     res['average'] = np.average(r)
     # we use unbiased estimator of stddev here, also known as sample stddev
     res['sample standard deviation'] = np.std(r, ddof=count-1)

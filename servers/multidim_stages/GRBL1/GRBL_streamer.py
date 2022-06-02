@@ -1,8 +1,8 @@
 import serial
 
 class GRBL:
-    def __init__(self) -> None:
-        self.com = 'COM5'
+    def __init__(self, com:str) -> None:
+        self.com = com
         self.ser = serial.Serial(self.com, baudrate=115200, timeout=1)
     
     def send_gcode(self, gcode:str):
@@ -19,4 +19,3 @@ class GRBL:
             res = self.ser.readline().decode()
         return res
 
-grbl = GRBL()

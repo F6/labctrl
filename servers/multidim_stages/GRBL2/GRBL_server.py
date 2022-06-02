@@ -12,7 +12,9 @@ __version__ = "20220601"
 
 import json
 from flask import Flask, Response
-from GRBL_streamer import grbl
+from GRBL_streamer import GRBL
+
+grbl = GRBL('COM6')
 
 app = Flask(__name__)
 
@@ -38,7 +40,7 @@ def send_gcode(gcode):
 
 
 @app.route("/g1blocking/<gcode>")
-def autohome(gcode):
+def g1blocking(gcode):
     r = grbl.blocking_g1_command(gcode)
     res = dict()
     res['success'] = True
