@@ -31,7 +31,7 @@ def online():
 
 @app.route("/getValue")
 def get_value():
-    r = pm.data[pm.current_data_index]
+    r = pm.buf.get_current()
     res = dict()
     res['success'] = True
     res['message'] = "Current value retrived"
@@ -42,13 +42,23 @@ def get_value():
 
 @app.route("/getSample/<count>")
 def get_sample(count):
+    count = int(count)
     assert count < pm.buf.length
     istart = pm.buf.current_data_index
     istop = istart + count
     if istop > pm.buf.length:
         istop = istop - pm.buf.length
-    while pm.buf.current_data_index < istop or pm.buf.current_data_index > istart:
-        time.sleep(0.01)
+
+    ci = pm.buf.current_data_index
+    if istop > istart:
+        while ci <= istop and ci >= istart:
+            ci = pm.buf.current_data_index
+            time.sleep(0.01)
+    else:
+        while ci >= istop or ci <= istart:
+            ci = pm.buf.current_data_index
+            time.sleep(0.01)
+
     r = pm.buf.get_slice(istart, istop)
     res = dict()
     res['success'] = True

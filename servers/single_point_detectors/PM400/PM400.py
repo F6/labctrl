@@ -11,15 +11,18 @@ import numpy as np
 
 class CyclicBuffer:
     def __init__(self) -> None: 
-        self.length = 65536 # 64kB
+        self.length = 128 # 64kB
         self.data = np.zeros(self.length, dtype=np.float64)
         self.current_data_index = 0
     
     def append(self, value):
-        self.data[self.current_data_index] = value
         self.current_data_index += 1
+        if self.current_data_index >= self.length:
+            self.current_data_index = 0
+        self.data[self.current_data_index] = value
 
     def get_current(self):
+        # print(self.data)
         return self.data[self.current_data_index]
     
     def get_slice(self, istart, istop):
@@ -103,10 +106,10 @@ class PM400:
             except NameError as e:
                 # probably lost connection, let's try reconnect
                 print(e, e.args)
-                self.__open_TLPM(self.wavelength, self.range_to_measure)
+                # self.__open_TLPM(self.wavelength, self.range_to_measure)
 
     def close_TLPM(self):
         self.halt = True
         self.tlPM.close()
 
-pm = PM400()
+pm = PM400(520.0, 0.015)

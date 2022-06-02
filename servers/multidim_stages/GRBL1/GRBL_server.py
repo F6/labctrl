@@ -14,7 +14,7 @@ import json
 from flask import Flask, Response
 from GRBL_streamer import GRBL
 
-grbl = GRBL('COM5')
+grbl = GRBL('COM7')
 
 app = Flask(__name__)
 
