@@ -31,8 +31,17 @@ The "port" section in configs also needs to be changed if the server port has be
         AeroTech_NView      5004
         CRD507              5005
         ETHGASN             5048
+        ETHGASN2            5053
 
     <!-- 5006 used by bokeh server -->
+
+* Multidimensional Stages:
+
+        GRBL1               5049
+        GRBL2               5050
+        GRBL3               5051
+        GRBL4               5052
+        GRBL5               5054
 
 * CCD and CMOS cameras:
 
@@ -59,6 +68,11 @@ The "port" section in configs also needs to be changed if the server port has be
         SiPMSelfMade1       5015
         SiPM4kHz            5022
     
+* Optical Powermeters:
+
+        PM400               5029
+        ThorlabsLarge       5030
+
 * Linear CCD:
 
         TCD1304             5016
@@ -91,11 +105,6 @@ The "port" section in configs also needs to be changed if the server port has be
 * Spectrometers:
 
         FX2000              5028
-    
-* OpticalPowerMeters:
-
-        ThorlabsSmall       5029
-        ThorlabsLarge       5030
     
 * Digital Multimeters:
 

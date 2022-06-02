@@ -9,19 +9,55 @@ import sys
 import numpy as np
 
 
+class CyclicBuffer:
+    def __init__(self) -> None: 
+        self.length = 65536 # 64kB
+        self.data = np.zeros(self.length, dtype=np.float64)
+        self.current_data_index = 0
+    
+    def append(self, value):
+        self.data[self.current_data_index] = value
+        self.current_data_index += 1
+
+    def get_current(self):
+        return self.data[self.current_data_index]
+    
+    def get_slice(self, istart, istop):
+        # overflow!
+        assert abs(istop - istart) <= self.length
+        # recursive: put istart and istop between 0 - length
+        if istop > self.length:
+            return self.get_slice(istart, istop - self.length)
+        if istart > self.length:
+            return self.get_slice(istart - self.length, istop)
+        if istart < 0:
+            return self.get_slice(istart + self.length, istop)
+        if istop < 0:
+            return self.get_slice(istart, istop + self.length)
+        # if stop is larger, it's just normal slice. if stop is smaller, we need to cat tail and head
+        if istop > istart:
+            return self.data[istart:istop]
+        elif istop == istart:
+            return np.array([])
+        else:
+            buf1 = self.data[istart:self.length]
+            buf2 = self.data[0:istop]
+            return np.concatenate((buf1, buf2))
+
+
 class PM400:
     def __init__(self, wavelength, range_to_measure) -> None:
         self.wavelength = wavelength
         self.range_to_measure = range_to_measure
         self.__init_TLPM()
         # create a cyclic buffer to store measured data
-        self.current_data_index = 0
-        self.data_index_max = 1024
-        self.data = np.zeros(self.data_index_max, dtype=np.float64)
+        self.buf = CyclicBuffer()
         # signal flag to exit data reading thread
         self.halt = False
         # open device and start data reading task
         self.__open_TLPM(self.wavelength, self.range_to_measure)
+        self.data_thread = Thread(target=self.reading_task)
+        self.data_thread.start()
 
     def __init_TLPM(self):
         self.tlPM = TLPM.TLPM()
@@ -55,20 +91,14 @@ class PM400:
 
         time.sleep(3)
         
-        data_thread = Thread(target=self.reading_task)
-        data_thread.start()
 
     def reading_task(self):
         while not self.halt:
             try:
-                if self.current_data_index < self.data_index_max - 1:
-                    self.current_data_index += 1
-                else:
-                    self.current_data_index = 0
                 power = c_double()
                 self.tlPM.measPower(byref(power))
                 # print(power.value)
-                self.data[self.current_data_index] = power.value
+                self.buf.append(power.value)
                 time.sleep(0.01)
             except NameError as e:
                 # probably lost connection, let's try reconnect
@@ -78,3 +108,5 @@ class PM400:
     def close_TLPM(self):
         self.halt = True
         self.tlPM.close()
+
+pm = PM400()
