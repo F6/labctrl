@@ -11,7 +11,7 @@ import numpy as np
 
 class CyclicBuffer:
     def __init__(self) -> None: 
-        self.length = 128 # 64kB
+        self.length = 65536 # 64kB
         self.data = np.zeros(self.length, dtype=np.float64)
         self.current_data_index = 0
     

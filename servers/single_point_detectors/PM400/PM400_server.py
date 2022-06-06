@@ -50,12 +50,19 @@ def get_sample(count):
         istop = istop - pm.buf.length
 
     ci = pm.buf.current_data_index
+    timeout = 0
     if istop > istart:
         while ci <= istop and ci >= istart:
+            timeout = timeout + 1
+            if timeout > 100:
+                break
             ci = pm.buf.current_data_index
             time.sleep(0.01)
     else:
         while ci >= istop or ci <= istart:
+            timeout = timeout + 1
+            if timeout > 100:
+                break
             ci = pm.buf.current_data_index
             time.sleep(0.01)
 
@@ -65,6 +72,7 @@ def get_sample(count):
     res['message'] = "Sample retrived"
     res['sample'] = base64.b64encode(r).decode()
     res['average'] = np.average(r)
+    res['median'] = np.median(r)
     # we use unbiased estimator of stddev here, also known as sample stddev
     res['sample standard deviation'] = np.std(r, ddof=count-1)
     res = json.dumps(res)

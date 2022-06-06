@@ -66,56 +66,57 @@ def linear_search(line):
         vals[i] = average
     return vals
 
-# initguess = (0.28, 0.04, 0.12, 0.14)
-# initguess = (0.28, 0.02, 0.12, 0.12000000000000001)
-# initguess = (0.405, 0.039999999999999994, 0.12, 0.17500000000000002)
-# initguess = (0.38, 0.04500000000000001, 0.095, 0.10500000000000001)
+# # initguess = (0.28, 0.04, 0.12, 0.14)
+# # initguess = (0.28, 0.02, 0.12, 0.12000000000000001)
+# # initguess = (0.405, 0.039999999999999994, 0.12, 0.17500000000000002)
+# # initguess = (0.38, 0.04500000000000001, 0.095, 0.10500000000000001)
+# initguess = (-0.11, -0.07999999999999999, -0.08, 0.06)
+# # initguess = (0, 0, 0, 0)
 
-initguess = (0.31000000000000005, 0.21500000000000002, 0.0050000000000000044, -0.035)
-spacer = 0.005
+# spacer = 0.01
 
-directions = [
-    (spacer, 0, 0, 0),
-    (0, spacer, 0, 0),
-    (spacer, 0, spacer, 0),
-    (0, -spacer, 0, spacer)
-]
-
-
-searchlimit = (-0.1, 0.1)
+# directions = [
+#     (spacer, 0, 0, 0),
+#     (0, spacer, 0, 0),
+#     (spacer, 0, spacer, 0),
+#     (0, -spacer, 0, spacer)
+# ]
 
 
-print("Init iterate")
-line = construct_line(initguess, directions[3], searchlimit)
-print(line)
-vals = linear_search(line)
-max = np.amax(vals)
-max_i = np.where(vals == max)[0][0]
-print("Init:", max, max_i)
-prevmax_p = line[max_i]
-globalmax = max
-globalmax_p = prevmax_p
+# searchlimit = (-0.3, 0.3)
 
-try:
-    for i in range(5):
-        print("Iteration #{}".format(i))
-        line = construct_line(prevmax_p, directions[i%4], searchlimit)
-        print(line)
-        vals = linear_search(line)
-        max = np.amax(vals)
-        max_i = np.where(vals == max)[0][0]
-        print("Iter max, max_i: ", max, max_i)
-        prevmax_p = line[max_i]
-        if max > globalmax:
-            globalmax = max
-            globalmax_p = prevmax_p
-except KeyboardInterrupt:
-    print("Keyboard Interrupted, backing to best yet")
 
-print("Optimize halted. Max find at")
-print(globalmax_p)
-print("Max value is ", globalmax)
-moveabs(*globalmax_p)
+# print("Init iterate")
+# line = construct_line(initguess, directions[3], searchlimit)
+# print(line)
+# vals = linear_search(line)
+# max = np.amax(vals)
+# max_i = np.where(vals == max)[0][0]
+# print("Init:", max, max_i)
+# prevmax_p = line[max_i]
+# globalmax = max
+# globalmax_p = prevmax_p
+
+# try:
+#     for i in range(5):
+#         print("Iteration #{}".format(i))
+#         line = construct_line(prevmax_p, directions[i%4], searchlimit)
+#         print(line)
+#         vals = linear_search(line)
+#         max = np.amax(vals)
+#         max_i = np.where(vals == max)[0][0]
+#         print("Iter max, max_i: ", max, max_i)
+#         prevmax_p = line[max_i]
+#         if max > globalmax:
+#             globalmax = max
+#             globalmax_p = prevmax_p
+# except KeyboardInterrupt:
+#     print("Keyboard Interrupted, backing to best yet")
+
+# print("Optimize halted. Max find at")
+# print(globalmax_p)
+# print("Max value is ", globalmax)
+# moveabs(*globalmax_p)
 
 
 
