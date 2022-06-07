@@ -9,7 +9,8 @@ gas = ctypes.CDLL("GAS.dll")
 class ETHGASN:
     def __init__(self) -> None:
         self.pos = 0 # TEMPORARY!!!!! update this
-        self.pulse_per_mm = 640
+        # self.pulse_per_mm = 640 # For LEISAI leadscrew
+        self.pulse_per_mm = 3200
         self.ip = '192.168.0.1'
         print("Opening ETHGASN Card...")
         res = 0
@@ -30,7 +31,7 @@ class ETHGASN:
         self.tpm.smoothTime = 0
 
         res += gas.GA_SetTrapPrm(1, self.tpm)
-        res += gas.GA_SetVel(1, c_double(10.0))
+        res += gas.GA_SetVel(1, c_double(200.0))
 
         print("Return Code: ", res)
 
@@ -43,7 +44,7 @@ class ETHGASN:
         res += gas.GA_SetPos(1, pos)
         res += gas.GA_Update(0xFF)
         print("Moving, ETHGASN Return: ", res)
-        tts = abs(delta/10000)
+        tts = abs(delta/(200.0 * 1000))
         time.sleep(tts)
     
     def moveabs(self, pos):

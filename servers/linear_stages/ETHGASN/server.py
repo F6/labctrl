@@ -16,8 +16,11 @@ from flask import Flask, Response
 from ETHGASN import stage
 
 
-SOFTMIN = -220
-SOFTMAX = 150
+# SOFTMIN = -220
+# SOFTMAX = 150
+
+SOFTMIN = -100
+SOFTMAX = 160
 
 app = Flask(__name__)
 
