@@ -11,14 +11,17 @@ import numpy as np
 
 class CyclicBuffer:
     def __init__(self) -> None: 
-        self.length = 65536 # 64kB
+        self.length = 16384 # 64kB
         self.data = np.zeros(self.length, dtype=np.float64)
         self.current_data_index = 0
-    
+
     def append(self, value):
         self.current_data_index += 1
         if self.current_data_index >= self.length:
             self.current_data_index = 0
+            np.savetxt(str(time.time()) + '.txt', self.data)
+        if self.current_data_index % 1000 == 0:
+            print("!")
         self.data[self.current_data_index] = value
 
     def get_current(self):
@@ -90,11 +93,9 @@ class PM400:
         time.sleep(0.5)
         self.tlPM.setWavelength(c_double(wavelength))
         time.sleep(0.5)
-        self.tlPM.setPowerAutoRange(TLPM.TLPM_AUTORANGE_POWER_OFF)
+        self.tlPM.setPowerAutoRange(TLPM.TLPM_AUTORANGE_CURRENT_OFF)
         time.sleep(0.5)
         self.tlPM.setPowerRange(c_double(range_to_measure))
-        time.sleep(0.5)
-        self.tlPM.setAvgTime(c_double(0.01))
         time.sleep(3)
         
 
@@ -115,5 +116,10 @@ class PM400:
         self.halt = True
         self.tlPM.close()
 
-# pm = PM400(520.0, 0.00016)
-pm = PM400(400.0, 0.04)
+pm = PM400(800, 0.03)
+
+try:
+    while True:
+        pass
+except KeyboardInterrupt:
+    pm.close_TLPM()
