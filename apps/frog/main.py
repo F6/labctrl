@@ -53,7 +53,6 @@ from threading import Thread
 from bokeh.layouts import column, row
 from bokeh.models.widgets import Button, Div
 from bokeh.models import Panel, Tabs
-from psutil import pid_exists
 
 from labctrl.labconfig import lcfg
 from labctrl.labstat import lstat

@@ -1,0 +1,13 @@
+{
+    "Name": "Generic Boxcar Controller",
+    "Comment": "The self made one",
+    "Host": "127.0.0.1",
+    "Port": 5055,
+    "DelayBackgroundSampling": 10,
+    "DelayIntegrate":400,
+    "DelayHold":500,
+    "DelaySignalSampling":550,
+    "DelayReset":800,
+    "WorkingModes":["PWA", "Boxcar"],
+    "Mode":"Boxcar"
+}

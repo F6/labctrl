@@ -204,6 +204,22 @@
         }
     },
     "lockin_and_boxcars": {
+        "generic_boxcar": {
+            "Name": "Generic Boxcar Controller",
+            "Comment": "The self made one",
+            "Host": "127.0.0.1",
+            "Port": 5055,
+            "DelayBackgroundSampling": 100.0,
+            "DelayIntegrate": 350.0,
+            "DelayHold": 400.0,
+            "DelaySignalSampling": 700.0,
+            "DelayReset": 800.0,
+            "WorkingModes": [
+                "PWA",
+                "Boxcar"
+            ],
+            "Mode": "Boxcar"
+        },
         "ziUHF": {
             "Name": "ziUHF",
             "Comment": "The white lock-in amplifier (600MHz)",
