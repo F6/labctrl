@@ -1,7 +1,7 @@
 
 import numpy as np
 from bokeh.plotting import figure
-from bokeh.models import ColumnDataSource, HoverTool, ColorBar, LinearColorMapper, Range1d
+from bokeh.models import ColumnDataSource, HoverTool, ColorBar, LinearColorMapper, Range1d, Whisker
 from tornado import gen
 from .mandelbrot import mandelbrot_image
 
@@ -38,6 +38,50 @@ class FactoryFigure1D:
 
     def generate_fig1d(self, title, x, y, length):
         return BundleFigure1D(title, x, y, length)
+
+
+
+class BundleFigure1DWithWhiskers:
+    def __init__(self, title: str, x: str, y: str, length: int) -> None:
+        spectrum_tools = "box_zoom,pan,undo,redo,reset,save,crosshair"
+        self.fig = figure(title=title, x_axis_label=x,
+                          y_axis_label=y, plot_width=700, plot_height=360, tools=spectrum_tools)
+        self.y = np.zeros(length)
+        self.x = np.arange(length)
+        self.base = np.arange(length)
+        self.upper = np.zeros(length)
+        self.lower = np.zeros(length)
+        self.ds = ColumnDataSource(data=dict(x=self.x, y=self.y, base=self.base, upper=self.upper, lower=self.lower))
+        self.line = self.fig.line('x', 'y', line_width=1, source=self.ds)
+        ht = HoverTool(
+            tooltips=[
+                ( x, '@x{0.000000}'  ),
+                ( y, '@y{0.000000}'  ),
+            ],
+            # display a tooltip whenever the cursor is vertically in line with a glyph
+            mode='vline'
+        )
+        self.fig.add_tools(ht)
+        self.fig.add_layout(Whisker(source=self.ds, base="base", upper="upper", lower="lower"))
+
+    @gen.coroutine
+    def callback_update(self, x, y, base, upper, lower):
+        new_data = dict()
+        new_data['x'] = x
+        new_data['y'] = y
+        new_data['base'] = base
+        new_data['upper'] = upper
+        new_data['lower'] = lower
+        self.ds.data = new_data
+
+
+class FactoryFigure1DWithWhiskers:
+    def __init__(self) -> None:
+        pass
+
+    def generate_fig1d(self, title, x, y, length):
+        return BundleFigure1DWithWhiskers(title, x, y, length)
+
 
 
 class BundleFigure2D:

@@ -11,6 +11,7 @@ __version__ = "20220624"
 
 
 from functools import wraps
+from this import d
 from bokeh.models.widgets import RadioButtonGroup, Button, TextInput, FileInput
 from bokeh.layouts import column
 from .remote import RemoteBoxcarController
@@ -35,6 +36,7 @@ class BundleBoxcarController:
             label='Submit Config to Boxcar', button_type='warning')
 
         self.working_mode = RadioButtonGroup(labels=[init_str, init_str])
+        self.set_working_mode = None
         self.get_boxcar_data = None
         self.get_PWA_data = None
 
@@ -155,9 +157,15 @@ class FactoryBoxcarController:
             labels=config["WorkingModes"], active=(config["WorkingModes"].index(config["Mode"])))
         working_mode.on_change('active', __callback_working_mode)
         bundle.working_mode = working_mode
+
+        def __set_working_mode(mode):
+            bundle.working_mode.active = config["WorkingModes"].index(config["Mode"])
+            return remote.set_working_mode(mode)
+
+        bundle.set_working_mode = __set_working_mode
         # sync once at spawn
         lstat.stat[name]["Mode"] = config["Mode"]
-        response = remote.set_working_mode(config["Mode"])
+        response = bundle.set_working_mode(config["Mode"])
         lstat.fmtmsg(response)
 
 

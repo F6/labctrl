@@ -75,12 +75,12 @@ class FROGPreviewFigure:
     def __init__(self) -> None:
         factory = FactoryFigure1D()
         self.signal = factory.generate_fig1d(
-            "Real Time Spectrum", "Wavelength (nm)", "Intensity (counts)", 2048)
+            "Real Time Spectrum", "Linear Array Pixel", "Intensity (counts)", 2048)
         self.delay = factory.generate_fig1d(
             "Time-Domain Intensity Autocorrelation", "Time Delay (ps)", "Intensity (counts)", 40)
         factory = FactoryFigure2D()
         self.twodim = factory.generate_fig2d(
-            "FROG Raw Intensity", "Wavelength", "Time Delay", "Intensity (counts)")
+            "FROG Raw Intensity", "Linear Array Pixel", "Time Delay Point #", "Intensity (counts)")
 
 
 class FROGExpData:

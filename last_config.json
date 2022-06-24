@@ -1,7 +1,7 @@
 {
     "basic": {
         "ExperimentType": "THz",
-        "FileStem": "test_frog",
+        "FileStem": "test_kerr_gate",
         "ScanRounds": 3,
         "Mode": "SimpleRepetition",
         "ScanModes": [
