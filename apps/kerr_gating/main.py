@@ -193,9 +193,11 @@ def unit_operation(meta=dict()):
     data = KerrGating.boxcar.get_boxcar_data()
     lstat.expmsg("Adding latest signal to dataset...")
     ds = np.size(data)
-    sig = data[:ds//2]
+    # sig = data[:ds//2]
+    sig = data
     bg = data[ds//2:]
-    delta = sig - bg
+    # delta = sig - bg
+    delta = sig
     sig_average = np.average(sig)
     bg_average = np.average(bg)
     delta_average = np.average(delta)
@@ -205,18 +207,18 @@ def unit_operation(meta=dict()):
     KerrGating.data.signal[stat["iDelay"]] = sig_average
     KerrGating.data.signal_sum[stat["iDelay"]] += sig_average
     lstat.doc.add_next_tick_callback(
-        partial(KerrGating.preview.signal.callback_update, np.arange(ds//2), sig))
+        partial(KerrGating.preview.signal.callback_update, np.arange(np.size(sig)), sig))
 
     KerrGating.data.background[stat["iDelay"]] = bg_average
     KerrGating.data.background_sum[stat["iDelay"]] += bg_average
     lstat.doc.add_next_tick_callback(
-        partial(KerrGating.preview.background.callback_update, np.arange(ds//2), bg))
+        partial(KerrGating.preview.background.callback_update, np.arange(np.size(bg)), bg))
 
     KerrGating.data.delta[stat["iDelay"]] = delta_average
     KerrGating.data.delta_sum[stat["iDelay"]] += delta_average
     KerrGating.data.delta_stddev[stat["iDelay"]] = delta_stddev
     lstat.doc.add_next_tick_callback(
-        partial(KerrGating.preview.delta.callback_update, np.arange(ds//2), delta))
+        partial(KerrGating.preview.delta.callback_update, np.arange(np.size(delta)), delta))
     lstat.doc.add_next_tick_callback(
         partial(KerrGating.preview.delay.callback_update,
                 KerrGating.data.delays, KerrGating.data.delta, KerrGating.data.delays,

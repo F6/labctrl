@@ -7,7 +7,7 @@ import time
 import serial
 import sys
 import numpy as np
-
+import sys
 
 class CyclicBuffer:
     def __init__(self) -> None: 
@@ -21,7 +21,8 @@ class CyclicBuffer:
             self.current_data_index = 0
             np.savetxt(str(time.time()) + '.txt', self.data)
         if self.current_data_index % 1000 == 0:
-            print("!")
+            print("!", end="")
+            sys.stdout.flush()
         self.data[self.current_data_index] = value
 
     def get_current(self):

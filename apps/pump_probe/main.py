@@ -31,7 +31,6 @@ __author__ = "Zhi Zi"
 __email__ = "x@zzi.io"
 __version__ = "20220525"
 
-
 import time
 import numpy as np
 
@@ -55,7 +54,7 @@ doc.template_variables["app_name"] = "pump_probe"
 
 
 # META SETTINGS
-delay_stage = 'USB1020'
+delay_stage = 'ETHGASN'
 spectrometer_sensor = 'FX2000'
 
 
@@ -63,12 +62,12 @@ class PumpProbePreviewFigure:
     def __init__(self) -> None:
         factory = FactoryFigure1D()
         self.signal = factory.generate_fig1d(
-            "Real Time Spectrum", "Wavelength (nm)", "Intensity (counts)", 2048)
+            "Real Time Spectrum", "Linear Array Pixel", "Intensity (counts)", 2048)
         self.delay = factory.generate_fig1d(
-            "Total intensity over time", "Time Delay (ps)", "Intensity (counts)", 40)
+            "Time-Domain Intensity Autocorrelation", "Time Delay (ps)", "Intensity (counts)", 40)
         factory = FactoryFigure2D()
         self.twodim = factory.generate_fig2d(
-            "Pump Probe Spectrum", "Time Delay (ps)", "Wavelength (nm)", "Intensity (counts)")
+            "PumpProbe Raw Intensity", "Linear Array Pixel", "Time Delay Point #", "Intensity (counts)")
 
 
 class PumpProbeExpData:
@@ -133,71 +132,71 @@ class PumpProbeExperiment:
         }
 
 
-pp = PumpProbeExperiment()
+pump_probe = PumpProbeExperiment()
 
 
-@pp.generic.scan_round
-@pp.linear_stage.scan_delay
+@pump_probe.generic.scan_round
+@pump_probe.linear_stage.scan_delay
 def unit_operation(meta=dict()):
-    if pp.flags["TERMINATE"]:
+    if pump_probe.flags["TERMINATE"]:
         meta["TERMINATE"] = True
         lstat.expmsg(
             "PumpProbe operation received signal TERMINATE, trying graceful Thread exit")
         return
     lstat.expmsg("Retriving signal from sensor...")
-    sig = pp.sensor.get_image()
+    sig = pump_probe.sensor.get_image()
     lstat.expmsg("Adding latest signal to dataset...")
     stat = lstat.stat[delay_stage]
-    pp.data.sig[stat["iDelay"], :] = sig
-    pp.data.sigsum[stat["iDelay"], :] += sig
+    pump_probe.data.sig[stat["iDelay"], :] = sig
+    pump_probe.data.sigsum[stat["iDelay"], :] += sig
     lstat.doc.add_next_tick_callback(
-        partial(pp.preview.signal.callback_update, pp.data.pixels_list, sig))
+        partial(pump_probe.preview.signal.callback_update, pump_probe.data.pixels_list, sig))
     lstat.doc.add_next_tick_callback(
-        partial(pp.preview.delay.callback_update,
-                stat["ScanList"], np.sum(pp.data.sig, axis=1))
+        partial(pump_probe.preview.delay.callback_update,
+                stat["ScanList"], np.sum(pump_probe.data.sig, axis=1))
     )
     # if this the end of delay scan, call export
     if stat["iDelay"] + 1 == len(stat["ScanList"]):
         lstat.doc.add_next_tick_callback(
-            partial(pp.preview.twodim.callback_update, np.transpose(pp.data.sig),
-                    pp.data.ymin, pp.data.ymax, pp.data.xmin, pp.data.xmax)
+            partial(pump_probe.preview.twodim.callback_update, pump_probe.data.sig,
+                    pump_probe.data.xmin, pump_probe.data.xmax, pump_probe.data.ymin, pump_probe.data.ymax)
         )
         lstat.expmsg("End of delay scan round, exporting data...")
-        pp.data.export("scandata/" + lcfg.config["basic"]["FileStem"] +
+        pump_probe.data.export("scandata/" + lcfg.config["basic"]["FileStem"] +
                          "-Round{rd}".format(rd=lstat.stat["basic"]["iRound"]))
 
 
 def task():
     lstat.expmsg("Allocating memory for experiment")
-    pp.data = PumpProbeExpData(lcfg, lstat)
+    pump_probe.data = PumpProbeExpData(lcfg, lstat)
     lstat.expmsg("Starting experiment")
     meta = dict()
     meta["TERMINATE"] = False
     unit_operation(meta=meta)
-    pp.flags["FINISH"] = True
-    pp.flags["RUNNING"] = False
+    pump_probe.flags["FINISH"] = True
+    pump_probe.flags["RUNNING"] = False
     lstat.expmsg("Experiment done")
 
 
 def __callback_start():
-    pp.flags["TERMINATE"] = False
-    pp.flags["FINISH"] = False
-    pp.flags["RUNNING"] = True
+    pump_probe.flags["TERMINATE"] = False
+    pump_probe.flags["FINISH"] = False
+    pump_probe.flags["RUNNING"] = True
     thread = Thread(target=task)
     thread.start()
 
 
-pp.start.on_click(__callback_start)
+pump_probe.start.on_click(__callback_start)
 
 
 def __callback_terminate():
     lstat.expmsg("Terminating current job")
-    pp.flags["TERMINATE"] = True
-    pp.flags["FINISH"] = False
-    pp.flags["RUNNING"] = False
+    pump_probe.flags["TERMINATE"] = True
+    pump_probe.flags["FINISH"] = False
+    pump_probe.flags["RUNNING"] = False
 
 
-pp.terminate.on_click(__callback_terminate)
+pump_probe.terminate.on_click(__callback_terminate)
 
 
 # roots: ["dashboard", "setup", "params", "schedule", "reports", "messages"]
@@ -209,12 +208,12 @@ doc.add_root(dashboard_tabs)
 
 # ================ params ================
 foo = column(
-    pp.linear_stage.scan_mode,
-    pp.linear_stage.scan_zero,
-    pp.linear_stage.scan_start,
-    pp.linear_stage.scan_stop,
-    pp.linear_stage.scan_step,
-    pp.linear_stage.scan_file
+    pump_probe.linear_stage.scan_mode,
+    pump_probe.linear_stage.scan_zero,
+    pump_probe.linear_stage.scan_start,
+    pump_probe.linear_stage.scan_stop,
+    pump_probe.linear_stage.scan_step,
+    pump_probe.linear_stage.scan_file
 )
 param_tab1 = Panel(child=foo, title="Linear Stage")
 param_tabs = Tabs(tabs=[param_tab1], name="param")
@@ -222,12 +221,12 @@ doc.add_root(param_tabs)
 
 # ================ manual ================
 foo = column(
-    pp.linear_stage.test_online,
-    pp.linear_stage.manual_position,
-    pp.linear_stage.manual_move,
-    pp.linear_stage.manual_step,
-    pp.linear_stage.manual_step_forward,
-    pp.linear_stage.manual_step_backward,
+    pump_probe.linear_stage.test_online,
+    pump_probe.linear_stage.manual_position,
+    pump_probe.linear_stage.manual_move,
+    pump_probe.linear_stage.manual_step,
+    pump_probe.linear_stage.manual_step_forward,
+    pump_probe.linear_stage.manual_step_backward,
 )
 manual_tab1 = Panel(child=foo, title="Linear Stage")
 manual_tabs = Tabs(tabs=[manual_tab1], name="manual")
@@ -235,10 +234,10 @@ doc.add_root(manual_tabs)
 
 # ================ schedule ================
 foo = column(
-    pp.generic.filestem,
-    pp.generic.scanrounds,
-    pp.start,
-    pp.terminate
+    pump_probe.generic.filestem,
+    pump_probe.generic.scanrounds,
+    pump_probe.start,
+    pump_probe.terminate
 )
 schedule_tab1 = Panel(child=foo, title="PumpProbe")
 schedule_tabs = Tabs(tabs=[schedule_tab1], name="schedule")
@@ -246,9 +245,9 @@ doc.add_root(schedule_tabs)
 
 # ================ reports ================
 foo = column(
-    pp.preview.signal.fig,
-    pp.preview.delay.fig,
-    pp.preview.twodim.fig
+    pump_probe.preview.signal.fig,
+    pump_probe.preview.delay.fig,
+    pump_probe.preview.twodim.fig
 )
 reports_tab1 = Panel(child=foo, title="PumpProbe")
 reports_tabs = Tabs(tabs=[reports_tab1], name="reports")

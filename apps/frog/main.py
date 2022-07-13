@@ -67,7 +67,7 @@ doc.template_variables["app_name"] = "frog"
 
 
 # META SETTINGS
-delay_stage = 'USB1020'
+delay_stage = 'ETHGASN'
 spectrometer_sensor = 'FX2000'
 
 

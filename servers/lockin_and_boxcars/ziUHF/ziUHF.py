@@ -14,11 +14,14 @@ import numpy as np
 import zhinst.utils
 
 cfg = {
-    "DeviceID": "dev2461",
+    # "DeviceID": "dev2461",
+    "DeviceID": "dev2819",
     "APILevel": 6,
-    "ServerHost": "localhost",
+    # "ServerHost": "localhost",
+    "ServerHost": "192.168.1.149",
     "ServerPort": 8004,
-    "SamplePath": "/dev2461/boxcars/0/sample"
+    # "SamplePath": "/dev2461/boxcars/0/sample"
+    "SamplePath": "/dev2819/boxcars/0/sample"
 }
 
 
@@ -40,6 +43,7 @@ class ziUHF:
             cfg["DeviceID"], cfg["APILevel"], server_host=cfg["ServerHost"], server_port=cfg["ServerPort"]
         )
         zhinst.utils.api_server_version_check(self.daq)
+        self.daq.subscribe(cfg["SamplePath"])
 
 
     def get_value(self, averaging_time=0.1):
@@ -70,6 +74,29 @@ class ziUHF:
         # print(f"Total sample count is {cnt}.")
         # print(f"Measured average amplitude is {val:.5e} V.")
         return val
+    
+    def get_data(self, averaging_time=0.1):
+        self.daq.flush()
+        tnow = time.time_ns()
+        tuntil = tnow + averaging_time * 10e9
+        datas = list()
+        while time.time_ns() < tuntil:
+            # Poll the data
+            poll_length = 0.1  # [s]
+            poll_timeout = 500  # [ms]
+            poll_flags = 0
+            poll_return_flat_dict = True
+            data = self.daq.poll(poll_length, poll_timeout,
+                                 poll_flags, poll_return_flat_dict)
+            datas.append(data)
+        # print(datas)
+        s = []
+        for data in datas:
+            sample = data[cfg["SamplePath"]]
+            value = sample["value"]
+            s = np.concatenate((s, value))
+
+        return s
 
 uhf = ziUHF()
 uhf.init_session()

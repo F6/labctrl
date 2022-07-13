@@ -19,8 +19,10 @@ from ETHGASN import stage
 # SOFTMIN = -220
 # SOFTMAX = 150
 
-SOFTMIN = -100
-SOFTMAX = 160
+SOFTMIN = -175
+SOFTMAX = 80
+
+ZERO = -170.5
 
 app = Flask(__name__)
 
