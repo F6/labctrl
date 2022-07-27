@@ -162,6 +162,46 @@
                 "ExternalFile"
             ]
         },
+        "ETHGASN_leisai": {
+            "Name": "ETHGASN_leisai",
+            "Comment": "Taobao Bopai Controller, the black one over ethernet, leisai driver on controller axis 4",
+            "Host": "127.0.0.1",
+            "Port": 5057,
+            "Unit": "ps",
+            "Mode": "Range",
+            "Start": -5.0,
+            "Step": 0.2,
+            "Stop": 5.0,
+            "ExternalList": [],
+            "ZeroAbsPos": 0.0,
+            "ManualPos": 14.985127349999999,
+            "ManualStep": 1.0,
+            "ScanModes": [
+                "Manual",
+                "Range",
+                "ExternalFile"
+            ]
+        },
+        "ETHGASN_yaskawa": {
+            "Name": "ETHGASN_yaskawa",
+            "Comment": "Taobao Bopai Controller, the black one over ethernet, yaskawa linear stage on controller axis 1",
+            "Host": "127.0.0.1",
+            "Port": 5056,
+            "Unit": "ps",
+            "Mode": "Range",
+            "Start": -5.0,
+            "Step": 0.2,
+            "Stop": 5.0,
+            "ExternalList": [],
+            "ZeroAbsPos": 228.883,
+            "ManualPos": 228.963,
+            "ManualStep": 1.0,
+            "ScanModes": [
+                "Manual",
+                "Range",
+                "ExternalFile"
+            ]
+        },
         "PMC48MT6": {
             "Name": "PMC48MT6",
             "Comment": "The long delay line with 2 retroreflectors installed at A304",
@@ -210,10 +250,10 @@
             "Host": "127.0.0.1",
             "Port": 5055,
             "DelayBackgroundSampling": 100.0,
-            "DelayIntegrate": 350.0,
-            "DelayHold": 400.0,
+            "DelayIntegrate": 50.0,
+            "DelayHold": 100.0,
             "DelaySignalSampling": 700.0,
-            "DelayReset": 800.0,
+            "DelayReset": 200.0,
             "WorkingModes": [
                 "PWA",
                 "Boxcar"

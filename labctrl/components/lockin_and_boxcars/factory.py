@@ -141,8 +141,10 @@ class FactoryBoxcarController:
             lstat.fmtmsg(response)
 
         bundle.submit_config.on_click(__callback_submit_config)
-        # sync once at spawn
-        __callback_submit_config()
+        # we can sync once at spawn so that the configs on boxcar controller is always 
+        # the same with what is displayed on GUI, but this increases gui instablility 
+        # so commented out here
+        # __callback_submit_config()
 
         @ignore_connection_error
         @update_config
@@ -163,10 +165,12 @@ class FactoryBoxcarController:
             return remote.set_working_mode(mode)
 
         bundle.set_working_mode = __set_working_mode
-        # sync once at spawn
         lstat.stat[name]["Mode"] = config["Mode"]
-        response = bundle.set_working_mode(config["Mode"])
-        lstat.fmtmsg(response)
+        # we can sync once at spawn so that the configs on boxcar controller is always 
+        # the same with what is displayed on GUI, but this increases gui instablility 
+        # so commented out here
+        # response = bundle.set_working_mode(config["Mode"])
+        # lstat.fmtmsg(response)
 
 
         def __get_boxcar_data():

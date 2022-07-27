@@ -32,6 +32,8 @@ The "port" section in configs also needs to be changed if the server port has be
         CRD507              5005
         ETHGASN             5048
         ETHGASN2            5053
+        ETHGASN_yaskawa     5056
+        ETHGASN_leisai      5057
 
     <!-- 5006 used by bokeh server -->
 
