@@ -13,16 +13,12 @@ __version__ = "20211110"
 
 import json
 from flask import Flask, Response
-from ETHGASN import stage
+from ETHGASN import controller
 
 
 # SOFTMIN = -220
 # SOFTMAX = 150
 
-SOFTMIN = -175
-SOFTMAX = 80
-
-ZERO = -170.5
 
 app = Flask(__name__)
 
@@ -37,8 +33,10 @@ def online():
     return Response(res, status=200, mimetype='application/json')
 
 
-@app.route("/moveabs/<pos>")
-def moveabs(pos):
+@app.route("/yaskawa/moveabs/<pos>")
+def yaskawa_moveabs(pos):
+    SOFTMIN = -100
+    SOFTMAX = 160
     pos = float(pos)
     if pos < SOFTMIN or pos > SOFTMAX:
         res = dict()
@@ -47,22 +45,40 @@ def moveabs(pos):
         res['target'] = pos
         res['software_min'] = SOFTMIN
         res['software_max'] = SOFTMAX
+        res['linear_stage'] = "Yaskawa"
         res = json.dumps(res)
         return Response(res, status=200, mimetype='application/json')
-    stage.moveabs(pos)
+    controller.yaskawa.moveabs(pos)
     res = dict()
     res['success'] = True
     res['message'] = "Moved to target position"
     res['target'] = pos
+    res['linear_stage'] = "Yaskawa"
     res = json.dumps(res)
     return Response(res, status=200, mimetype='application/json')
 
 
-@app.route("/autohome")
-def autohome():
-    stage.autohome()
+@app.route("/leisai/moveabs/<pos>")
+def leisai_moveabs(pos):
+    SOFTMIN = -100
+    SOFTMAX = 160
+    pos = float(pos)
+    if pos < SOFTMIN or pos > SOFTMAX:
+        res = dict()
+        res['success'] = False
+        res['message'] = "Cannot move to target because it exceeds software limit!"
+        res['target'] = pos
+        res['software_min'] = SOFTMIN
+        res['software_max'] = SOFTMAX
+        res['linear_stage'] = "LeiSai"
+        res = json.dumps(res)
+        return Response(res, status=200, mimetype='application/json')
+    controller.yaskawa.moveabs(pos)
     res = dict()
     res['success'] = True
-    res['message'] = "Moved to Home and reset Home position via limit switch"
+    res['message'] = "Moved to target position"
+    res['target'] = pos
+    res['linear_stage'] = "LeiSai"
     res = json.dumps(res)
     return Response(res, status=200, mimetype='application/json')
+
