@@ -42,7 +42,10 @@ def get_value():
 @app.route("/getBoxcarData")
 def get_boxcar_data():
     # makes sure you can get new results every query
-    r = uhf.get_data()
+    for i in range(100): # retry times
+        r = uhf.get_data()
+        if np.size(r) != 0:
+            break
     if np.size(r) % 2:
         r = r[:-1]
     res = dict()

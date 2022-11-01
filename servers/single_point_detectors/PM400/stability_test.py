@@ -117,7 +117,7 @@ class PM400:
         self.halt = True
         self.tlPM.close()
 
-pm = PM400(800, 0.03)
+pm = PM400(560, 0.003)
 
 try:
     while True:

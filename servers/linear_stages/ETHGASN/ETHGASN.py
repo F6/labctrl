@@ -34,7 +34,7 @@ class Axis:
         print("Setting axis {} velocity to {} pulses per ms".format(self.axis_i, vel))
         res = 0
         self.vel = vel
-        res += gas.GA_SetVel(1, c_double(vel))
+        res += gas.GA_SetVel(self.axis_i, c_double(vel))
         return res
 
     def setparam(self, acceleration=1.0, deceleration=1.0, velocity_start=0, smooth_time=0):        
@@ -51,6 +51,7 @@ class Axis:
         # print("Return Code: ", res)
 
     def setpos(self, pos):
+        print(self.axis_i, pos)
         delta = self.pos - pos
         self.pos = pos
         res = 0
@@ -84,7 +85,7 @@ class ETHGASN:
         """The yaskawa controller and linear stage on axis 1. 3200 pulses per mm (measured with ruler)"""
         self.yaskawa = Axis(1, 3200, 200)
         """The leadscrew linear stage, connected to LeiSai driver, 640 pulses per mm (measured with ruler)"""
-        self.leisai = Axis(4, 640, 200)
+        self.leisai = Axis(4, 640, 10)
 
         self.linear_stages = [self.yaskawa, self.leisai]
 

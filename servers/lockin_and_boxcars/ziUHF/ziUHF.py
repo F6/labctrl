@@ -21,7 +21,8 @@ cfg = {
     "ServerHost": "192.168.1.149",
     "ServerPort": 8004,
     # "SamplePath": "/dev2461/boxcars/0/sample"
-    "SamplePath": "/dev2819/boxcars/0/sample"
+    "SamplePath": "/dev2819/boxcars/1/sample",
+    # "BackgroundSamplePath": "/dev2819/boxcars/1/sample"
 }
 
 
@@ -44,6 +45,7 @@ class ziUHF:
         )
         zhinst.utils.api_server_version_check(self.daq)
         self.daq.subscribe(cfg["SamplePath"])
+        # self.daq.subscribe(cfg["BackgroundSamplePath"])
 
 
     def get_value(self, averaging_time=0.1):
@@ -92,10 +94,16 @@ class ziUHF:
         # print(datas)
         s = []
         for data in datas:
-            sample = data[cfg["SamplePath"]]
-            value = sample["value"]
-            s = np.concatenate((s, value))
-
+            try:
+                sample = data[cfg["SamplePath"]]
+                value = sample["value"]
+                s = np.concatenate((s, value))
+            except KeyError:
+                pass
+        # for data in datas:
+        #     sample = data[cfg["BackgroundSamplePath"]]
+        #     value = sample["value"]
+        #     s = np.concatenate((s, value))
         return s
 
 uhf = ziUHF()

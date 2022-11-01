@@ -532,12 +532,14 @@ class LibraryLoader(object):
     def __call__(self, libname):
         """Given the name of a library, load it."""
         paths = self.getpaths(libname)
+        paths = list(paths)
+        print("PATHS:", paths)
 
         for path in paths:
             try:
                 return self.Lookup(path)
-            except:
-                pass
+            except Exception as inst:
+                print(inst, inst.args)
 
         raise ImportError("Could not load %s." % libname)
 
@@ -815,6 +817,8 @@ add_library_search_dirs([])
 
 # Begin libraries
 _libs["./USB1020_64"] = load_library("./USB1020_64")
+# _libs["./USB1020_64"] = load_library("C:/Users/pulse/Desktop/labctrl/servers/linear_stages/USB1020_IRPumpVisProbe/USB1020_64.dll")
+
 
 # 1 libraries
 # End libraries

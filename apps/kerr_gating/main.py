@@ -44,7 +44,9 @@ __version__ = "20220624"
 
 import time
 import numpy as np
-
+import requests
+import json
+import base64
 from functools import partial
 from threading import Thread
 
@@ -67,7 +69,7 @@ doc.template_variables["app_name"] = "kerr_gating"
 # META SETTINGS
 delay_stage = 'ETHGASN_leisai'
 boxcar_name = 'generic_boxcar'
-# boxcar = 'ziUHF'
+# boxcar_name = 'ziUHF'
 
 
 class KerrGatingPreviewFigure:
@@ -81,7 +83,7 @@ class KerrGatingPreviewFigure:
             "Shot-to-shot Boxcar Delta", "Data #", "Intensity (V)", 256)
         self.PWA = factory.generate_fig1d(
             "PWA", "Time/us", "Intensity (V)", 1024)
-        factory = FactoryFigure1DWithWhiskers()
+        # factory = FactoryFigure1DWithWhiskers()
         self.delay = factory.generate_fig1d(
             "Delay Scan", "Time Delay (ps)", "Intensity (V)", 40)
         # factory = FactoryFigure2D()
@@ -196,7 +198,10 @@ def unit_operation(meta=dict()):
     # sig = data[:ds//2]
     sig = data
     bg = data[ds//2:]
+
     # delta = sig - bg
+
+    # delta = np.log10(sig/bg)
     delta = sig
     sig_average = np.average(sig)
     bg_average = np.average(bg)
@@ -221,9 +226,10 @@ def unit_operation(meta=dict()):
         partial(KerrGating.preview.delta.callback_update, np.arange(np.size(delta)), delta))
     lstat.doc.add_next_tick_callback(
         partial(KerrGating.preview.delay.callback_update,
-                KerrGating.data.delays, KerrGating.data.delta, KerrGating.data.delays,
-                KerrGating.data.delta + KerrGating.data.delta_stddev,
-                KerrGating.data.delta - KerrGating.data.delta_stddev)
+                KerrGating.data.delays, KerrGating.data.delta)
+                # , KerrGating.data.delays
+                # KerrGating.data.delta + KerrGating.data.delta_stddev,
+                # KerrGating.data.delta - KerrGating.data.delta_stddev)
     )
 
     # if this the end of delay scan, call export

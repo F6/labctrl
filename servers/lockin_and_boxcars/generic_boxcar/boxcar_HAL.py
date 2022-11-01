@@ -86,7 +86,7 @@ class BoxcarController:
     def __init__(self) -> None:
         # self.baudrate = 921600
         self.baudrate = 115200
-        self.ser = serial.Serial("COM6", baudrate=115200, timeout=1)
+        self.ser = serial.Serial("COM8", baudrate=115200, timeout=1)
         self.set_delay_background_sampling(DEFAULT_DELAY_BACKGROUND_SAMPLING)
         self.set_delay_integrate(DEFAULT_DELAY_INTEGRATE)
         self.set_delay_hold(DEFAULT_DELAY_HOLD)

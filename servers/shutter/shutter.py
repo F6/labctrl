@@ -10,19 +10,25 @@ class ShutterController:
         self.shutter_status = dict()
         for i in range(16): # at most 16 shutters for one controller
             self.shutter_status[str(i)] = False
+        self.ser = serial.Serial(self.comport, timeout=1, baudrate=115200)
 
-    @contextmanager
-    def getser(self, *args, **kwds):
-        ser = serial.Serial(self.comport, timeout=1, baudrate=115200)
-        try:
-            yield ser
-        finally:
-            ser.close()
+    # @contextmanager
+    # def getser(self, *args, **kwds):
+    #     ser = serial.Serial(self.comport, timeout=1, baudrate=115200)
+        # try:
+        #     yield ser
+        # finally:
+        #     ser.close()
+
+    # def cmd(self, s):
+    #     with self.getser() as ser:
+    #         ser.write(s.encode('ascii'))
+    #         res = ser.readline()
+    #     return res
 
     def cmd(self, s):
-        with self.getser() as ser:
-            ser.write(s.encode('ascii'))
-            res = ser.readline()
+        self.ser.write(s.encode('ascii'))
+        res = self.ser.readline()
         return res
 
     def shutter_off(self, shutter_name='1'):

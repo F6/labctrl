@@ -126,15 +126,15 @@ class FactoryShutterController:
     def __init__(self) -> None:
         pass
 
-    def generate_bundle(self, config:dict, lcfg, lstat):
+    def generate_bundle(self, name, lcfg, lstat):
         """
         actually generates the bundle
-            config: the config dict of the shutter controller
+            name: the name of the shutter controller
             lcfg:   the configure object to bind to
             lstat:  the stat object to bind to
         """
 
-
+        config = lcfg.config["shutter_controllers"][name]
         update_config = lcfg.update_config
         bundle = BundleShutterController()
         remote = RemoteShutter(config)
