@@ -1,0 +1,6 @@
+{
+    "Name": "ToupTek_Coler",
+    "Comment": "ToupTek Camera",
+    "Host": "127.0.0.1",
+    "Port": 5058
+}
