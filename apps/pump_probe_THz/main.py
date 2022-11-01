@@ -24,6 +24,11 @@ is scanned by a second small delay line, and the intensity profile along the sca
 fourier transformed to retrive the original E-field frequency specrtum of the
 terahertz white light.
 
+A chopper chops the repetition rate of the pump laser to 1/2 frequency, to recover
+the difference of the pumped and non-pumped signal. For generic Fourier Transform
+detection, since FT(a(t) - b(t)) = FT(a(t)) - FT(b(t)), direct subtraction of detector
+signal can be used before FT.
+
 the Zurich Instruments UHF is used as the boxcar integrator. When UHF
 is not available we use our self made one
 """
@@ -323,7 +328,7 @@ foo = column(
     TerahertzPP.pump_probe_delay_stage.manual_step_backward,
 )
 manual_tab1 = Panel(child=foo, title="Pump Probe Delay Line")
-column(
+foo = column(
     TerahertzPP.fourier_transform_delay_stage.test_online,
     TerahertzPP.fourier_transform_delay_stage.manual_position,
     TerahertzPP.fourier_transform_delay_stage.manual_move,
