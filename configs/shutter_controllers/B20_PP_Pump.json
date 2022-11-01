@@ -1,0 +1,16 @@
+{
+    "Name": "B20_PP_Pump",
+    "Comment": "The shutter at Pump Probe spectrometer pump beam entry point",
+    "Host": "127.0.0.1",
+    "Port": 5011,
+    "NumberOfShutter": 2,
+    "SelectedShutter": "1",
+    "Shutters" : {
+        "1": {
+            "UseShutterBackground": false
+        },
+        "2": {
+            "UseShutterBackground": false
+        }
+    }
+}
