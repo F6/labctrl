@@ -49,6 +49,7 @@ The "port" section in configs also needs to be changed if the server port has be
 
         EMCCD               5007
         ToupCam             5008
+        ToupTek_Color       5058
 
 * Monochromers:
 

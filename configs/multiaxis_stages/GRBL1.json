@@ -1,0 +1,6 @@
+{
+    "Name": "GRBL1",
+    "Comment": "GRBL G-Code compatible motion controller",
+    "Host": "127.0.0.1",
+    "Port": 5049
+}

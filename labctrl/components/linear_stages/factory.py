@@ -22,6 +22,7 @@ from .utils import ps_to_mm, eval_float, ignore_connection_error
 class BundleLinearStage:
     """
     This class is responsible for holding references to the Bokeh UI Widgets
+    and basic functions
     of a single linear stage.
     """
 
@@ -44,6 +45,7 @@ class BundleLinearStage:
         self.scan_step = TextInput(title=init_str)
         self.scan_file = FileInput(accept=".txt")
         self.scan_delay = None
+        self.set_delay = None
 
     def quick_control_group(self):
         return column(
@@ -216,7 +218,7 @@ class FactoryLinearStage:
         bundle.scan_file.on_change('value', __callback_scan_file)
 
         def scan_delay(func, meta=''):
-            """decorator, when applied to fun, scan delays for func"""
+            """decorator, when applied to func, scan delays for func"""
             def iterate(meta=dict()):
                 if config["Mode"] == "Range" or config["Mode"] == "ExternalFile":
                     for i, dl in enumerate(lstat.stat[name]["ScanList"]):
@@ -240,4 +242,13 @@ class FactoryLinearStage:
             return iterate
 
         bundle.scan_delay = scan_delay
+
+        @ignore_connection_error
+        def set_delay(delay):
+            pos = config["ZeroAbsPos"] + ps_to_mm(delay)
+            response = remote.moveabs(pos)
+            lstat.fmtmsg(response)
+        
+        bundle.set_delay = set_delay
+
         return bundle
