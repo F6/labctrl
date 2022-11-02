@@ -27,7 +27,7 @@ terahertz white light.
 A chopper chops the repetition rate of the pump laser to 1/2 frequency, to recover
 the difference of the pumped and non-pumped signal. For generic Fourier Transform
 detection, since FT(a(t) - b(t)) = FT(a(t)) - FT(b(t)), direct subtraction of detector
-signal can be used before FT.
+signal shot-to-shot can be used before FT.
 
 the Zurich Instruments UHF is used as the boxcar integrator. When UHF
 is not available we use our self made one
