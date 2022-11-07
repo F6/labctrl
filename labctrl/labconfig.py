@@ -46,7 +46,7 @@ class LabConfig(metaclass=Singleton):
             root = root.replace("\\", "/")
             keys = root.split('/')
             keys.pop(0)
-            cfg = self.config
+            cfg = self.config # default case
             for k in keys:
                 cfg = cfg[k]
             return cfg
@@ -92,46 +92,13 @@ class LabConfig(metaclass=Singleton):
         with open(filename, 'w') as f:
             json.dump(self.config, f, indent=4)
 
-    def generate_scanlist(self, config) -> list:
-        """After experiment settings are changed, scanlists need to be automatically
-        generated."""
-        name = config["Name"]
-
-        if name not in lstat.stat:
-            lstat.stat[name] = dict()
-
-        if config["Mode"] == 'ExternalFile':
-            # if the flag is set to Ext, then the ext list is set by external program so just copy it
-            lstat.stat[name]["ScanList"] = config["ExternalList"]
-        elif config["Mode"] == 'Range':
-            # if the flag is set to True, then we need to construct scan lists by given parameter
-            lstat.stat[name]["ScanList"] = np.arange(
-                config["Start"], config["Stop"], config["Step"]).tolist()
-        else:
-            # this sets the len of the list to 1 for our convenience when dealing with for loops,
-            #  while preventing accidentally set wavelengths or delays if we have a bug elsewhere
-            lstat.stat[name]["ScanList"] = [None]
-
-        return lstat.stat[name]["ScanList"]
-
-    def update_labstat(self):
-        """
-        This updates some of the labstats according to a new labconfig.
-        Labstats like current position of linear stages are not changed because
-            we always try to follow physical properties as close as possible.
-        """
-        for stage in self.config["linear_stages"]:
-            self.generate_scanlist(self.config["linear_stages"][stage])
-        
-        for topas in self.config["topas"]:
-            self.generate_scanlist(self.config["topas"][topas])
-        
-        # staging the labstat
-        lstat.dump_stat('last_stat.json')
-
     def refresh_config(self) -> None:
-        """Regenerate all scan lists, and save backup config in last_config.json"""
-        self.update_labstat()
+        """
+        When lab config is updated, do the following:
+            - Save a backup config in last_config.json
+            - (When debugging) Print some of the config
+            - (TODO) Try to do some simple sanity check and gives warnings
+        """
         self.save_config("last_config.json")
         # a convenient alias: print sums when refresh config
         # expmsg(self.print_lists())

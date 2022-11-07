@@ -1,3 +1,9 @@
 {
-    "ScanModes":["Manual", "Range", "ExternalFile"]
+    "WorkingUnits":["fs", "ps", "ns"],
+    "ScanModes":["Manual", "Range", "ExternalFile"],
+    "PositionUnits":["nm", "um", "mm"],
+    "ManualUnits":["fs", "ps", "ns"],
+    "WorkingDirections":["Positive", "Negative"],
+    "DrivingSpeedUnits":["nm/s", "um/s", "mm/s"],
+    "DrivingAccelerationUnits":["nm/s^2", "um/s^2", "mm/s^2"]
 }

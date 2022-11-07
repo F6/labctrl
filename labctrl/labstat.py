@@ -21,7 +21,7 @@ class LabStat(metaclass=Singleton):
     def __init__(self) -> None:
         self.msg_list = list()
         self.pre_exp_msg = PreText(
-            text='''After setting up params and remote servers, click Start to start.''', width=800, height=500, name="messages")
+            text='''After setting up params and remote servers, click Start to start.''', width=800, height=800, name="messages")
 
         self.stat = dict()
 
@@ -40,8 +40,14 @@ class LabStat(metaclass=Singleton):
         """formats messages, then send it to front end via a callback"""
         # print(t)
         for i in t.split('\n'):
-            self.msg_list.append(i)
-        while len(self.msg_list) > 20:
+            if len(i) < 80: # max 80 chars a line
+                self.msg_list.append(i)
+            else:
+                while len(i) >= 80:
+                    self.msg_list.append(i[0:80])
+                    i = i[80:]
+                self.msg_list.append(i)
+        while len(self.msg_list) > 40:
             self.msg_list.pop(0)
         text = '\n'.join(self.msg_list)
         self.doc.add_next_tick_callback(

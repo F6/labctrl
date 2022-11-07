@@ -3,12 +3,13 @@
     "Comment": "The Topas at A304, now for IR pump generation",
     "Host": "192.168.1.9",
     "Port": "5018",
-    "Unit": "cm-1",
-    "Mode": "Range",
-    "Start": 1300,
-    "Step": 5,
-    "Stop": 3500,
-    "ExternalList": [],
-    "ManualTarget": 1618,
-    "ManualStep": 1.0
+    "WorkingUnit": "cm-1",
+    "ScanMode": "Range",
+    "RangeScanStart": 1300.0,
+    "RangeScanStop": 1500.0,
+    "RangeScanStep": 10.0,
+    "LoadedExternalScanList": [1300.0, 1400.0, 1450.0, 1500.0],
+    "ManualUnit": "cm-1",
+    "ManualTarget": 1450.0,
+    "ManualStep": 10.0
 }

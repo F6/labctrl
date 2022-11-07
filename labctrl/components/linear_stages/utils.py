@@ -24,6 +24,14 @@ def eval_float(f):
         print("Non-float number inputed")
         return 0.0
 
+def eval_int(i):
+    try:
+        i = int(i)
+        return i
+    except Exception as e:
+        print("Non-integer number inputed")
+        return 0
+
 
 def ignore_connection_error(func):
     def ret():

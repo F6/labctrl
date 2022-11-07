@@ -2,18 +2,21 @@
 
 """remote.py:
 This module provides methods to communicate with a remote 
-linear stage server.
+Linear Image Sensor.
 """
 
 __author__ = "Zhi Zi"
 __email__ = "x@zzi.io"
-__version__ = "20211110"
+__version__ = "20221103"
 
 
 import requests
 import json
+import base64
+import numpy as np
+from PIL import Image
 
-class RemoteLinearStage():
+class RemoteCamera():
     def __init__(self, config, max_retry=3) -> None:
         self.host = config["Host"]
         self.port = config["Port"]
@@ -29,21 +32,23 @@ class RemoteLinearStage():
                 return json.loads(rc)
             except requests.exceptions.ConnectionError as err:
                 print(err)
-        print("Error: Cannot connect to remote stage, exceeded max retry {mr}".format(
+        print("Error: Cannot connect to remote, exceeded max retry {mr}".format(
             mr=self.max_retry))
         raise requests.exceptions.ConnectionError
 
     def online(self):
-        """Tests if the remote stage server is online.
+        """Tests if the remote server is online.
         Does not test if the remote server actually works, however."""
         return self.apicall('')
 
-    def moveabs(self, pos):
-        return self.apicall('moveabs/{:.6f}'.format(pos))
-
-    def set_speed(self, speed):
-        pass
-        # return self.apicall('setSpeed/{:.6f}'.format(speed))
-
-    def autohome(self):
-        return self.apicall('autohome')
+    def get_image(self):
+        """Triggers the remote camera once, and retrive the new image
+        """
+        r = self.apicall('trigAndGetBuffer')
+        # print(r["message"])
+        buffer = base64.b64decode(r["buffer"])
+        image = Image.frombuffer("RGB", (r["width"], r["height"]), buffer)
+        image = np.array(image)
+        return image
+    
+# camera = RemoteCamera({"Host":"127.0.0.1", "Port":5058})

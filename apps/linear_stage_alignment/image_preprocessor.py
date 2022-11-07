@@ -8,6 +8,8 @@ from skimage import img_as_float
 import scipy.fftpack as fp
 import pywt
 import time
+import lmfit
+
 
 from denoise import denoise_GB, denoise_PCA
 from fit_gaussian_2D import getFWHM_GaussianFitScaledAmp
@@ -69,49 +71,62 @@ def image_preprocess(img):
     img_denoise = denoise_GB(img_fs)
     img_denoise = denoise_PCA(img_denoise)
     img_denoise_fs = img_fullscale(img_denoise)
+    x, y, dx, dy = img_fit_gaussian(img_denoise_fs)
+    img_denoise_fs = cv2.applyColorMap(img_denoise_fs, cv2.COLORMAP_JET)
+    img_fs = cv2.applyColorMap(img_fs, cv2.COLORMAP_JET)
+    img_denoise_fs = draw_guassian_marks(img_denoise_fs, x, y, dx, dy)
+    img_fs = draw_guassian_marks(img_fs, x, y, dx, dy)
+    # img_show = np.concatenate((img_fs, img_denoise_fs), axis=1)
+    # my_show_img(img_show)
+    return img_denoise_fs, img_fs
+
+def img_fit_gaussian(img_denoise_fs):
     # Fit denoised image with 2D Gaussian
     # img_fit = limit_img_size(img_gray, 128, 128)
     print("Fitting single Gaussian beam profile...")
-    x, y, dx, dy, amp, offset = getFWHM_GaussianFitScaledAmp(img_denoise_fs)
-    # x = x*4
-    # y = y*4
-    # dx=dx*4
-    # dy=dy*4
-    print("Fitted single Gaussian beam, x={}, y={}, FWHM(x)={}, FWHM(y)={}, Amplitude={}, Offset={}".format(
-        x, y, dx, dy, amp, offset))
+    xpixels = np.arange(0, img_denoise_fs.shape[1])
+    ypixels = np.arange(0, img_denoise_fs.shape[0])
+    xgrid, ygrid = np.meshgrid(xpixels, ypixels)
+    model = lmfit.models.Gaussian2dModel()
+    params = model.guess(img_denoise_fs.flatten(), xgrid.flatten(), ygrid.flatten())
+    result = model.fit(img_denoise_fs, x=xgrid, y=ygrid, params=params)
+    lmfit.report_fit(result)
+    result = result.params.valuesdict()
+    print(result)
+    # Fallback to scipy optimize if no lmfit package available
+    # x, y, dx, dy, amp, offset = getFWHM_GaussianFitScaledAmp(img_denoise_fs)
+    # print("Fitted single Gaussian beam, x={}, y={}, FWHM(x)={}, FWHM(y)={}, Amplitude={}, Offset={}".format(
+    #     x, y, dx, dy, amp, offset))
+    return result['centerx'], result['centery'], result['fwhmx'], result['fwhmy']
+
+
+
+def draw_guassian_marks(img, x, y, dx, dy):
     center_coordinates = (int(x), int(y))
     axesLength = (int(dx/2), int(dy/2))
     angle = 0
     startAngle = 0
     endAngle = 360
     color = (255, 255, 255)
-    thickness = 2
-    # ======== Redraw image with pseudocolor for better contract ========
-    img_denoise_fs = cv2.applyColorMap(img_denoise_fs, cv2.COLORMAP_JET)
-    img_denoise_fs = cv2.ellipse(img_denoise_fs, center_coordinates, axesLength,
+    thickness = 1
+    # ======== Redraw image with gaussian marks ========
+    img = cv2.ellipse(img, center_coordinates, axesLength,
                                  angle, startAngle, endAngle, color, thickness)
-    img_fs = cv2.applyColorMap(img_fs, cv2.COLORMAP_JET)
-    img_fs = cv2.ellipse(img_fs, center_coordinates, axesLength,
-                         angle, startAngle, endAngle, color, thickness)
     axesLength = (int(dx), int(dy))
-    img_denoise_fs = cv2.ellipse(img_denoise_fs, center_coordinates, axesLength,
+    img = cv2.ellipse(img, center_coordinates, axesLength,
                                  angle, startAngle, endAngle, color, thickness)
-    img_fs = cv2.ellipse(img_fs, center_coordinates, axesLength,
-                         angle, startAngle, endAngle, color, thickness)
     start_point = (int(x), 0)
-    end_point = (int(x), img_denoise_fs.shape[0])
-    img_denoise_fs = cv2.line(img_denoise_fs, start_point, end_point, color, thickness)
-    img_fs = cv2.line(img_fs, start_point, end_point, color, thickness)
+    end_point = (int(x), img.shape[0])
+    img = cv2.line(img, start_point, end_point, color, thickness)
     start_point = (0, int(y))
-    end_point = (img_denoise_fs.shape[1], int(y))
-    img_denoise_fs = cv2.line(img_denoise_fs, start_point, end_point, color, thickness)
-    img_fs = cv2.line(img_fs, start_point, end_point, color, thickness)
-    return img_denoise_fs, img_fs
+    end_point = (img.shape[1], int(y))
+    img = cv2.line(img, start_point, end_point, color, thickness)
+    return img
 
 
-img = cv2.imread("examples/0002.jpg")
-print("Img Size: ", img.shape)
-img_denoise_fs, img_fs = image_preprocess(img)
+# img = cv2.imread("examples/0002.jpg")
+# print("Img Size: ", img.shape)
+# img_denoise_fs, img_fs = image_preprocess(img)
 
-img_show = np.concatenate((img_fs, img_denoise_fs), axis=1)
-my_show_img(img_show)
+# img_show = np.concatenate((img_fs, img_denoise_fs), axis=1)
+# my_show_img(img_show)

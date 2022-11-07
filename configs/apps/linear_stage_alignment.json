@@ -1,0 +1,15 @@
+{
+    "Name": "Linear Stage Alignment",
+    "Comment": "Automatically aligns input beam to a delay line",
+    "StageToAlign": "ETHGASN_leisai",
+    "InputCoupler": "GRBL1",
+    "BeamAnalyzerCamera": "ToupTek_Color",
+    "InputCouplerDimensionality": 2,
+    "StagePositionMinimum": -100,
+    "StagePositionMaximum": 200,
+    "MaxIterations": 10,
+    "TargetBeamCenterDeltaPixel": 10,
+    "InputCouplerBoundMinimum": [-1.0, -1.0],
+    "InputCouplerBoundMaximum": [1.0, 1.0],
+    "InputCouplerInitialGuess": [0.0, 0.0]
+}

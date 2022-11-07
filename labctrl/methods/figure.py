@@ -141,6 +141,74 @@ class BundleFigure2D:
 class FactoryFigure2D:
     def __init__(self) -> None:
         pass
-
+ 
     def generate_fig2d(self, title, xname, yname, dname):
         return BundleFigure2D(title, xname, yname, dname)
+
+
+class BundleImageRGBA:
+    def __init__(self, title: str, xname: str, yname: str, dname: str) -> None:
+        spectrum_tools = "box_zoom,pan,undo,redo,reset,save,crosshair"
+        self.fig = figure(title=title, x_axis_label=xname,
+                          y_axis_label=yname, plot_width=640, plot_height=480, tools=spectrum_tools)
+        self.d = np.zeros((100, 100), dtype=np.uint32)
+        self.ds = ColumnDataSource({
+            'image': [self.d],
+            'x' : [0],
+            'y' : [0],
+            'dw' : [1],
+            'dh' : [1]
+            })
+        self.fig.x_range = Range1d(-2, 1)
+        self.fig.y_range = Range1d(-1.5, 1.5)
+        self.img = self.fig.image_rgba(image='image', source=self.ds, x='x', y='y', dw='dw', dh='dh')
+        ht = HoverTool(
+            tooltips=[
+                ( xname, '$x{0.000000}'  ),
+                ( yname, '$y{0.000000}'  ),
+                ( "data", '@image{0.000000}' )
+            ],
+            # display a tooltip only when the mouse is directly over a glyph
+            mode='mouse'
+        )
+        self.fig.add_tools(ht)
+
+    @gen.coroutine
+    def callback_update(self, new_img, xmin, xmax, ymin, ymax):
+        """
+        Converts opencv format img to bokeh format and updates ColumnDataSource
+            ''After investigation, the return result from OpenCV is a Numpy array of 
+                bytes with shape (M, N, 3), i.e. RGB tuples. What Bokeh expects is a 
+                Numpy array of shape (M, N) 32-bit integers representing RGBA values. 
+                So you need to convert from one format to the other.''
+        """
+        M, N, _ = new_img.shape
+        img = np.empty((M, N), dtype=np.uint32)
+        view = img.view(dtype=np.uint8).reshape((M, N, 4))
+        view[:,:,0] = new_img[:,:,2] # copy red channel
+        view[:,:,1] = new_img[:,:,1] # copy blue channel
+        view[:,:,2] = new_img[:,:,0] # copy green channel
+        view[:,:,3] = 255
+        new_data = dict()
+        new_data['image'] = [img]
+        new_data['x'] = [xmin]
+        new_data['y'] = [ymin]
+        new_data['dw'] = [xmax - xmin]
+        new_data['dh'] = [ymax - ymin]
+        self.ds.data = new_data
+        self.fig.x_range.start = xmin
+        self.fig.x_range.end = xmax
+        self.fig.x_range.reset_start = xmin
+        self.fig.x_range.reset_end = xmax
+        self.fig.y_range.start = ymin
+        self.fig.y_range.end = ymax
+        self.fig.y_range.reset_start = ymin
+        self.fig.y_range.reset_end = ymax
+
+
+class FactoryImageRGBA:
+    def __init__(self) -> None:
+        pass
+ 
+    def generate_bundle(self, title, xname, yname, dname):
+        return BundleImageRGBA(title, xname, yname, dname)

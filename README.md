@@ -33,7 +33,7 @@ Add a json config file of the new device in "configs". The config file must incl
 
 Add remote API caller classes in "components" to provide local API.
 
-Add the corresponding factory class in "components" to provide UI widgets and other functions of the device. Factory for Bokeh UI widgets are prefered because it is web-based.
+Add the corresponding bundle class and factory class in "components" to provide UI widgets and other functions of the device. The bundle class object is responsible to hold all elements (either frontend widgets or backend API calls) required to interact with one specific device. The elements can vary for different application requirements, for example, the same motion controller can be used as a contineous movement controller when used as delay line, or be used as a discrete positional switch when used as optical filter switch, so different working modes can be modeled at this layer. UI widgets can also vary when using different front end frameworks, for example the bundle class may hold references to a bunch of Bokeh UI widgets if the frontend is web-based. Bundle for Bokeh UI widgets are prefered because it is web-based. However, the factory may also generate other-type bundles (for example bundle for Qt widgets) if needed by higher level applications (which is the main reason for choosing factory pattern instead of direct instantiation of bundle - the higher level applications are more consistant because lower levels are more swift).
 
 ## To add a new method
 

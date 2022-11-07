@@ -15,15 +15,18 @@ __version__ = "20221029"
 import toupcam
 from PIL import Image
 
+
 class ToupCamera:
     def __init__(self):
+        # default params
         self.hcam = None
         self.buf = None
         self.total = 0
         self.width = 0
         self.height = 0
-        self.mode = "Video"
-        self.exposure = 100000
+        self.mode = "Trig"
+        self.exposure = 100000 # 100ms default
+        self.new_image_in_buffer = False
 
     # the vast majority of callbacks come from toupcam.dll/so/dylib internal threads
     @staticmethod
@@ -36,25 +39,29 @@ class ToupCamera:
             try:
                 self.hcam.PullImageV2(self.buf, 24, None)
                 self.total += 1
-                print('pull image ok, total = {}'.format(self.total))
+                print(
+                    'Received TOUPCAM_EVENT_IMAGE, pull image ok, total = {}'.format(self.total))
+                self.new_image_in_buffer = True
             except toupcam.HRESULTException:
-                print('pull image failed')
+                print('Received TOUPCAM_EVENT_IMAGE, pull image failed')
         else:
             print('event callback: {}'.format(nEvent))
 
     def configureCamera(self):
-        # set image size to max (2592 * 1944)
+        # set image size to maximum
         toupcam.Toupcam.put_eSize(self.hcam, 0)
         # disable auto expo
         toupcam.Toupcam.put_AutoExpoEnable(self.hcam, 0)
         # set camera mode
-        if self.mode == "Trigger":
+        if self.mode == "Trig":
             self.setTrigMode()
-        else:
+        elif self.mode == "Video":
             self.setVideoMode()
-        # set camera temp to 0
+        else:
+            self.setTrigMode()
+        # set camera temperature to 0
         # toupcam.Toupcam.put_Temperature(self.hcam, 0)
-
+        # set camera exposure time to default value
         self.setExposureTime(self.exposure)
         # use raw data mode
         # toupcam.Toupcam.put_Option(toupcam.TOUPCAM_OPTION_RAW, 1)
@@ -62,17 +69,20 @@ class ToupCamera:
         # toupcam.Toupcam.put_Option(toupcam.TOUPCAM_OPTION_BITDEPTH, 1)
 
     def setExposureTime(self, t: int):
-        toupcam.Toupcam.put_ExpoTime(self.hcam, t)
+        self.exposure = t
+        toupcam.Toupcam.put_ExpoTime(self.hcam, self.exposure)
 
     def setTrigMode(self):
         # set camera mode to Software Trigger
         toupcam.Toupcam.put_Option(
             self.hcam, toupcam.TOUPCAM_OPTION_TRIGGER, 1)
+        self.mode = "Trig"
 
     def setVideoMode(self):
         # set camera mode to Video Mode, no Trigger
         toupcam.Toupcam.put_Option(
             self.hcam, toupcam.TOUPCAM_OPTION_TRIGGER, 0)
+        self.mode = "Video"
 
     def prepareBuffer(self):
         self.width, self.height = self.hcam.get_Size()
@@ -82,6 +92,10 @@ class ToupCamera:
         self.buf = bytes(bufsize)
 
     def run(self):
+        """Enumerates all touptek cameras on device, 
+        automatically opens the first camera and put the camera to 
+        working mode.
+        """
         a = toupcam.Toupcam.EnumV2()
         if len(a) > 0:
             caminfo = '{}: flag = {:#x}, preview = {}, still = {}'.format(
@@ -121,11 +135,18 @@ class ToupCamera:
     def trig(self):
         toupcam.Toupcam.Trigger(self.hcam, 1)
 
-    def getimg(self):
+    def getImage(self):
         img = Image.frombuffer('RGB', (self.width, self.height), self.buf)
+        # because image is retrived and used, flag current buffer as old
+        self.new_image_in_buffer = False
         return img
+    
+    def getBuffer(self):
+        # because image is retrived and used, flag current buffer as old
+        self.new_image_in_buffer = False
+        return self.buf
 
 
 camera = ToupCamera()
 camera.run()
-camera.stop()
+# camera.stop()

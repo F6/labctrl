@@ -1,4 +1,4 @@
 {
     "ScanModes":["Manual", "Range", "ExternalFile"],
-    "Units":["nm", "cm-1"]
+    "WorkingUnits":["nm", "cm-1"]
 }

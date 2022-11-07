@@ -1,13 +1,47 @@
 {
     "basic": {
         "ExperimentType": "THz",
-        "FileStem": "testDNA",
-        "ScanRounds": 999,
+        "FileStem": "NewSample",
+        "ScanRounds": 3,
         "Mode": "SimpleRepetition",
         "ScanModes": [
             "SimpleRepetition",
             "AdaptiveSearch"
         ]
+    },
+    "apps": {
+        "linear_stage_alignment": {
+            "Name": "Linear Stage Alignment",
+            "Comment": "Automatically aligns input beam to a delay line",
+            "StageToAlign": "ETHGASN_leisai",
+            "InputCoupler": "GRBL1",
+            "BeamAnalyzerCamera": "ToupTek_Color",
+            "InputCouplerDimensionality": 2,
+            "StagePositionMinimum": -100,
+            "StagePositionMaximum": 200,
+            "MaxIterations": 10,
+            "TargetBeamCenterDeltaPixel": 10,
+            "InputCouplerBoundMinimum": [
+                -1.0,
+                -1.0
+            ],
+            "InputCouplerBoundMaximum": [
+                1.0,
+                1.0
+            ],
+            "InputCouplerInitialGuess": [
+                0.0,
+                0.0
+            ]
+        }
+    },
+    "cameras": {
+        "ToupTek_Color": {
+            "Name": "ToupTek_Color",
+            "Comment": "ToupTek Camera",
+            "Host": "127.0.0.1",
+            "Port": 5058
+        }
     },
     "linear_image_sensors": {
         "FX2000": {
@@ -25,19 +59,64 @@
             "Comment": "The long delay line now for 120fs at A304",
             "Host": "127.0.0.1",
             "Port": 5004,
-            "Unit": "ps",
-            "Mode": "Range",
-            "Start": -5.0,
-            "Step": 0.2,
-            "Stop": 5.0,
-            "ExternalList": [],
-            "ZeroAbsPos": 228.883,
-            "ManualPos": 228.963,
+            "WorkingUnit": "ps",
+            "ScanMode": "Range",
+            "RangeScanStart": -5.0,
+            "RangeScanStop": 5.0,
+            "RangeScanStep": 0.2,
+            "LoadedExternalScanList": [
+                0.0,
+                1.0,
+                2.0,
+                4.0,
+                8.0
+            ],
+            "PositionUnit": "mm",
+            "ZeroDelayAbsolutePosition": 4.2,
+            "ManualUnit": "ps",
+            "ManualPosition": 4.2,
             "ManualStep": 1.0,
+            "Multiples": 2,
+            "SoftLimitMin": -999.0,
+            "SoftLimitMax": 999.0,
+            "WorkingDirection": "Positive",
+            "DrivingSpeedUnit": "mm/s",
+            "DrivingSpeed": 30,
+            "DrivingAccelerationUnit": "mm/s^2",
+            "DrivingAcceleration": 30,
+            "WorkingUnits": [
+                "fs",
+                "ps",
+                "ns"
+            ],
             "ScanModes": [
                 "Manual",
                 "Range",
                 "ExternalFile"
+            ],
+            "PositionUnits": [
+                "nm",
+                "um",
+                "mm"
+            ],
+            "ManualUnits": [
+                "fs",
+                "ps",
+                "ns"
+            ],
+            "WorkingDirections": [
+                "Positive",
+                "Negative"
+            ],
+            "DrivingSpeedUnits": [
+                "nm/s",
+                "um/s",
+                "mm/s"
+            ],
+            "DrivingAccelerationUnits": [
+                "nm/s^2",
+                "um/s^2",
+                "mm/s^2"
             ]
         },
         "AeroTech_THz": {
@@ -45,19 +124,64 @@
             "Comment": "AeroTech Ensemble",
             "Host": "127.0.0.1",
             "Port": 5003,
-            "Unit": "ps",
-            "Mode": "Range",
-            "Start": -5.0,
-            "Step": 0.2,
-            "Stop": 5.0,
-            "ExternalList": [],
-            "ZeroAbsPos": 228.883,
-            "ManualPos": 228.963,
+            "WorkingUnit": "ps",
+            "ScanMode": "Range",
+            "RangeScanStart": -5.0,
+            "RangeScanStop": 5.0,
+            "RangeScanStep": 0.2,
+            "LoadedExternalScanList": [
+                0.0,
+                1.0,
+                2.0,
+                4.0,
+                8.0
+            ],
+            "PositionUnit": "mm",
+            "ZeroDelayAbsolutePosition": 4.2,
+            "ManualUnit": "ps",
+            "ManualPosition": 4.2,
             "ManualStep": 1.0,
+            "Multiples": 2,
+            "SoftLimitMin": -999.0,
+            "SoftLimitMax": 999.0,
+            "WorkingDirection": "Positive",
+            "DrivingSpeedUnit": "mm/s",
+            "DrivingSpeed": 30,
+            "DrivingAccelerationUnit": "mm/s^2",
+            "DrivingAcceleration": 30,
+            "WorkingUnits": [
+                "fs",
+                "ps",
+                "ns"
+            ],
             "ScanModes": [
                 "Manual",
                 "Range",
                 "ExternalFile"
+            ],
+            "PositionUnits": [
+                "nm",
+                "um",
+                "mm"
+            ],
+            "ManualUnits": [
+                "fs",
+                "ps",
+                "ns"
+            ],
+            "WorkingDirections": [
+                "Positive",
+                "Negative"
+            ],
+            "DrivingSpeedUnits": [
+                "nm/s",
+                "um/s",
+                "mm/s"
+            ],
+            "DrivingAccelerationUnits": [
+                "nm/s^2",
+                "um/s^2",
+                "mm/s^2"
             ]
         },
         "CDHD2": {
@@ -65,19 +189,64 @@
             "Comment": "The long delay line now for psTopas at A304",
             "Host": "127.0.0.1",
             "Port": 5002,
-            "Unit": "ps",
-            "Mode": "Range",
-            "Start": -5.0,
-            "Step": 0.2,
-            "Stop": 5.0,
-            "ExternalList": [],
-            "ZeroAbsPos": 228.883,
-            "ManualPos": 228.963,
+            "WorkingUnit": "ps",
+            "ScanMode": "Range",
+            "RangeScanStart": -5.0,
+            "RangeScanStop": 5.0,
+            "RangeScanStep": 0.2,
+            "LoadedExternalScanList": [
+                0.0,
+                1.0,
+                2.0,
+                4.0,
+                8.0
+            ],
+            "PositionUnit": "mm",
+            "ZeroDelayAbsolutePosition": 4.2,
+            "ManualUnit": "ps",
+            "ManualPosition": 4.2,
             "ManualStep": 1.0,
+            "Multiples": 2,
+            "SoftLimitMin": -999.0,
+            "SoftLimitMax": 999.0,
+            "WorkingDirection": "Positive",
+            "DrivingSpeedUnit": "mm/s",
+            "DrivingSpeed": 30,
+            "DrivingAccelerationUnit": "mm/s^2",
+            "DrivingAcceleration": 30,
+            "WorkingUnits": [
+                "fs",
+                "ps",
+                "ns"
+            ],
             "ScanModes": [
                 "Manual",
                 "Range",
                 "ExternalFile"
+            ],
+            "PositionUnits": [
+                "nm",
+                "um",
+                "mm"
+            ],
+            "ManualUnits": [
+                "fs",
+                "ps",
+                "ns"
+            ],
+            "WorkingDirections": [
+                "Positive",
+                "Negative"
+            ],
+            "DrivingSpeedUnits": [
+                "nm/s",
+                "um/s",
+                "mm/s"
+            ],
+            "DrivingAccelerationUnits": [
+                "nm/s^2",
+                "um/s^2",
+                "mm/s^2"
             ]
         },
         "CRD507": {
@@ -85,19 +254,64 @@
             "Comment": "Sigma Koki Rotator",
             "Host": "192.168.1.9",
             "Port": 5005,
-            "Unit": "ps",
-            "Mode": "Range",
-            "Start": -5.0,
-            "Step": 0.2,
-            "Stop": 5.0,
-            "ExternalList": [],
-            "ZeroAbsPos": 228.883,
-            "ManualPos": 228.963,
+            "WorkingUnit": "ps",
+            "ScanMode": "Range",
+            "RangeScanStart": -5.0,
+            "RangeScanStop": 5.0,
+            "RangeScanStep": 0.2,
+            "LoadedExternalScanList": [
+                0.0,
+                1.0,
+                2.0,
+                4.0,
+                8.0
+            ],
+            "PositionUnit": "mm",
+            "ZeroDelayAbsolutePosition": 4.2,
+            "ManualUnit": "ps",
+            "ManualPosition": 4.2,
             "ManualStep": 1.0,
+            "Multiples": 2,
+            "SoftLimitMin": -999.0,
+            "SoftLimitMax": 999.0,
+            "WorkingDirection": "Positive",
+            "DrivingSpeedUnit": "mm/s",
+            "DrivingSpeed": 30,
+            "DrivingAccelerationUnit": "mm/s^2",
+            "DrivingAcceleration": 30,
+            "WorkingUnits": [
+                "fs",
+                "ps",
+                "ns"
+            ],
             "ScanModes": [
                 "Manual",
                 "Range",
                 "ExternalFile"
+            ],
+            "PositionUnits": [
+                "nm",
+                "um",
+                "mm"
+            ],
+            "ManualUnits": [
+                "fs",
+                "ps",
+                "ns"
+            ],
+            "WorkingDirections": [
+                "Positive",
+                "Negative"
+            ],
+            "DrivingSpeedUnits": [
+                "nm/s",
+                "um/s",
+                "mm/s"
+            ],
+            "DrivingAccelerationUnits": [
+                "nm/s^2",
+                "um/s^2",
+                "mm/s^2"
             ]
         },
         "ETHGASN": {
@@ -105,21 +319,64 @@
             "Comment": "Taobao Bopai Controller, the black one over ethernet",
             "Host": "127.0.0.1",
             "Port": 5048,
-            "Unit": "ps",
-            "Mode": "Range",
-            "Start": -5.0,
-            "Step": 0.2,
-            "Stop": 5.0,
-            "ExternalList": [
-                1
+            "WorkingUnit": "ps",
+            "ScanMode": "Range",
+            "RangeScanStart": -5.0,
+            "RangeScanStop": 5.0,
+            "RangeScanStep": 0.2,
+            "LoadedExternalScanList": [
+                0.0,
+                1.0,
+                2.0,
+                4.0,
+                8.0
             ],
-            "ZeroAbsPos": 228.883,
-            "ManualPos": 228.963,
+            "PositionUnit": "mm",
+            "ZeroDelayAbsolutePosition": 4.2,
+            "ManualUnit": "ps",
+            "ManualPosition": 4.2,
             "ManualStep": 1.0,
+            "Multiples": 2,
+            "SoftLimitMin": -999.0,
+            "SoftLimitMax": 999.0,
+            "WorkingDirection": "Positive",
+            "DrivingSpeedUnit": "mm/s",
+            "DrivingSpeed": 30,
+            "DrivingAccelerationUnit": "mm/s^2",
+            "DrivingAcceleration": 30,
+            "WorkingUnits": [
+                "fs",
+                "ps",
+                "ns"
+            ],
             "ScanModes": [
                 "Manual",
                 "Range",
                 "ExternalFile"
+            ],
+            "PositionUnits": [
+                "nm",
+                "um",
+                "mm"
+            ],
+            "ManualUnits": [
+                "fs",
+                "ps",
+                "ns"
+            ],
+            "WorkingDirections": [
+                "Positive",
+                "Negative"
+            ],
+            "DrivingSpeedUnits": [
+                "nm/s",
+                "um/s",
+                "mm/s"
+            ],
+            "DrivingAccelerationUnits": [
+                "nm/s^2",
+                "um/s^2",
+                "mm/s^2"
             ]
         },
         "ETHGASN_leisai": {
@@ -127,269 +384,128 @@
             "Comment": "Taobao Bopai Controller, the black one over ethernet, leisai driver on controller axis 4",
             "Host": "127.0.0.1",
             "Port": 5057,
-            "Unit": "ps",
-            "Mode": "ExternalFile",
-            "Start": 0.0,
-            "Step": 0.1,
-            "Stop": 2.0,
-            "ExternalList": [
-                49.77,
-                46.42,
-                43.29,
-                40.37,
-                37.65,
-                35.11,
-                32.75,
-                30.54,
-                28.48,
-                26.56,
-                24.77,
-                23.1,
-                21.54,
-                20.09,
-                18.74,
-                17.48,
-                16.3,
-                15.2,
-                14.17,
-                13.22,
-                12.33,
-                11.5,
-                10.72,
-                10.0,
-                9.33,
-                8.7,
-                8.11,
-                7.56,
-                7.05,
-                6.58,
-                6.14,
-                5.72,
-                5.34,
-                4.98,
-                4.64,
-                4.33,
-                4.04,
-                3.76,
-                3.51,
-                3.27,
-                3.05,
-                2.85,
-                2.66,
-                2.48,
-                2.31,
-                2.15,
-                2.01,
-                1.87,
-                1.75,
-                1.63,
-                1.52,
-                1.42,
-                1.32,
-                1.23,
-                1.15,
-                1.07,
-                1.0,
-                0.93,
-                0.87,
-                0.81,
-                0.76,
-                0.71,
-                0.66,
-                0.61,
-                0.57,
-                0.53,
-                0.5,
-                0.46,
-                0.43,
-                0.4,
-                0.38,
-                0.35,
-                0.33,
-                0.31,
-                0.28,
-                0.27,
-                0.25,
-                0.23,
-                0.22,
-                0.2,
-                0.19,
-                0.17,
-                0.16,
-                0.15,
-                0.14,
-                0.13,
-                0.12,
-                0.11,
-                0.11,
-                0.1,
-                0.09,
-                0.09,
-                0.08,
-                0.08,
-                0.07,
-                0.07,
-                0.06,
+            "WorkingUnit": "ps",
+            "ScanMode": "Range",
+            "RangeScanStart": -5.0,
+            "RangeScanStop": 5.0,
+            "RangeScanStep": 0.2,
+            "LoadedExternalScanList": [
+                -0.5,
                 0.0,
-                -0.061359073,
-                -0.065793322,
-                -0.070548023,
-                -0.075646333,
-                -0.081113083,
-                -0.0869749,
-                -0.093260335,
-                -0.1,
-                -0.107226722,
-                -0.1149757,
-                -0.123284674,
-                -0.132194115,
-                -0.141747416,
-                -0.151991108,
-                -0.162975083,
-                -0.17475284,
-                -0.187381742,
-                -0.2009233,
-                -0.215443469,
-                -0.23101297,
-                -0.247707636,
-                -0.265608778,
-                -0.284803587,
-                -0.305385551,
-                -0.327454916,
-                -0.351119173,
-                -0.376493581,
-                -0.403701726,
-                -0.432876128,
-                -0.464158883,
-                -0.497702356,
-                -0.533669923,
-                -0.572236766,
-                -0.613590727,
-                -0.657933225,
-                -0.705480231,
-                -0.756463328,
-                -0.811130831,
-                -0.869749003,
-                -0.932603347,
-                -1.0,
-                -1.072267222,
-                -1.149756995,
-                -1.232846739,
-                -1.321941148,
-                -1.417474163,
-                -1.519911083,
-                -1.629750835,
-                -1.7475284,
-                -1.873817423,
-                -2.009233003,
-                -2.15443469,
-                -2.3101297,
-                -2.477076356,
-                -2.656087783,
-                -2.848035868,
-                -3.053855509,
-                -3.274549163,
-                -3.511191734,
-                -3.764935807,
-                -4.037017259,
-                -4.328761281,
-                -4.641588834,
-                -4.977023564,
-                -5.336699231,
-                -5.722367659,
-                -6.135907273,
-                -6.579332247,
-                -7.054802311,
-                -7.564633276,
-                -8.111308308,
-                -8.697490026,
-                -9.326033469,
-                -10.0,
-                -10.72267222,
-                -11.49756995,
-                -12.32846739,
-                -13.21941148,
-                -14.17474163,
-                -15.19911083,
-                -16.29750835,
-                -17.475284,
-                -18.73817423,
-                -20.09233003,
-                -21.5443469,
-                -23.101297,
-                -24.77076356,
-                -26.56087783,
-                -28.48035868,
-                -30.53855509,
-                -32.74549163,
-                -35.11191734,
-                -37.64935807,
-                -40.37017259,
-                -43.28761281,
-                -46.41588834,
-                -49.77023564,
-                -53.36699231,
-                -57.22367659,
-                -61.35907273,
-                -65.79332247,
-                -70.54802311,
-                -75.64633276,
-                -81.11308308,
-                -86.97490026,
-                -93.26033469,
-                -100.0,
-                -107.2267222,
-                -114.9756995,
-                -123.2846739,
-                -132.1941148,
-                -141.7474163,
-                -151.9911083,
-                -162.9750835,
-                -174.75284,
-                -187.3817423,
-                -200.9233003,
-                -215.443469,
-                -231.01297,
-                -247.7076356,
-                -265.6087783,
-                -284.8035868,
-                -305.3855509,
-                -327.4549163,
-                -351.1191734,
-                -376.4935807,
-                -403.7017259,
-                -432.8761281,
-                -464.1588834,
-                -497.7023564,
-                -533.6699231
+                1.0
             ],
-            "ZeroAbsPos": 1.823802,
-            "ManualPos": 1.823802,
-            "ManualStep": 10.0,
+            "PositionUnit": "mm",
+            "ZeroDelayAbsolutePosition": 100.0,
+            "ManualUnit": "ps",
+            "ManualPosition": 100.1498512735,
+            "ManualStep": 1.0,
+            "Multiples": 2.0,
+            "SoftLimitMin": -100.0,
+            "SoftLimitMax": 200.0,
+            "WorkingDirection": "Positive",
+            "DrivingSpeedUnit": "mm/s",
+            "DrivingSpeed": 30,
+            "DrivingAccelerationUnit": "mm/s^2",
+            "DrivingAcceleration": 30,
+            "WorkingUnits": [
+                "fs",
+                "ps",
+                "ns"
+            ],
             "ScanModes": [
                 "Manual",
                 "Range",
                 "ExternalFile"
-            ]
+            ],
+            "PositionUnits": [
+                "nm",
+                "um",
+                "mm"
+            ],
+            "ManualUnits": [
+                "fs",
+                "ps",
+                "ns"
+            ],
+            "WorkingDirections": [
+                "Positive",
+                "Negative"
+            ],
+            "DrivingSpeedUnits": [
+                "nm/s",
+                "um/s",
+                "mm/s"
+            ],
+            "DrivingAccelerationUnits": [
+                "nm/s^2",
+                "um/s^2",
+                "mm/s^2"
+            ],
+            "Mode": "ExternalFile"
         },
         "ETHGASN_yaskawa": {
             "Name": "ETHGASN_yaskawa",
             "Comment": "Taobao Bopai Controller, the black one over ethernet, yaskawa linear stage on controller axis 1",
             "Host": "127.0.0.1",
             "Port": 5056,
-            "Unit": "ps",
-            "Mode": "Range",
-            "Start": -5.0,
-            "Step": 0.2,
-            "Stop": 5.0,
-            "ExternalList": [],
-            "ZeroAbsPos": 228.883,
-            "ManualPos": 228.963,
+            "WorkingUnit": "ps",
+            "ScanMode": "Range",
+            "RangeScanStart": -5.0,
+            "RangeScanStop": 5.0,
+            "RangeScanStep": 0.2,
+            "LoadedExternalScanList": [
+                0.0,
+                1.0,
+                2.0,
+                4.0,
+                8.0
+            ],
+            "PositionUnit": "mm",
+            "ZeroDelayAbsolutePosition": 4.2,
+            "ManualUnit": "ps",
+            "ManualPosition": 4.2,
             "ManualStep": 1.0,
+            "Multiples": 2,
+            "SoftLimitMin": -999.0,
+            "SoftLimitMax": 999.0,
+            "WorkingDirection": "Positive",
+            "DrivingSpeedUnit": "mm/s",
+            "DrivingSpeed": 30,
+            "DrivingAccelerationUnit": "mm/s^2",
+            "DrivingAcceleration": 30,
+            "WorkingUnits": [
+                "fs",
+                "ps",
+                "ns"
+            ],
             "ScanModes": [
                 "Manual",
                 "Range",
                 "ExternalFile"
+            ],
+            "PositionUnits": [
+                "nm",
+                "um",
+                "mm"
+            ],
+            "ManualUnits": [
+                "fs",
+                "ps",
+                "ns"
+            ],
+            "WorkingDirections": [
+                "Positive",
+                "Negative"
+            ],
+            "DrivingSpeedUnits": [
+                "nm/s",
+                "um/s",
+                "mm/s"
+            ],
+            "DrivingAccelerationUnits": [
+                "nm/s^2",
+                "um/s^2",
+                "mm/s^2"
             ]
         },
         "PMC48MT6": {
@@ -397,19 +513,64 @@
             "Comment": "The long delay line with 2 retroreflectors installed at A304",
             "Host": "192.168.1.9",
             "Port": 5000,
-            "Unit": "ps",
-            "Mode": "Range",
-            "Start": -5.0,
-            "Step": 0.2,
-            "Stop": 5.0,
-            "ExternalList": [],
-            "ZeroAbsPos": 228.883,
-            "ManualPos": 228.963,
+            "WorkingUnit": "ps",
+            "ScanMode": "Range",
+            "RangeScanStart": -5.0,
+            "RangeScanStop": 5.0,
+            "RangeScanStep": 0.2,
+            "LoadedExternalScanList": [
+                0.0,
+                1.0,
+                2.0,
+                4.0,
+                8.0
+            ],
+            "PositionUnit": "mm",
+            "ZeroDelayAbsolutePosition": 4.2,
+            "ManualUnit": "ps",
+            "ManualPosition": 4.2,
             "ManualStep": 1.0,
+            "Multiples": 2,
+            "SoftLimitMin": -999.0,
+            "SoftLimitMax": 999.0,
+            "WorkingDirection": "Positive",
+            "DrivingSpeedUnit": "mm/s",
+            "DrivingSpeed": 30,
+            "DrivingAccelerationUnit": "mm/s^2",
+            "DrivingAcceleration": 30,
+            "WorkingUnits": [
+                "fs",
+                "ps",
+                "ns"
+            ],
             "ScanModes": [
                 "Manual",
                 "Range",
                 "ExternalFile"
+            ],
+            "PositionUnits": [
+                "nm",
+                "um",
+                "mm"
+            ],
+            "ManualUnits": [
+                "fs",
+                "ps",
+                "ns"
+            ],
+            "WorkingDirections": [
+                "Positive",
+                "Negative"
+            ],
+            "DrivingSpeedUnits": [
+                "nm/s",
+                "um/s",
+                "mm/s"
+            ],
+            "DrivingAccelerationUnits": [
+                "nm/s^2",
+                "um/s^2",
+                "mm/s^2"
             ]
         },
         "USB1020": {
@@ -417,19 +578,64 @@
             "Comment": "The short one",
             "Host": "127.0.0.1",
             "Port": 5001,
-            "Unit": "ps",
-            "Mode": "Range",
-            "Start": -100.0,
-            "Step": 0.05,
-            "Stop": 100.0,
-            "ExternalList": [],
-            "ZeroAbsPos": 151.0,
-            "ManualPos": 25.474716495000003,
-            "ManualStep": 10.0,
+            "WorkingUnit": "ps",
+            "ScanMode": "Range",
+            "RangeScanStart": -5.0,
+            "RangeScanStop": 5.0,
+            "RangeScanStep": 0.2,
+            "LoadedExternalScanList": [
+                0.0,
+                1.0,
+                2.0,
+                4.0,
+                8.0
+            ],
+            "PositionUnit": "mm",
+            "ZeroDelayAbsolutePosition": 4.2,
+            "ManualUnit": "ps",
+            "ManualPosition": 4.2,
+            "ManualStep": 1.0,
+            "Multiples": 2,
+            "SoftLimitMin": -999.0,
+            "SoftLimitMax": 999.0,
+            "WorkingDirection": "Positive",
+            "DrivingSpeedUnit": "mm/s",
+            "DrivingSpeed": 30,
+            "DrivingAccelerationUnit": "mm/s^2",
+            "DrivingAcceleration": 30,
+            "WorkingUnits": [
+                "fs",
+                "ps",
+                "ns"
+            ],
             "ScanModes": [
                 "Manual",
                 "Range",
                 "ExternalFile"
+            ],
+            "PositionUnits": [
+                "nm",
+                "um",
+                "mm"
+            ],
+            "ManualUnits": [
+                "fs",
+                "ps",
+                "ns"
+            ],
+            "WorkingDirections": [
+                "Positive",
+                "Negative"
+            ],
+            "DrivingSpeedUnits": [
+                "nm/s",
+                "um/s",
+                "mm/s"
+            ],
+            "DrivingAccelerationUnits": [
+                "nm/s^2",
+                "um/s^2",
+                "mm/s^2"
             ]
         }
     },
@@ -499,6 +705,14 @@
             ]
         }
     },
+    "multiaxis_stages": {
+        "GRBL1": {
+            "Name": "GRBL1",
+            "Comment": "GRBL G-Code compatible motion controller",
+            "Host": "127.0.0.1",
+            "Port": 5049
+        }
+    },
     "shutter_controllers": {
         "B20_PP_Pump": {
             "Name": "B20_PP_Pump",
@@ -555,20 +769,26 @@
             "Comment": "The Topas at A304, now for Visible pump generation",
             "Host": "192.168.1.9",
             "Port": "5019",
-            "Unit": "nm",
-            "Mode": "Range",
-            "Start": 450,
-            "Step": 5,
-            "Stop": 470,
-            "ExternalList": [],
-            "ManualTarget": 450,
+            "WorkingUnit": "nm",
+            "ScanMode": "Range",
+            "RangeScanStart": 300.0,
+            "RangeScanStop": 500.0,
+            "RangeScanStep": 10.0,
+            "LoadedExternalScanList": [
+                300.0,
+                400.0,
+                450.0,
+                500.0
+            ],
+            "ManualUnit": "nm",
+            "ManualTarget": 450.0,
             "ManualStep": 1.0,
             "ScanModes": [
                 "Manual",
                 "Range",
                 "ExternalFile"
             ],
-            "Units": [
+            "WorkingUnits": [
                 "nm",
                 "cm-1"
             ]
@@ -578,20 +798,26 @@
             "Comment": "The Topas at A304, now for IR pump generation",
             "Host": "192.168.1.9",
             "Port": "5018",
-            "Unit": "cm-1",
-            "Mode": "Range",
-            "Start": 1300,
-            "Step": 5,
-            "Stop": 3500,
-            "ExternalList": [],
-            "ManualTarget": 1618,
-            "ManualStep": 1.0,
+            "WorkingUnit": "cm-1",
+            "ScanMode": "Range",
+            "RangeScanStart": 1300.0,
+            "RangeScanStop": 1500.0,
+            "RangeScanStep": 10.0,
+            "LoadedExternalScanList": [
+                1300.0,
+                1400.0,
+                1450.0,
+                1500.0
+            ],
+            "ManualUnit": "cm-1",
+            "ManualTarget": 1450.0,
+            "ManualStep": 10.0,
             "ScanModes": [
                 "Manual",
                 "Range",
                 "ExternalFile"
             ],
-            "Units": [
+            "WorkingUnits": [
                 "nm",
                 "cm-1"
             ]
