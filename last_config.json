@@ -17,8 +17,9 @@
             "InputCoupler": "GRBL1",
             "BeamAnalyzerCamera": "ToupTek_Color",
             "InputCouplerDimensionality": 2,
-            "StagePositionMinimum": -100,
-            "StagePositionMaximum": 200,
+            "AlignLimitationsUnit": "ps",
+            "AlignMin": -100,
+            "AlignMax": 200,
             "MaxIterations": 10,
             "TargetBeamCenterDeltaPixel": 10,
             "InputCouplerBoundMinimum": [
@@ -32,7 +33,9 @@
             "InputCouplerInitialGuess": [
                 0.0,
                 0.0
-            ]
+            ],
+            "StagePositionMinimum": -100,
+            "StagePositionMaximum": 200
         }
     },
     "cameras": {
@@ -397,7 +400,7 @@
             "PositionUnit": "mm",
             "ZeroDelayAbsolutePosition": 100.0,
             "ManualUnit": "ps",
-            "ManualPosition": 100.1498512735,
+            "ManualPosition": 85.01487265,
             "ManualStep": 1.0,
             "Multiples": 2.0,
             "SoftLimitMin": -100.0,

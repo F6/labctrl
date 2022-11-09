@@ -61,6 +61,28 @@ def my_show_img(img, code=cv2.COLOR_BGR2RGB, convert_to_uint=False):
 
 
 def image_preprocess(img):
+    """Preprocess the beam profile from a photo, fit it with gaussian model"""
+    # First step, convert image to grayscale, limit it's size, then rescale to full scale for better numeric results
+    img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    print("Limiting image size for processing")
+    img_resized = limit_img_size(img_gray, 1024, 1024)
+    img_fs = img_fullscale(img_resized)
+    # Reducing noise with Gaussian Blur and PCA
+    img_denoise = denoise_GB(img_fs)
+    img_denoise = denoise_PCA(img_denoise)
+    img_denoise_fs = img_fullscale(img_denoise)
+    result = img_fit_gaussian(img_denoise_fs)
+    img_denoise_fs = cv2.applyColorMap(img_denoise_fs, cv2.COLORMAP_JET)
+    img_fs = cv2.applyColorMap(img_fs, cv2.COLORMAP_JET)
+    x, y, dx, dy = result['centerx'], result['centery'], result['fwhmx'], result['fwhmy']
+    img_denoise_fs = draw_guassian_marks(img_denoise_fs, x, y, dx, dy)
+    img_fs = draw_guassian_marks(img_fs, x, y, dx, dy)
+    # img_show = np.concatenate((img_fs, img_denoise_fs), axis=1)
+    # my_show_img(img_show)
+    return img_denoise_fs, img_fs, result
+
+
+def image_preprocess_no_fit(img):
     """Preprocess the beam profile from a photo"""
     # First step, convert image to grayscale, limit it's size, then rescale to full scale for better numeric results
     img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -71,14 +93,12 @@ def image_preprocess(img):
     img_denoise = denoise_GB(img_fs)
     img_denoise = denoise_PCA(img_denoise)
     img_denoise_fs = img_fullscale(img_denoise)
-    x, y, dx, dy = img_fit_gaussian(img_denoise_fs)
     img_denoise_fs = cv2.applyColorMap(img_denoise_fs, cv2.COLORMAP_JET)
     img_fs = cv2.applyColorMap(img_fs, cv2.COLORMAP_JET)
-    img_denoise_fs = draw_guassian_marks(img_denoise_fs, x, y, dx, dy)
-    img_fs = draw_guassian_marks(img_fs, x, y, dx, dy)
     # img_show = np.concatenate((img_fs, img_denoise_fs), axis=1)
     # my_show_img(img_show)
     return img_denoise_fs, img_fs
+
 
 def img_fit_gaussian(img_denoise_fs):
     # Fit denoised image with 2D Gaussian
@@ -92,12 +112,11 @@ def img_fit_gaussian(img_denoise_fs):
     result = model.fit(img_denoise_fs, x=xgrid, y=ygrid, params=params)
     lmfit.report_fit(result)
     result = result.params.valuesdict()
-    print(result)
     # Fallback to scipy optimize if no lmfit package available
     # x, y, dx, dy, amp, offset = getFWHM_GaussianFitScaledAmp(img_denoise_fs)
     # print("Fitted single Gaussian beam, x={}, y={}, FWHM(x)={}, FWHM(y)={}, Amplitude={}, Offset={}".format(
     #     x, y, dx, dy, amp, offset))
-    return result['centerx'], result['centery'], result['fwhmx'], result['fwhmy']
+    return result
 
 
 

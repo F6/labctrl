@@ -22,7 +22,7 @@ from bokeh.models.widgets import RadioButtonGroup, Button, TextInput, FileInput,
 from bokeh.layouts import column, row
 
 from .remote import RemoteLinearStage
-from .utils import ps_to_mm, eval_float, ignore_connection_error, eval_int
+from .utils import eval_float, ignore_connection_error, eval_int, dt_to_mm
 
 
 class BundleBokehLinearStage:
@@ -118,8 +118,9 @@ class FactoryLinearStage:
             # this sets the len of the list to 1 for our convenience when dealing with for loops,
             #  while preventing accidentally set wavelengths or delays if we have a bug elsewhere
             self.lstat.stat[name]["ScanList"] = [None]
-        
-        self.lstat.expmsg("Generated Scan List: {}".format(self.lstat.stat[name]["ScanList"]))
+
+        self.lstat.expmsg("Generated Scan List: {}".format(
+            self.lstat.stat[name]["ScanList"]))
         self.lstat.dump_stat("last_stat.json")
         return self.lstat.stat[name]["ScanList"]
 
@@ -283,6 +284,8 @@ class FactoryLinearStage:
             active=(config["PositionUnits"].index(config["PositionUnit"]))
         )
         position_unit.on_change('active', __callback_position_unit)
+        # Disabled because no actual implementation is available
+        position_unit.disabled = True
         bundle.position_unit = position_unit
         # endregion position_unit
 
@@ -317,7 +320,8 @@ class FactoryLinearStage:
         def __callback_manual_position(attr, old, new):
             delay = eval_float(bundle.manual_position.value)
             config["ManualPosition"] = config["ZeroDelayAbsolutePosition"] + \
-                ps_to_mm(delay)
+                dt_to_mm(
+                    delay, config["ManualUnit"], config["Multiples"], config["WorkingDirection"])
 
         bundle.manual_position.value = str(config["ManualPosition"])
         bundle.manual_position.on_change('value', __callback_manual_position)
@@ -390,6 +394,8 @@ class FactoryLinearStage:
                 config["DrivingSpeedUnit"]))
         )
         driving_speed_unit.on_change('active', __callback_driving_speed_unit)
+        # Disabled because no actual implementation is available
+        driving_speed_unit.disabled = True
         bundle.driving_speed_unit = driving_speed_unit
         # endregion driving_speed_unit
 
@@ -401,6 +407,8 @@ class FactoryLinearStage:
 
         bundle.driving_speed.value = str(config["DrivingSpeed"])
         bundle.driving_speed.on_change('value', __callback_driving_speed)
+        # Disabled because no actual implementation is available
+        bundle.driving_speed.disabled = True
         # endregion driving_speed
 
         # region driving_acceleration_unit
@@ -416,6 +424,8 @@ class FactoryLinearStage:
         )
         driving_acceleration_unit.on_change(
             'active', __callback_driving_acceleration_unit)
+        # Disabled because no actual implementation is available
+        driving_acceleration_unit.disabled = True
         bundle.driving_acceleration_unit = driving_acceleration_unit
         # endregion driving_acceleration_unit
 
@@ -430,6 +440,8 @@ class FactoryLinearStage:
             config["DrivingAcceleration"])
         bundle.driving_acceleration.on_change(
             'value', __callback_driving_acceleration)
+        # Disabled because no actual implementation is available
+        bundle.driving_acceleration.disabled = True
         # endregion driving_acceleration
 
         # region test_online
@@ -451,7 +463,8 @@ class FactoryLinearStage:
             """before actual movement, make sure it's sync with what is at the front panel"""
             delay = eval_float(bundle.manual_position.value)
             config["ManualPosition"] = config["ZeroDelayAbsolutePosition"] + \
-                ps_to_mm(delay)
+                dt_to_mm(
+                    delay, config["ManualUnit"], config["Multiples"], config["WorkingDirection"])
             response = bundle.remote.moveabs(config["ManualPosition"])
             self.lstat.fmtmsg(response)
 
@@ -462,7 +475,8 @@ class FactoryLinearStage:
         @ignore_connection_error
         @update_config
         def __callback_manual_step_forward():
-            config["ManualPosition"] += ps_to_mm(config["ManualStep"])
+            config["ManualPosition"] += dt_to_mm(
+                config["ManualStep"], config["ManualUnit"], config["Multiples"], config["WorkingDirection"])
             response = bundle.remote.moveabs(config["ManualPosition"])
             self.lstat.fmtmsg(response)
 
@@ -473,7 +487,8 @@ class FactoryLinearStage:
         @ignore_connection_error
         @update_config
         def __callback_manual_step_backward():
-            config["ManualPosition"] -= ps_to_mm(config["ManualStep"])
+            config["ManualPosition"] -= dt_to_mm(
+                config["ManualStep"], config["ManualUnit"], config["Multiples"], config["WorkingDirection"])
             response = bundle.remote.moveabs(config["ManualPosition"])
             self.lstat.fmtmsg(response)
 
@@ -498,7 +513,8 @@ class FactoryLinearStage:
                         self.lstat.expmsg(
                             "Setting delay to {dl} ps".format(dl=dl))
                         target_abs_pos = config["ZeroDelayAbsolutePosition"] + \
-                            ps_to_mm(dl)
+                            dt_to_mm(
+                                dl, config["ManualUnit"], config["Multiples"], config["WorkingDirection"])
                         response = bundle.remote.moveabs(target_abs_pos)
                         self.lstat.fmtmsg(response)
                         self.lstat.stat[name]["Delay"] = dl
@@ -516,9 +532,9 @@ class FactoryLinearStage:
         # endregion scan_delay
 
         # region set_delay
-        @ignore_connection_error
         def set_delay(delay):
-            pos = config["ZeroDelayAbsolutePosition"] + ps_to_mm(delay)
+            pos = config["ZeroDelayAbsolutePosition"] + dt_to_mm(
+                delay, config["ManualUnit"], config["Multiples"], config["WorkingDirection"])
             response = bundle.remote.moveabs(pos)
             self.lstat.fmtmsg(response)
 

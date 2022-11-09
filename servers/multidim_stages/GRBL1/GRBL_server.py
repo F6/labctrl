@@ -12,9 +12,9 @@ __version__ = "20220601"
 
 import json
 from flask import Flask, Response
-from GRBL_streamer import GRBL
+from grbl_controller import GRBLController
 
-grbl = GRBL('COM8')
+grbl = GRBLController('COM14')
 
 app = Flask(__name__)
 
@@ -23,7 +23,16 @@ def online():
     res = dict()
     res['success'] = True
     res['message'] = "The server is ONLINE"
-    res['name'] = "GRBL"
+    res['name'] = "GRBL1"
+    res = json.dumps(res)
+    return Response(res, status=200, mimetype='application/json')
+
+@app.route("/?")
+def q():
+    res = dict()
+    res['success'] = True
+    res['message'] = "The server is ONLINE"
+    res['name'] = "GRBL1"
     res = json.dumps(res)
     return Response(res, status=200, mimetype='application/json')
 
