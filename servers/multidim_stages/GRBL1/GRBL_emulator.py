@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-"""server.py:
-This module provides web API for
+"""emulator.py:
+This module provides web API emulator for
 a remote GRBL compatible G-Code controller
 """
 
@@ -12,9 +12,9 @@ __version__ = "20221109"
 
 import json
 from flask import Flask, Response
-from grbl_controller import GRBLController
+# from grbl_controller import GRBLController
 
-grbl = GRBLController('COM14')
+# grbl = GRBLController('COM14')
 
 app = Flask(__name__)
 
@@ -32,7 +32,7 @@ def online():
 def moveabs(xyz:str):
     xyz = xyz.split(',')
     x, y, z = list(map(float, xyz))
-    grbl.blocking_moveabs(x, y, z)
+    # grbl.blocking_moveabs(x, y, z)
     res = dict()
     res['success'] = True
     res['name'] = 'GRBL1'

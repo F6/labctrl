@@ -155,7 +155,7 @@ current system, homing is recommanded to re-establish absolute coordinates.""")
         state_is_idle = (self.parser.vars["State"] == "Idle")
         return x_in_place and y_in_place and z_in_place and state_is_idle
 
-    def blocking_moveabs(self, x, y, z):
+    def blocking_moveabs(self, x:float, y:float, z:float):
         """
         Send a movement command gcode to current buffer and wait for state to become idle.
         This is more reliable than the above, because it checks both idle state and

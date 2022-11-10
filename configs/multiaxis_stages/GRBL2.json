@@ -1,5 +1,5 @@
 {
-    "Name": "GRBL1",
+    "Name": "GRBL2",
     "Comment": "GRBL1.1 G-Code compatible motion controller, used for motorized mirror support",
     "Host": "127.0.0.1",
     "Port": 5049,

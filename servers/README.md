@@ -41,9 +41,11 @@ The "port" section in configs also needs to be changed if the server port has be
 
         GRBL1               5049
         GRBL2               5050
-        GRBL3               5051
         GRBL4               5052
         GRBL5               5054
+
+* Filter Wheels:
+        GRBL3               5051
 
 * CCD and CMOS cameras:
 
