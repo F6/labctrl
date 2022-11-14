@@ -29,15 +29,19 @@ class RemoteHandlerThreeAxes:
     access to remote. This class implements methods to interact with
     remote for other components.
     """
-    def __init__(self, config:dict, init_pos:list) -> None:
+
+    def __init__(self, config: dict, init_pos: list) -> None:
         self.config = config
         self.remote = RemoteThreeAxesStage(config)
         self.current_position = init_pos
-    
-    def switch_remote(self, config:dict) -> None:
+
+    def online(self):
+        return self.remote.online()
+
+    def switch_remote(self, config: dict) -> None:
         self.remote = RemoteThreeAxesStage(config)
 
-    def axis_moveabs(self, axis_name:str, pos:float):
+    def axis_moveabs(self, axis_name: str, pos: float):
         for i, axis_config in enumerate(self.config["Axes"]):
             if axis_config["Name"] == axis_name:
                 self.current_position[i] = pos
@@ -170,7 +174,7 @@ class FactorySingleAxis:
         config = bundle_config["Config"]
         name = config["Name"]
         bundle = BundleBokehSingleAxis()
-        # all axes share the same remote, so use remote_handler to 
+        # all axes share the same remote, so use remote_handler to
         # coordinate motions between axes.
         bundle.remote_handler = bundle_config["RemoteHandler"]
 
@@ -312,7 +316,8 @@ class FactorySingleAxis:
         @update_config
         def __callback_manual_position(attr, old, new):
             offset = eval_float(bundle.manual_position.value)
-            config["ManualPosition"] = offset + config["ZeroPointAbsolutePosition"]
+            config["ManualPosition"] = offset + \
+                config["ZeroPointAbsolutePosition"]
 
         bundle.manual_position.value = str(config["ManualPosition"])
         bundle.manual_position.on_change('value', __callback_manual_position)
@@ -440,8 +445,10 @@ class FactorySingleAxis:
         def __callback_manual_move():
             """before actual movement, make sure it's sync with what is at the front panel"""
             offset = eval_float(bundle.manual_position.value)
-            config["ManualPosition"] = offset + config["ZeroPointAbsolutePosition"]
-            response = bundle.remote_handler.axis_moveabs(name, config["ManualPosition"])
+            config["ManualPosition"] = offset + \
+                config["ZeroPointAbsolutePosition"]
+            response = bundle.remote_handler.axis_moveabs(
+                name, config["ManualPosition"])
             self.lstat.fmtmsg(response)
 
         bundle.manual_move.on_click(__callback_manual_move)
@@ -452,7 +459,8 @@ class FactorySingleAxis:
         @update_config
         def __callback_manual_step_forward():
             config["ManualPosition"] += config["ManualStep"]
-            response = bundle.remote_handler.axis_moveabs(name, config["ManualPosition"])
+            response = bundle.remote_handler.axis_moveabs(
+                name, config["ManualPosition"])
             self.lstat.fmtmsg(response)
 
         bundle.manual_step_forward.on_click(__callback_manual_step_forward)
@@ -463,7 +471,8 @@ class FactorySingleAxis:
         @update_config
         def __callback_manual_step_backward():
             config["ManualPosition"] -= config["ManualStep"]
-            response = bundle.remote_handler.axis_moveabs(name, config["ManualPosition"])
+            response = bundle.remote_handler.axis_moveabs(
+                name, config["ManualPosition"])
             self.lstat.fmtmsg(response)
 
         bundle.manual_step_backward.on_click(__callback_manual_step_backward)
@@ -472,29 +481,30 @@ class FactorySingleAxis:
         # region scan_range
         def scan_range(func, meta=''):
             """
-            decorator, when applied to func, scan delays for func.
+            decorator, when applied to func, scan range for func.
             adds or alters the following meta params:
-                meta[name]["Delay"] : str or float, current delay
-                meta[name]["iDelay"]: int, index of current delay
+                meta[name]["Delay"] : str or float, current position
+                meta[name]["iDelay"]: int, index of current position
             """
             def iterate(meta=dict()):
-                if config["Mode"] == "Range" or config["Mode"] == "ExternalFile":
-                    for i, dl in enumerate(self.lstat.stat[name]["ScanList"]):
+                if config["ScanMode"] == "Range" or config["ScanMode"] == "ExternalFile":
+                    for i, pos in enumerate(self.lstat.stat[name]["ScanList"]):
                         if meta["TERMINATE"]:
                             self.lstat.expmsg(
-                                "scan_range received signal TERMINATE, trying graceful Thread exit")
+                                "[{name}][scan_range] Received signal TERMINATE, trying graceful Thread exit".format(name=name))
                             break
                         self.lstat.expmsg(
-                            "Setting delay to {dl} ps".format(dl=dl))
-                        target_abs_pos = config["ZeroPointAbsolutePosition"] + dl
-                        response = bundle.remote_handler.axis_moveabs(name, target_abs_pos)
+                            "[{name}][scan_range] Setting position to {pos} {unit}".format(name=name, pos=pos, unit=config["WorkingUnit"]))
+                        target_abs_pos = config["ZeroPointAbsolutePosition"] + pos
+                        response = bundle.remote_handler.axis_moveabs(
+                            name, target_abs_pos)
                         self.lstat.fmtmsg(response)
-                        self.lstat.stat[name]["Delay"] = dl
+                        self.lstat.stat[name]["Delay"] = pos
                         self.lstat.stat[name]["iDelay"] = i
                         func(meta=meta)
                 else:
                     self.lstat.expmsg(
-                        "Delay is set manually, so no action has been taken")
+                        "[{name}][scan_range] Range is set manually, so no action has been taken".format(name=name))
                     self.lstat.stat[name]["Delay"] = "ManualDelay"
                     self.lstat.stat[name]["iDelay"] = 0
                     func(meta=meta)
@@ -515,7 +525,6 @@ class FactorySingleAxis:
         return bundle
 
 
-
 class BundleBokehThreeAxes:
     def __init__(self) -> None:
         """
@@ -524,6 +533,7 @@ class BundleBokehThreeAxes:
         init_str = 'Initialize at {}'.format(self)
         self.host = TextInput(title="Host", value="")
         self.port = TextInput(title="Port", value="")
+        self.test_online = Button(label="Test Motion Controller Online")
         self.remote_handler = None
         self.remote = None
         self.axis1 = BundleBokehSingleAxis()
@@ -531,7 +541,7 @@ class BundleBokehThreeAxes:
         self.axis3 = BundleBokehSingleAxis()
 
 
-class FactoryThreeAxes:        
+class FactoryThreeAxes:
     def __init__(self, lcfg, lstat) -> None:
         self.lcfg = lcfg
         self.lstat = lstat
@@ -566,9 +576,13 @@ class FactoryThreeAxes:
         config = bundle_config["Config"]
         name = config["Name"]
         bundle = BundleBokehThreeAxes()
-        # all axes share the same remote, so use remote_handler to 
+        # all axes share the same remote, so use remote_handler to
         # coordinate motions between axes.
-        bundle.remote_handler = RemoteHandlerThreeAxes(config, [0, 0, 0])
+        bundle.remote_handler = RemoteHandlerThreeAxes(config, [
+            config["Axes"][0]["ManualPosition"],
+            config["Axes"][1]["ManualPosition"],
+            config["Axes"][2]["ManualPosition"]
+        ])
 
         # region host
         @update_config
@@ -596,6 +610,18 @@ class FactoryThreeAxes:
         bundle.port.on_change('value', __callback_port)
         # endregion port
 
+        # region test_online
+        def __callback_test_online():
+            try:
+                self.lstat.fmtmsg(bundle.remote_handler.online())
+            except Exception as inst:
+                print(type(inst), inst.args)
+                self.lstat.expmsg(
+                    "[Error] Nothing from remote, server is probably down.")
+
+        bundle.test_online.on_click(__callback_test_online)
+        # endregion test_online
+
         factory = FactorySingleAxis(self.lcfg, self.lstat)
         # axis 1
         bcfg = dict()
@@ -615,3 +641,5 @@ class FactoryThreeAxes:
         bcfg["Config"] = config["Axes"][2]
         bcfg["RemoteHandler"] = bundle.remote_handler
         bundle.axis3 = factory.generate_bundle(bcfg)
+
+        return bundle

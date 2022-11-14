@@ -28,7 +28,7 @@ def online():
     return Response(res, status=200, mimetype='application/json')
 
 
-@app.route("/moveabs/{xyz}")
+@app.route("/moveabs/<xyz>")
 def moveabs(xyz:str):
     xyz = xyz.split(',')
     x, y, z = list(map(float, xyz))

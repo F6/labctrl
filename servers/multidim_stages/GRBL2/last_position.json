@@ -1,0 +1,15 @@
+{
+    "State": "Idle",
+    "Pins": "P",
+    "MachineX": 0.0,
+    "MachineY": 0.0,
+    "MachineZ": 0.0,
+    "CurrentFeedRate": 0.0,
+    "CurrentSpindleSpeed": 0.0,
+    "WorkingCoordinateOffsetX": -1.0,
+    "WorkingCoordinateOffsetY": -2.0,
+    "WorkingCoordinateOffsetZ": -4.0,
+    "OverrideFeed": 100,
+    "OverrideRapid": 100,
+    "OverrideSpindle": 100
+}
