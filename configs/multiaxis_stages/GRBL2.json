@@ -1,8 +1,8 @@
 {
-    "Name": "GRBL2",
+    "Name": "GRBL1",
     "Comment": "GRBL1.1 G-Code compatible motion controller, used for motorized mirror support",
     "Host": "127.0.0.1",
-    "Port": 5049,
+    "Port": 5050,
     "NumberOfAxes": 2,
     "Axes": [
         {
@@ -17,6 +17,7 @@
             "LoadedExternalScanList": [0.0, 1.0, 2.0, 4.0, 8.0],
             "PositionUnits": ["second", "minute", "degree", "radian"],
             "PositionUnit": "degree",
+            "ZeroPointAbsolutePosition": 0.0,
             "ManualUnits": ["second", "minute", "degree", "radian"],
             "ManualUnit": "degree",
             "ManualPosition": 4.2,
@@ -44,6 +45,7 @@
             "LoadedExternalScanList": [0.0, 1.0, 2.0, 4.0, 8.0],
             "PositionUnits": ["second", "minute", "degree", "radian"],
             "PositionUnit": "degree",
+            "ZeroPointAbsolutePosition": 0.0,
             "ManualUnits": ["second", "minute", "degree", "radian"],
             "ManualUnit": "degree",
             "ManualPosition": 4.2,

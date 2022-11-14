@@ -14,13 +14,13 @@ import requests
 import json
 
 class RemoteMultiaxisStage():
-    def __init__(self, config, max_retry=3) -> None:
+    def __init__(self, config:dict, max_retry=3) -> None:
         self.host = config["Host"]
         self.port = config["Port"]
         self.max_retry = max_retry
         self.api_url = 'http://{host}:{port}/'.format(host=self.host, port=self.port)
 
-    def apicall(self, command):
+    def apicall(self, command:str):
         for i in range(self.max_retry):
             try:
                 apicall = self.api_url + command
@@ -38,6 +38,13 @@ class RemoteMultiaxisStage():
         Does not test if the remote server actually works, however."""
         return self.apicall('')
 
+
+class RemoteThreeAxesStage(RemoteMultiaxisStage):
     def moveabs(self, x, y, z):
         return self.apicall('moveabs/{x:.3f},{y:.3f},{z:.3f}'.format(x=x, y=y, z=z))
 
+
+
+# class RemoteTwoAxesStage(RemoteMultiaxisStage):
+#     def moveabs(self, x, y):
+#         return self.apicall('moveabs/{x:.3f},{y:.3f}'.format(x=x, y=y))

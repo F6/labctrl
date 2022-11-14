@@ -19,8 +19,30 @@ from datetime import datetime
 from bokeh.models.widgets import RadioButtonGroup, Button, TextInput, FileInput, Div
 from bokeh.layouts import column, row
 
-from .remote import RemoteMultiaxisStage
+from .remote import RemoteThreeAxesStage
 from .utils import eval_float, ignore_connection_error, eval_int, dt_to_mm
+
+
+class RemoteHandlerThreeAxes:
+    """
+    To keep consistency between axes, only remote handler should have
+    access to remote. This class implements methods to interact with
+    remote for other components.
+    """
+    def __init__(self, config:dict, init_pos:list) -> None:
+        self.config = config
+        self.remote = RemoteThreeAxesStage(config)
+        self.current_position = init_pos
+    
+    def switch_remote(self, config:dict) -> None:
+        self.remote = RemoteThreeAxesStage(config)
+
+    def axis_moveabs(self, axis_name:str, pos:float):
+        for i, axis_config in enumerate(self.config["Axes"]):
+            if axis_config["Name"] == axis_name:
+                self.current_position[i] = pos
+                break
+        return self.remote.moveabs(*self.current_position)
 
 
 class BundleBokehSingleAxis:
@@ -46,8 +68,6 @@ class BundleBokehSingleAxis:
         #  - Then why use new instance to replace placeholder, rather than just change
         #    the content of the the placeholder?
         #  - I'd like to but bokeh won't allow me to...
-        self.host = TextInput(title="Host", value="")
-        self.port = TextInput(title="Port", value="")
         self.working_unit = RadioButtonGroup(labels=[init_str, init_str])
         self.scan_mode = RadioButtonGroup(labels=[init_str, init_str])
         self.range_scan_start = TextInput(title="Range Scan Start", value="")
@@ -55,8 +75,8 @@ class BundleBokehSingleAxis:
         self.range_scan_step = TextInput(title="Range Scan Step", value="")
         self.external_scan_list_file = FileInput(accept=".txt")
         self.position_unit = RadioButtonGroup(labels=[init_str, init_str])
-        self.zero_delay_absolute_position = TextInput(
-            title="Zero Delay Absolute Position", value="")
+        self.zero_point_absolute_position = TextInput(
+            title="Zero Point Absolute Position", value="")
         self.manual_unit = RadioButtonGroup(labels=[init_str, init_str])
         self.manual_position = TextInput(
             title="Manually set delay to", value="")
@@ -72,18 +92,20 @@ class BundleBokehSingleAxis:
         self.driving_acceleration = TextInput(
             title="Driving Acceleration", value="")
         # ======== Interactive Elements ========
-        self.test_online = Button(label="Test Linear Stage Online")
         self.manual_move = Button(label='Move Stage', button_type='warning')
         self.manual_step_forward = Button(
             label="Step forward", button_type='warning')
         self.manual_step_backward = Button(
             label="Step backward", button_type='warning')
         # ======== Other Stuff to attach ========
+        self.remote_handler = None
+        self.scan_range = None
+        self.set_pos = None
 
 
-class FactoryLinearStage:
+class FactorySingleAxis:
     """
-    This class is responsible for generating BundleLinearStage objects 
+    This class is responsible for generating BundleSingleAxis objects 
     from given params
     """
 
@@ -134,7 +156,7 @@ class FactoryLinearStage:
         name = bundle_config["Config"]["Name"]
         if name in self.generated:
             print(
-                "FactoryLinearStage: SANITY: Linear Stage with name {} \
+                "FactorySingleAxis: SANITY: Axis with name {} \
                     already generated before!".format(name))
         self.generated.append(name)
         return self.generate_bundle_bokeh(bundle_config)
@@ -147,36 +169,12 @@ class FactoryLinearStage:
         update_config = self.lcfg.update_config
         config = bundle_config["Config"]
         name = config["Name"]
-        bundle = BundleBokehLinearStage()
-        bundle.remote = RemoteLinearStage(config)
+        bundle = BundleBokehSingleAxis()
+        # all axes share the same remote, so use remote_handler to 
+        # coordinate motions between axes.
+        bundle.remote_handler = bundle_config["RemoteHandler"]
 
         self.update_scanlist(config)
-
-        # region host
-        @update_config
-        def __callback_host(attr, old, new):
-            # no validation here because host can be literally anything,
-            # it is just a param passed to remote API
-            config["Host"] = bundle.host.value
-            # regenerate remote when config updated
-            bundle.remote = RemoteLinearStage(config)
-
-        bundle.host.value = config["Host"]
-        bundle.host.on_change('value', __callback_host)
-        # endregion host
-
-        # region port
-        @update_config
-        def __callback_port(attr, old, new):
-            # no validation here because port can be literally anything,
-            # it is just a param passed to remote API
-            config["Port"] = eval_int(bundle.port.value)
-            # regenerate remote when config updated
-            bundle.remote = RemoteLinearStage(config)
-
-        bundle.port.value = str(config["Port"])
-        bundle.port.on_change('value', __callback_port)
-        # endregion port
 
         # region working_unit
         @update_config
@@ -284,16 +282,16 @@ class FactoryLinearStage:
         bundle.position_unit = position_unit
         # endregion position_unit
 
-        # region zero_delay_absolute_position
+        # region zero_point_absolute_position
         @update_config
-        def __callback_zero_delay_absolute_position(attr, old, new):
-            config["ZeroDelayAbsolutePosition"] = eval_float(
-                bundle.zero_delay_absolute_position.value)
+        def __callback_zero_point_absolute_position(attr, old, new):
+            config["ZeroPointAbsolutePosition"] = eval_float(
+                bundle.zero_point_absolute_position.value)
 
-        bundle.zero_delay_absolute_position.value = str(
-            config["ZeroDelayAbsolutePosition"])
-        bundle.zero_delay_absolute_position.on_change(
-            'value', __callback_zero_delay_absolute_position)
+        bundle.zero_point_absolute_position.value = str(
+            config["ZeroPointAbsolutePosition"])
+        bundle.zero_point_absolute_position.on_change(
+            'value', __callback_zero_point_absolute_position)
         # endregion zero_delay_absolute_position
 
         # region manual_unit
@@ -313,10 +311,8 @@ class FactoryLinearStage:
         # region manual_position
         @update_config
         def __callback_manual_position(attr, old, new):
-            delay = eval_float(bundle.manual_position.value)
-            config["ManualPosition"] = config["ZeroDelayAbsolutePosition"] + \
-                dt_to_mm(
-                    delay, config["ManualUnit"], config["Multiples"], config["WorkingDirection"])
+            offset = eval_float(bundle.manual_position.value)
+            config["ManualPosition"] = offset + config["ZeroPointAbsolutePosition"]
 
         bundle.manual_position.value = str(config["ManualPosition"])
         bundle.manual_position.on_change('value', __callback_manual_position)
@@ -439,28 +435,13 @@ class FactoryLinearStage:
         bundle.driving_acceleration.disabled = True
         # endregion driving_acceleration
 
-        # region test_online
-        def __callback_test_online():
-            try:
-                self.lstat.fmtmsg(bundle.remote.online())
-            except Exception as inst:
-                print(type(inst), inst.args)
-                self.lstat.expmsg(
-                    "[Error] Nothing from remote, server is probably down.")
-
-        bundle.test_online.on_click(__callback_test_online)
-        # endregion test_online
-
         # region manual_move
-        @ignore_connection_error
         @update_config
         def __callback_manual_move():
             """before actual movement, make sure it's sync with what is at the front panel"""
-            delay = eval_float(bundle.manual_position.value)
-            config["ManualPosition"] = config["ZeroDelayAbsolutePosition"] + \
-                dt_to_mm(
-                    delay, config["ManualUnit"], config["Multiples"], config["WorkingDirection"])
-            response = bundle.remote.moveabs(config["ManualPosition"])
+            offset = eval_float(bundle.manual_position.value)
+            config["ManualPosition"] = offset + config["ZeroPointAbsolutePosition"]
+            response = bundle.remote_handler.axis_moveabs(name, config["ManualPosition"])
             self.lstat.fmtmsg(response)
 
         bundle.manual_move.on_click(__callback_manual_move)
@@ -470,9 +451,8 @@ class FactoryLinearStage:
         @ignore_connection_error
         @update_config
         def __callback_manual_step_forward():
-            config["ManualPosition"] += dt_to_mm(
-                config["ManualStep"], config["ManualUnit"], config["Multiples"], config["WorkingDirection"])
-            response = bundle.remote.moveabs(config["ManualPosition"])
+            config["ManualPosition"] += config["ManualStep"]
+            response = bundle.remote_handler.axis_moveabs(name, config["ManualPosition"])
             self.lstat.fmtmsg(response)
 
         bundle.manual_step_forward.on_click(__callback_manual_step_forward)
@@ -482,19 +462,18 @@ class FactoryLinearStage:
         @ignore_connection_error
         @update_config
         def __callback_manual_step_backward():
-            config["ManualPosition"] -= dt_to_mm(
-                config["ManualStep"], config["ManualUnit"], config["Multiples"], config["WorkingDirection"])
-            response = bundle.remote.moveabs(config["ManualPosition"])
+            config["ManualPosition"] -= config["ManualStep"]
+            response = bundle.remote_handler.axis_moveabs(name, config["ManualPosition"])
             self.lstat.fmtmsg(response)
 
         bundle.manual_step_backward.on_click(__callback_manual_step_backward)
         # endregion manual_step_backward
 
-        # region scan_delay
-        def scan_delay(func, meta=''):
+        # region scan_range
+        def scan_range(func, meta=''):
             """
-            decorator, when applied to func, scan delays for func
-            addes or alters following meta params:
+            decorator, when applied to func, scan delays for func.
+            adds or alters the following meta params:
                 meta[name]["Delay"] : str or float, current delay
                 meta[name]["iDelay"]: int, index of current delay
             """
@@ -503,14 +482,12 @@ class FactoryLinearStage:
                     for i, dl in enumerate(self.lstat.stat[name]["ScanList"]):
                         if meta["TERMINATE"]:
                             self.lstat.expmsg(
-                                "scan_delay received signal TERMINATE, trying graceful Thread exit")
+                                "scan_range received signal TERMINATE, trying graceful Thread exit")
                             break
                         self.lstat.expmsg(
                             "Setting delay to {dl} ps".format(dl=dl))
-                        target_abs_pos = config["ZeroDelayAbsolutePosition"] + \
-                            dt_to_mm(
-                                dl, config["ManualUnit"], config["Multiples"], config["WorkingDirection"])
-                        response = bundle.remote.moveabs(target_abs_pos)
+                        target_abs_pos = config["ZeroPointAbsolutePosition"] + dl
+                        response = bundle.remote_handler.axis_moveabs(name, target_abs_pos)
                         self.lstat.fmtmsg(response)
                         self.lstat.stat[name]["Delay"] = dl
                         self.lstat.stat[name]["iDelay"] = i
@@ -523,17 +500,118 @@ class FactoryLinearStage:
                     func(meta=meta)
             return iterate
 
-        bundle.scan_delay = scan_delay
-        # endregion scan_delay
+        bundle.scan_range = scan_range
+        # endregion scan_range
 
-        # region set_delay
-        def set_delay(delay):
-            pos = config["ZeroDelayAbsolutePosition"] + dt_to_mm(
-                delay, config["ManualUnit"], config["Multiples"], config["WorkingDirection"])
-            response = bundle.remote.moveabs(pos)
+        # region set_pos
+        def set_pos(d):
+            pos = config["ZeroPointAbsolutePosition"] + d
+            response = bundle.remote_handler.axis_moveabs(name, pos)
             self.lstat.fmtmsg(response)
 
-        bundle.set_delay = set_delay
-        # endregion set_delay
+        bundle.set_pos = set_pos
+        # endregion set_pos
 
         return bundle
+
+
+
+class BundleBokehThreeAxes:
+    def __init__(self) -> None:
+        """
+        One to one maps to config
+        """
+        init_str = 'Initialize at {}'.format(self)
+        self.host = TextInput(title="Host", value="")
+        self.port = TextInput(title="Port", value="")
+        self.remote_handler = None
+        self.remote = None
+        self.axis1 = BundleBokehSingleAxis()
+        self.axis2 = BundleBokehSingleAxis()
+        self.axis3 = BundleBokehSingleAxis()
+
+
+class FactoryThreeAxes:        
+    def __init__(self, lcfg, lstat) -> None:
+        self.lcfg = lcfg
+        self.lstat = lstat
+        self.generated = []
+
+    def generate_bundle(self, bundle_config: dict):
+        """
+        actually generates the bundle
+            bundle_config:  dict that contains all information needed to generate
+                             the bundle
+                            required fields: 
+                                "Config" : config dict of linear stage
+
+        for now only bokeh bundle is used, so direct generation, 
+        if more are required, then the fork goes here
+        """
+        # sanity check
+        name = bundle_config["Config"]["Name"]
+        if name in self.generated:
+            print(
+                "FactoryThreeAxes: SANITY: Axis with name {} \
+                    already generated before!".format(name))
+        self.generated.append(name)
+        return self.generate_bundle_bokeh(bundle_config)
+
+    def generate_bundle_bokeh(self, bundle_config):
+        """
+        Implementation of all bokeh element callbacks, callback bindings,
+         and other utils in bundle
+        """
+        update_config = self.lcfg.update_config
+        config = bundle_config["Config"]
+        name = config["Name"]
+        bundle = BundleBokehThreeAxes()
+        # all axes share the same remote, so use remote_handler to 
+        # coordinate motions between axes.
+        bundle.remote_handler = RemoteHandlerThreeAxes(config, [0, 0, 0])
+
+        # region host
+        @update_config
+        def __callback_host(attr, old, new):
+            # no validation here because host can be literally anything,
+            # it is just a param passed to remote API
+            config["Host"] = bundle.host.value
+            # regenerate remote when config updated
+            bundle.remote_handler.switch_remote(config)
+
+        bundle.host.value = config["Host"]
+        bundle.host.on_change('value', __callback_host)
+        # endregion host
+
+        # region port
+        @update_config
+        def __callback_port(attr, old, new):
+            # no validation here because port can be literally anything,
+            # it is just a param passed to remote API
+            config["Port"] = eval_int(bundle.port.value)
+            # regenerate remote when config updated
+            bundle.remote_handler.switch_remote(config)
+
+        bundle.port.value = str(config["Port"])
+        bundle.port.on_change('value', __callback_port)
+        # endregion port
+
+        factory = FactorySingleAxis(self.lcfg, self.lstat)
+        # axis 1
+        bcfg = dict()
+        bcfg["Name"] = config["Axes"][0]["Name"]
+        bcfg["Config"] = config["Axes"][0]
+        bcfg["RemoteHandler"] = bundle.remote_handler
+        bundle.axis1 = factory.generate_bundle(bcfg)
+        # axis 2
+        bcfg = dict()
+        bcfg["Name"] = config["Axes"][1]["Name"]
+        bcfg["Config"] = config["Axes"][1]
+        bcfg["RemoteHandler"] = bundle.remote_handler
+        bundle.axis2 = factory.generate_bundle(bcfg)
+        # axis 3
+        bcfg = dict()
+        bcfg["Name"] = config["Axes"][2]["Name"]
+        bcfg["Config"] = config["Axes"][2]
+        bcfg["RemoteHandler"] = bundle.remote_handler
+        bundle.axis3 = factory.generate_bundle(bcfg)
