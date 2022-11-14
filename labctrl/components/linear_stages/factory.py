@@ -504,17 +504,17 @@ class FactoryLinearStage:
                 meta[name]["iDelay"]: int, index of current delay
             """
             def iterate(meta=dict()):
-                if config["Mode"] == "Range" or config["Mode"] == "ExternalFile":
+                if config["ScanMode"] == "Range" or config["ScanMode"] == "ExternalFile":
                     for i, dl in enumerate(self.lstat.stat[name]["ScanList"]):
                         if meta["TERMINATE"]:
                             self.lstat.expmsg(
                                 "scan_delay received signal TERMINATE, trying graceful Thread exit")
                             break
                         self.lstat.expmsg(
-                            "Setting delay to {dl} ps".format(dl=dl))
+                            "[{name}][scan_delay]: Setting delay to {dl} {unit}".format(name=name, dl=dl, unit=config["WorkingUnit"]))
                         target_abs_pos = config["ZeroDelayAbsolutePosition"] + \
                             dt_to_mm(
-                                dl, config["ManualUnit"], config["Multiples"], config["WorkingDirection"])
+                                dl, config["WorkingUnit"], config["Multiples"], config["WorkingDirection"])
                         response = bundle.remote.moveabs(target_abs_pos)
                         self.lstat.fmtmsg(response)
                         self.lstat.stat[name]["Delay"] = dl

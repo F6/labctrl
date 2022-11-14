@@ -37,6 +37,7 @@ def moveabs(pos):
     res = dict()
     res['success'] = True
     res['message'] = "Moved to target position"
+    res['name'] = "CDHD2"
     res['target'] = pos
     res = json.dumps(res)
     return Response(res, status=200, mimetype='application/json')
