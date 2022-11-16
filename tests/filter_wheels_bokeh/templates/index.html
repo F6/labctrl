@@ -1,0 +1,94 @@
+{% extends base %}
+
+{% block preamble %}
+
+<link href="{{ app_name }}/static/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+  .bd-placeholder-img {
+    font-size: 1.125rem;
+    text-anchor: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+  }
+
+  @media (min-width: 768px) {
+    .bd-placeholder-img-lg {
+      font-size: 3.5rem;
+    }
+  }
+</style>
+
+<link href="{{ app_name }}/static/css/dashboard.css" rel="stylesheet">
+
+{% endblock %}
+
+{% block contents %}
+
+<header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+  <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="#">Filter Wheel Tester</a>
+  <button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse"
+    data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <input class="form-control form-control-dark w-100" type="text" placeholder="Command" aria-label="Command">
+  <div class="navbar-nav">
+    <div class="nav-item text-nowrap">
+      <a class="nav-link px-3" href="#" onclick="close_window();return false;">Sign Out</a>
+    </div>
+  </div>
+</header>
+
+<div class="container-fluid">
+  <div class="row">
+    <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+      <div class="position-sticky pt-3">
+        <div class="nav flex-column" id="nav-tab" role="tablist">
+          <a type="button" class="nav-link active" id="nav-dashboard-tab" data-bs-toggle="tab"
+            data-bs-target="#nav-dashboard" role="tab" aria-controls="nav-dashboard" aria-selected="true">
+            <span data-feather="tool"></span>
+            Testbench
+          </a>
+          <a type="button" class="nav-link" id="nav-message-tab" data-bs-toggle="tab" data-bs-target="#nav-message"
+            role="tab" aria-controls="nav-message" aria-selected="false">
+            <span data-feather="code"></span>
+            Laboratory Messages
+          </a>
+
+          <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+            <span>Advanced</span>
+            <a class="link-secondary" href="#" aria-label="Add a new method or component">
+              <span data-feather="plus-circle"></span>
+            </a>
+          </h6>
+
+          <a class="nav-link" href="#" onclick="print_about();return false;">
+            <span data-feather="terminal"></span>
+            Dev Guide & About
+          </a>
+        </div>
+      </div>
+    </nav>
+    <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <div
+        class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <div class="tab-content" id="nav-tabContent">
+          <div class="tab-pane fade show active" id="nav-dashboard" role="tabpanel" aria-labelledby="nav-dashboard-tab">
+            {{ embed(roots.dashboard) }}
+          </div>
+          <div class="tab-pane fade" id="nav-message" role="tabpanel" aria-labelledby="nav-message-tab">
+            {{ embed(roots.messages) }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script src="{{ app_name }}/static/js/bootstrap.js"></script>
+<script src="{{ app_name }}/static/js/feather.min.js"></script>
+<script src="{{ app_name }}/static/js/dashboard.js"></script>
+
+{% endblock %}

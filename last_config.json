@@ -46,15 +46,21 @@
     },
     "filter_wheels": {
         "GRBL3": {
-            "Name": "GRBL1",
-            "Comment": "GRBL1.1 G-Code compatible motion controller, used for motorized mirror support",
+            "Name": "GRBL3",
+            "Comment": "GRBL1.1 G-Code compatible motion controller, used for motorized filter wheels",
             "Host": "127.0.0.1",
             "Port": 5051,
-            "NumberOfAxes": 2,
+            "NumberOfAxes": 3,
             "Axes": [
                 {
-                    "Name": "X",
-                    "Comment": "Horizontal Motor",
+                    "Name": "GRBL3.Wheel1",
+                    "Comment": "First Filter Wheel",
+                    "WorkingUnits": [
+                        "second",
+                        "minute",
+                        "degree",
+                        "radian"
+                    ],
                     "WorkingUnit": "degree",
                     "ScanModes": [
                         "Manual",
@@ -62,15 +68,15 @@
                         "ExternalFile"
                     ],
                     "ScanMode": "Range",
-                    "RangeScanStart": -5.0,
-                    "RangeScanStop": 5.0,
-                    "RangeScanStep": 0.2,
+                    "RangeScanStart": 0,
+                    "RangeScanStop": 360,
+                    "RangeScanStep": 60,
                     "LoadedExternalScanList": [
-                        0.0,
-                        1.0,
-                        2.0,
-                        4.0,
-                        8.0
+                        0,
+                        10,
+                        20,
+                        40,
+                        50
                     ],
                     "PositionUnits": [
                         "second",
@@ -87,11 +93,15 @@
                         "radian"
                     ],
                     "ManualUnit": "degree",
-                    "ManualPosition": 4.2,
+                    "ManualPosition": 60.0,
                     "ManualStep": 1.0,
-                    "Multiples": 2,
+                    "Multiples": 1,
                     "SoftLimitMin": -999.0,
                     "SoftLimitMax": 999.0,
+                    "WorkingDirections": [
+                        "Positive",
+                        "Negative"
+                    ],
                     "WorkingDirection": "Positive",
                     "DrivingSpeedUnits": [
                         "second/s",
@@ -108,11 +118,45 @@
                         "radian/s^2"
                     ],
                     "DrivingAccelerationUnit": "degree/s^2",
-                    "DrivingAcceleration": 30
+                    "DrivingAcceleration": 30,
+                    "NumberOfSlots": 6,
+                    "ManualSlotIndex": 0,
+                    "Slots": [
+                        {
+                            "Name": "Fused Silica Compensation Plate",
+                            "Position": 0.0
+                        },
+                        {
+                            "Name": "OD 0.1 Neutral Density Filter",
+                            "Position": 60.0
+                        },
+                        {
+                            "Name": "OD 0.2 Neutral Density Filter",
+                            "Position": 120.0
+                        },
+                        {
+                            "Name": "OD 0.3 Neutral Density Filter",
+                            "Position": 180.0
+                        },
+                        {
+                            "Name": "OD 0.4 Neutral Density Filter",
+                            "Position": 240.0
+                        },
+                        {
+                            "Name": "OD 0.5 Neutral Density Filter",
+                            "Position": 300.0
+                        }
+                    ]
                 },
                 {
-                    "Name": "Y",
-                    "Comment": "Vertical Motor",
+                    "Name": "GRBL3.Wheel2",
+                    "Comment": "Second Filter Wheel",
+                    "WorkingUnits": [
+                        "second",
+                        "minute",
+                        "degree",
+                        "radian"
+                    ],
                     "WorkingUnit": "degree",
                     "ScanModes": [
                         "Manual",
@@ -120,15 +164,15 @@
                         "ExternalFile"
                     ],
                     "ScanMode": "Range",
-                    "RangeScanStart": -5.0,
-                    "RangeScanStop": 5.0,
-                    "RangeScanStep": 0.2,
+                    "RangeScanStart": 0,
+                    "RangeScanStop": 360,
+                    "RangeScanStep": 60,
                     "LoadedExternalScanList": [
-                        0.0,
-                        1.0,
-                        2.0,
-                        4.0,
-                        8.0
+                        0,
+                        10,
+                        20,
+                        40,
+                        50
                     ],
                     "PositionUnits": [
                         "second",
@@ -145,11 +189,15 @@
                         "radian"
                     ],
                     "ManualUnit": "degree",
-                    "ManualPosition": 4.2,
+                    "ManualPosition": 0.0,
                     "ManualStep": 1.0,
-                    "Multiples": 2,
+                    "Multiples": 1,
                     "SoftLimitMin": -999.0,
                     "SoftLimitMax": 999.0,
+                    "WorkingDirections": [
+                        "Positive",
+                        "Negative"
+                    ],
                     "WorkingDirection": "Positive",
                     "DrivingSpeedUnits": [
                         "second/s",
@@ -166,7 +214,131 @@
                         "radian/s^2"
                     ],
                     "DrivingAccelerationUnit": "degree/s^2",
-                    "DrivingAcceleration": 30
+                    "DrivingAcceleration": 30,
+                    "NumberOfSlots": 6,
+                    "ManualSlotIndex": 0,
+                    "Slots": [
+                        {
+                            "Name": "Fused Silica Compensation Plate",
+                            "Position": 0.0
+                        },
+                        {
+                            "Name": "OD 0.045 Neutral Density Filter",
+                            "Position": 60.0
+                        },
+                        {
+                            "Name": "OD 0.6 Neutral Density Filter",
+                            "Position": 120.0
+                        },
+                        {
+                            "Name": "OD 1.3 Neutral Density Filter",
+                            "Position": 180.0
+                        },
+                        {
+                            "Name": "OD 2.0 Neutral Density Filter",
+                            "Position": 240.0
+                        },
+                        {
+                            "Name": "OD 3.0 Neutral Density Filter",
+                            "Position": 300.0
+                        }
+                    ]
+                },
+                {
+                    "Name": "GRBL3.Wheel3",
+                    "Comment": "Third Filter Wheel (unused!)",
+                    "WorkingUnits": [
+                        "second",
+                        "minute",
+                        "degree",
+                        "radian"
+                    ],
+                    "WorkingUnit": "degree",
+                    "ScanModes": [
+                        "Manual",
+                        "Range",
+                        "ExternalFile"
+                    ],
+                    "ScanMode": "Manual",
+                    "RangeScanStart": 0,
+                    "RangeScanStop": 360,
+                    "RangeScanStep": 60,
+                    "LoadedExternalScanList": [
+                        0,
+                        10,
+                        20,
+                        40,
+                        50
+                    ],
+                    "PositionUnits": [
+                        "second",
+                        "minute",
+                        "degree",
+                        "radian"
+                    ],
+                    "PositionUnit": "degree",
+                    "ZeroPointAbsolutePosition": 0.0,
+                    "ManualUnits": [
+                        "second",
+                        "minute",
+                        "degree",
+                        "radian"
+                    ],
+                    "ManualUnit": "degree",
+                    "ManualPosition": 120.0,
+                    "ManualStep": 1.0,
+                    "Multiples": 1,
+                    "SoftLimitMin": -999.0,
+                    "SoftLimitMax": 999.0,
+                    "WorkingDirections": [
+                        "Positive",
+                        "Negative"
+                    ],
+                    "WorkingDirection": "Positive",
+                    "DrivingSpeedUnits": [
+                        "second/s",
+                        "minute/s",
+                        "degree/s",
+                        "radian/s"
+                    ],
+                    "DrivingSpeedUnit": "degree/s",
+                    "DrivingSpeed": 30,
+                    "DrivingAccelerationUnits": [
+                        "second/s^2",
+                        "minute/s^2",
+                        "degree/s^2",
+                        "radian/s^2"
+                    ],
+                    "DrivingAccelerationUnit": "degree/s^2",
+                    "DrivingAcceleration": 30,
+                    "NumberOfSlots": 6,
+                    "ManualSlotIndex": 0,
+                    "Slots": [
+                        {
+                            "Name": "Unused",
+                            "Position": 0.0
+                        },
+                        {
+                            "Name": "Unused",
+                            "Position": 20.0
+                        },
+                        {
+                            "Name": "Unused",
+                            "Position": 120.0
+                        },
+                        {
+                            "Name": "Unused",
+                            "Position": 180.0
+                        },
+                        {
+                            "Name": "Unused",
+                            "Position": 240.0
+                        },
+                        {
+                            "Name": "Unused",
+                            "Position": 300.0
+                        }
+                    ]
                 }
             ]
         }
@@ -858,9 +1030,9 @@
                         "ExternalFile"
                     ],
                     "ScanMode": "Range",
-                    "RangeScanStart": -0.5,
-                    "RangeScanStop": 0.5,
-                    "RangeScanStep": 0.1,
+                    "RangeScanStart": -5.0,
+                    "RangeScanStop": 5.0,
+                    "RangeScanStep": 0.2,
                     "LoadedExternalScanList": [
                         0.0,
                         1.0,
@@ -883,7 +1055,7 @@
                         "radian"
                     ],
                     "ManualUnit": "degree",
-                    "ManualPosition": 4.0,
+                    "ManualPosition": 4.2,
                     "ManualStep": 1.0,
                     "Multiples": 2,
                     "SoftLimitMin": -999.0,
@@ -926,9 +1098,9 @@
                         "ExternalFile"
                     ],
                     "ScanMode": "Range",
-                    "RangeScanStart": -0.3,
-                    "RangeScanStop": 0.2,
-                    "RangeScanStep": 0.1,
+                    "RangeScanStart": -5.0,
+                    "RangeScanStop": 5.0,
+                    "RangeScanStep": 0.2,
                     "LoadedExternalScanList": [
                         0.0,
                         1.0,
@@ -951,7 +1123,7 @@
                         "radian"
                     ],
                     "ManualUnit": "degree",
-                    "ManualPosition": 1.0,
+                    "ManualPosition": 4.2,
                     "ManualStep": 1.0,
                     "Multiples": 2,
                     "SoftLimitMin": -999.0,
@@ -994,8 +1166,8 @@
                         "ExternalFile"
                     ],
                     "ScanMode": "Range",
-                    "RangeScanStart": -0.4,
-                    "RangeScanStop": 0.4,
+                    "RangeScanStart": -5.0,
+                    "RangeScanStop": 5.0,
                     "RangeScanStep": 0.2,
                     "LoadedExternalScanList": [
                         0.0,
@@ -1019,7 +1191,7 @@
                         "radian"
                     ],
                     "ManualUnit": "degree",
-                    "ManualPosition": 5.5,
+                    "ManualPosition": 4.2,
                     "ManualStep": 1.0,
                     "Multiples": 2,
                     "SoftLimitMin": -999.0,
@@ -1313,6 +1485,10 @@
         }
     },
     "tests": {
+        "filter_wheels_bokeh": {
+            "Name": "filter_wheels_bokeh",
+            "ControllerUnderTesting": "GRBL3"
+        },
         "linear_stages_bokeh": {
             "Name": "linear_stages_bokeh",
             "LinearStageUnderTesting": "CDHD2"
