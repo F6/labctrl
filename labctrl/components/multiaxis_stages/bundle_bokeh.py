@@ -19,82 +19,13 @@ from bokeh.models.widgets import Button, FileInput, RadioButtonGroup, TextInput
 from labctrl.labconfig import LabConfig
 from labctrl.labstat import LabStat
 
-from .abstract import (AbstractBundleFilterWheelController,
-                       AbstractBundleSingleFilterWheelAxis,
-                       AbstractBundleSixSlots)
+from .abstract import (AbstractBundleSingleAxis,
+                       AbstractBundleMultiAxisController)
 from .remote import RemoteHandlerThreeAxes
 from .utils import eval_float, ignore_connection_error, eval_int, calculate_dx
 
 
-class BundleBokehSixSlots(AbstractBundleSixSlots):
-    def __init__(self, bundle_config: dict, lcfg: LabConfig, lstat: LabStat) -> None:
-        super().__init__()
-        self.axis_name: str = bundle_config["AxisName"]
-        self.config: dict = bundle_config["Config"]
-        self.slot_configs: list[dict] = self.config["Slots"]
-        self.remote_handler = bundle_config["RemoteHandler"]
-
-        # Construct position_slot_list
-        self.position_slot_list = list()
-        for i in range(len(self.slot_configs)):
-            foo = TextInput(
-                title="Position: [Slot {slot_index}] {slot_name}".format(
-                    slot_index=i,
-                    slot_name=self.slot_configs[i]["Name"]
-                ),
-                value=str(self.slot_configs[i]["Position"])
-            )
-            self.position_slot_list.append(foo)
-
-        # Attach callbacks to position_slot_list widgets
-        def __create_closure_position_slot(i: int):
-            @lcfg.update_config
-            def __callback_position_slot(attr, old, new):
-                position_slot = eval_float(self.position_slot_list[i].value)
-                self.slot_configs[i]["Position"] = position_slot
-            return __callback_position_slot
-
-        for i in range(len(self.position_slot_list)):
-            __callback_position_slot = __create_closure_position_slot(i)
-            self.position_slot_list[i].on_change(
-                'value', __callback_position_slot)
-
-        # Construct switch_to_slot_list
-        self.switch_to_slot_list = list()
-        for i in range(len(self.slot_configs)):
-            foo = Button(label="Switch to Slot {i}".format(
-                i=i), button_type='warning')
-            self.switch_to_slot_list.append(foo)
-
-        # Attach callbacks to switch_to_slot_list widgets
-        def __create_closure_switch_to_slot(i: int):
-            @ignore_connection_error
-            @lcfg.update_config
-            def __callback_switch_to_slot():
-                # Clicking Switch To Slot is also considered manual operation,
-                #  so let's update the manual position in the backside
-                self.config["ManualPosition"] = self.slot_configs[i]["Position"]
-                # Notice that we did not update manual position at front panel,
-                #  because the user might still want to use that value later.
-                # When the user has restarted the app, the front panel value
-                #  will be loaded from saved config, so replaced by the backside value.
-                # It just behaves like a step forward or step backward button.
-                response = self.switch_to_slot(i)
-                lstat.fmtmsg(response)
-            return __callback_switch_to_slot
-
-        for i in range(len(self.switch_to_slot_list)):
-            __callback_switch_to_slot = __create_closure_switch_to_slot(i)
-            self.switch_to_slot_list[i].on_click(__callback_switch_to_slot)
-
-    def switch_to_slot(self, slot_index: int):
-        target_pos = self.slot_configs[slot_index]["Position"]
-        response = self.remote_handler.axis_moveabs(
-            self.axis_name, target_pos)
-        return response
-
-
-class BundleBokehSingleFilterWheelAxis(AbstractBundleSingleFilterWheelAxis):
+class BundleBokehSingleAxis(AbstractBundleSingleAxis):
     def __init__(self, bundle_config: dict, lcfg: LabConfig, lstat: LabStat) -> None:
         super().__init__()
         # all axes share the same remote, so use remote_handler to
@@ -173,11 +104,6 @@ class BundleBokehSingleFilterWheelAxis(AbstractBundleSingleFilterWheelAxis):
         self.manual_step_backward = Button(
             label="Step backward", button_type='warning')
         # ======== Composites ========
-        bundle_config_slot = dict()
-        bundle_config_slot["AxisName"] = name
-        bundle_config_slot["Config"] = config
-        bundle_config_slot["RemoteHandler"] = self.remote_handler
-        self.slots = BundleBokehSixSlots(bundle_config_slot, lcfg, lstat)
 
         # region working_unit
 
@@ -503,7 +429,7 @@ class BundleBokehSingleFilterWheelAxis(AbstractBundleSingleFilterWheelAxis):
         return self.lstat.stat[name]["ScanList"]
 
 
-class BundleBokehFilterWheelController(AbstractBundleFilterWheelController):
+class BundleBokehMultiAxisController(AbstractBundleMultiAxisController):
     def __init__(self, bundle_config: dict, lcfg: LabConfig, lstat: LabStat) -> None:
         super().__init__()
         self.config: dict = bundle_config["Config"]  # Controller Config
@@ -529,19 +455,19 @@ class BundleBokehFilterWheelController(AbstractBundleFilterWheelController):
         bundle_config_axis = dict()
         bundle_config_axis["Config"] = config["Axes"][0]
         bundle_config_axis["RemoteHandler"] = self.remote_handler
-        self.axis_0 = BundleBokehSingleFilterWheelAxis(
+        self.axis_0 = BundleBokehSingleAxis(
             bundle_config_axis, lcfg, lstat)
 
         bundle_config_axis = dict()
         bundle_config_axis["Config"] = config["Axes"][1]
         bundle_config_axis["RemoteHandler"] = self.remote_handler
-        self.axis_1 = BundleBokehSingleFilterWheelAxis(
+        self.axis_1 = BundleBokehSingleAxis(
             bundle_config_axis, lcfg, lstat)
 
         bundle_config_axis = dict()
         bundle_config_axis["Config"] = config["Axes"][2]
         bundle_config_axis["RemoteHandler"] = self.remote_handler
-        self.axis_2 = BundleBokehSingleFilterWheelAxis(
+        self.axis_2 = BundleBokehSingleAxis(
             bundle_config_axis, lcfg, lstat)
 
         # region host

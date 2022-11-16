@@ -48,3 +48,29 @@ class RemoteThreeAxesStage(RemoteMultiaxisStage):
 # class RemoteTwoAxesStage(RemoteMultiaxisStage):
 #     def moveabs(self, x, y):
 #         return self.apicall('moveabs/{x:.3f},{y:.3f}'.format(x=x, y=y))
+
+
+class RemoteHandlerThreeAxes:
+    """
+    To keep consistency between axes, only remote handler should have
+    access to remote. This class implements methods to interact with
+    remote for other components.
+    """
+
+    def __init__(self, config: dict, init_pos: list) -> None:
+        self.config = config
+        self.remote = RemoteThreeAxesStage(config)
+        self.current_position = init_pos
+
+    def online(self):
+        return self.remote.online()
+
+    def switch_remote(self, config: dict) -> None:
+        self.remote = RemoteThreeAxesStage(config)
+
+    def axis_moveabs(self, axis_name: str, pos: float):
+        for i, axis_config in enumerate(self.config["Axes"]):
+            if axis_config["Name"] == axis_name:
+                self.current_position[i] = pos
+                break
+        return self.remote.moveabs(*self.current_position)

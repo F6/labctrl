@@ -18,7 +18,7 @@ from tornado import gen
 
 from labctrl.labconfig import lcfg
 from labctrl.labstat import lstat
-from labctrl.components.multiaxis_stages.factory import FactoryThreeAxes
+from labctrl.components.multiaxis_stages.factory import FactoryMultiAxis
 from labctrl.main_doc import doc
 
 from .utils import ignore_connection_error
@@ -34,7 +34,7 @@ motion_controller_name = app_config["ControllerUnderTesting"]
 class MultiaxisStagesBokehWidgetTester:
     def __init__(self) -> None:
         self.motion_controller_config = lcfg.config["multiaxis_stages"][motion_controller_name]
-        factory = FactoryThreeAxes(lcfg, lstat)
+        factory = FactoryMultiAxis(lcfg, lstat)
         motion_controller_bundle_config = dict()
         motion_controller_bundle_config["Config"] = self.motion_controller_config
         self.motion_controller = factory.generate_bundle(
@@ -53,9 +53,9 @@ class MultiaxisStagesBokehWidgetTester:
 tester = MultiaxisStagesBokehWidgetTester()
 
 
-@tester.motion_controller.axis1.scan_range
-@tester.motion_controller.axis2.scan_range
-@tester.motion_controller.axis3.scan_range
+@tester.motion_controller.axis_2.scan_range
+@tester.motion_controller.axis_1.scan_range
+@tester.motion_controller.axis_0.scan_range
 def range_scan_unit_operation(meta=dict()):
     if tester.flags["TERMINATE"]:
         meta["TERMINATE"] = True
@@ -112,131 +112,131 @@ foo0 = column(
 bar0 = Panel(child=foo0, title="Multiaxis Controller")
 # endregion basic
 
-# region axis1
+# region axis_0
 foo0 = column(
-    tester.motion_controller.axis1.multiples,
-    tester.motion_controller.axis1.working_direction,
+    tester.motion_controller.axis_0.multiples,
+    tester.motion_controller.axis_0.working_direction,
     Div(text="Position and Limitation Unit:"),
-    tester.motion_controller.axis1.position_unit,
-    tester.motion_controller.axis1.zero_point_absolute_position,
-    tester.motion_controller.axis1.soft_limit_min,
-    tester.motion_controller.axis1.soft_limit_max,
-    tester.motion_controller.axis1.driving_speed,
-    tester.motion_controller.axis1.driving_speed_unit,
-    tester.motion_controller.axis1.driving_acceleration,
-    tester.motion_controller.axis1.driving_acceleration_unit,
+    tester.motion_controller.axis_0.position_unit,
+    tester.motion_controller.axis_0.zero_point_absolute_position,
+    tester.motion_controller.axis_0.soft_limit_min,
+    tester.motion_controller.axis_0.soft_limit_max,
+    tester.motion_controller.axis_0.driving_speed,
+    tester.motion_controller.axis_0.driving_speed_unit,
+    tester.motion_controller.axis_0.driving_acceleration,
+    tester.motion_controller.axis_0.driving_acceleration_unit,
 )
 
 foo1 = column(
     # exp params
     Div(text="<b>Range Scan Param Settings:</b>"),
-    tester.motion_controller.axis1.scan_mode,
-    tester.motion_controller.axis1.working_unit,
-    tester.motion_controller.axis1.range_scan_start,
-    tester.motion_controller.axis1.range_scan_stop,
-    tester.motion_controller.axis1.range_scan_step,
-    tester.motion_controller.axis1.external_scan_list_file,
+    tester.motion_controller.axis_0.scan_mode,
+    tester.motion_controller.axis_0.working_unit,
+    tester.motion_controller.axis_0.range_scan_start,
+    tester.motion_controller.axis_0.range_scan_stop,
+    tester.motion_controller.axis_0.range_scan_step,
+    tester.motion_controller.axis_0.external_scan_list_file,
 )
 
 foo2 = column(
     # manual
     Div(text="<b>Manual Operations:</b>"),
     Div(text="Manual Operation Unit:"),
-    tester.motion_controller.axis1.manual_unit,
-    tester.motion_controller.axis1.manual_position,
-    tester.motion_controller.axis1.manual_move,
-    tester.motion_controller.axis1.manual_step,
-    tester.motion_controller.axis1.manual_step_forward,
-    tester.motion_controller.axis1.manual_step_backward,
+    tester.motion_controller.axis_0.manual_unit,
+    tester.motion_controller.axis_0.manual_position,
+    tester.motion_controller.axis_0.manual_move,
+    tester.motion_controller.axis_0.manual_step,
+    tester.motion_controller.axis_0.manual_step_forward,
+    tester.motion_controller.axis_0.manual_step_backward,
 )
 
 bar = row(foo0, foo1, foo2)
-bar1 = Panel(child=bar, title="Axis 1")
-# endregion axis1
+bar1 = Panel(child=bar, title="Axis 0")
+# endregion axis_0
 
-# region axis2
+# region axis_1
 foo0 = column(
-    tester.motion_controller.axis2.multiples,
-    tester.motion_controller.axis2.working_direction,
+    tester.motion_controller.axis_1.multiples,
+    tester.motion_controller.axis_1.working_direction,
     Div(text="Position and Limitation Unit:"),
-    tester.motion_controller.axis2.position_unit,
-    tester.motion_controller.axis2.zero_point_absolute_position,
-    tester.motion_controller.axis2.soft_limit_min,
-    tester.motion_controller.axis2.soft_limit_max,
-    tester.motion_controller.axis2.driving_speed,
-    tester.motion_controller.axis2.driving_speed_unit,
-    tester.motion_controller.axis2.driving_acceleration,
-    tester.motion_controller.axis2.driving_acceleration_unit,
+    tester.motion_controller.axis_1.position_unit,
+    tester.motion_controller.axis_1.zero_point_absolute_position,
+    tester.motion_controller.axis_1.soft_limit_min,
+    tester.motion_controller.axis_1.soft_limit_max,
+    tester.motion_controller.axis_1.driving_speed,
+    tester.motion_controller.axis_1.driving_speed_unit,
+    tester.motion_controller.axis_1.driving_acceleration,
+    tester.motion_controller.axis_1.driving_acceleration_unit,
 )
 
 foo1 = column(
     # exp params
     Div(text="<b>Range Scan Param Settings:</b>"),
-    tester.motion_controller.axis2.scan_mode,
-    tester.motion_controller.axis2.working_unit,
-    tester.motion_controller.axis2.range_scan_start,
-    tester.motion_controller.axis2.range_scan_stop,
-    tester.motion_controller.axis2.range_scan_step,
-    tester.motion_controller.axis2.external_scan_list_file,
+    tester.motion_controller.axis_1.scan_mode,
+    tester.motion_controller.axis_1.working_unit,
+    tester.motion_controller.axis_1.range_scan_start,
+    tester.motion_controller.axis_1.range_scan_stop,
+    tester.motion_controller.axis_1.range_scan_step,
+    tester.motion_controller.axis_1.external_scan_list_file,
 )
 
 foo2 = column(
     # manual
     Div(text="<b>Manual Operations:</b>"),
     Div(text="Manual Operation Unit:"),
-    tester.motion_controller.axis2.manual_unit,
-    tester.motion_controller.axis2.manual_position,
-    tester.motion_controller.axis2.manual_move,
-    tester.motion_controller.axis2.manual_step,
-    tester.motion_controller.axis2.manual_step_forward,
-    tester.motion_controller.axis2.manual_step_backward,
+    tester.motion_controller.axis_1.manual_unit,
+    tester.motion_controller.axis_1.manual_position,
+    tester.motion_controller.axis_1.manual_move,
+    tester.motion_controller.axis_1.manual_step,
+    tester.motion_controller.axis_1.manual_step_forward,
+    tester.motion_controller.axis_1.manual_step_backward,
 )
 
 bar = row(foo0, foo1, foo2)
-bar2 = Panel(child=bar, title="Axis 2")
-# endregion axis2
+bar2 = Panel(child=bar, title="Axis 1")
+# endregion axis_1
 
-# region axis3
+# region axis_2
 foo0 = column(
-    tester.motion_controller.axis3.multiples,
-    tester.motion_controller.axis3.working_direction,
+    tester.motion_controller.axis_2.multiples,
+    tester.motion_controller.axis_2.working_direction,
     Div(text="Position and Limitation Unit:"),
-    tester.motion_controller.axis3.position_unit,
-    tester.motion_controller.axis3.zero_point_absolute_position,
-    tester.motion_controller.axis3.soft_limit_min,
-    tester.motion_controller.axis3.soft_limit_max,
-    tester.motion_controller.axis3.driving_speed,
-    tester.motion_controller.axis3.driving_speed_unit,
-    tester.motion_controller.axis3.driving_acceleration,
-    tester.motion_controller.axis3.driving_acceleration_unit,
+    tester.motion_controller.axis_2.position_unit,
+    tester.motion_controller.axis_2.zero_point_absolute_position,
+    tester.motion_controller.axis_2.soft_limit_min,
+    tester.motion_controller.axis_2.soft_limit_max,
+    tester.motion_controller.axis_2.driving_speed,
+    tester.motion_controller.axis_2.driving_speed_unit,
+    tester.motion_controller.axis_2.driving_acceleration,
+    tester.motion_controller.axis_2.driving_acceleration_unit,
 )
 
 foo1 = column(
     # exp params
     Div(text="<b>Range Scan Param Settings:</b>"),
-    tester.motion_controller.axis3.scan_mode,
-    tester.motion_controller.axis3.working_unit,
-    tester.motion_controller.axis3.range_scan_start,
-    tester.motion_controller.axis3.range_scan_stop,
-    tester.motion_controller.axis3.range_scan_step,
-    tester.motion_controller.axis3.external_scan_list_file,
+    tester.motion_controller.axis_2.scan_mode,
+    tester.motion_controller.axis_2.working_unit,
+    tester.motion_controller.axis_2.range_scan_start,
+    tester.motion_controller.axis_2.range_scan_stop,
+    tester.motion_controller.axis_2.range_scan_step,
+    tester.motion_controller.axis_2.external_scan_list_file,
 )
 
 foo2 = column(
     # manual
     Div(text="<b>Manual Operations:</b>"),
     Div(text="Manual Operation Unit:"),
-    tester.motion_controller.axis3.manual_unit,
-    tester.motion_controller.axis3.manual_position,
-    tester.motion_controller.axis3.manual_move,
-    tester.motion_controller.axis3.manual_step,
-    tester.motion_controller.axis3.manual_step_forward,
-    tester.motion_controller.axis3.manual_step_backward,
+    tester.motion_controller.axis_2.manual_unit,
+    tester.motion_controller.axis_2.manual_position,
+    tester.motion_controller.axis_2.manual_move,
+    tester.motion_controller.axis_2.manual_step,
+    tester.motion_controller.axis_2.manual_step_forward,
+    tester.motion_controller.axis_2.manual_step_backward,
 )
 
 bar = row(foo0, foo1, foo2)
-bar3 = Panel(child=bar, title="Axis 3")
-# endregion axis3
+bar3 = Panel(child=bar, title="Axis 2")
+# endregion axis_2
 
 t = Tabs(tabs=[bar0, bar1, bar2, bar3], name="dashboard")
 

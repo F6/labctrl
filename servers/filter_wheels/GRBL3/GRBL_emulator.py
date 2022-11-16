@@ -23,7 +23,7 @@ def online():
     res = dict()
     res['success'] = True
     res['message'] = "The server is ONLINE"
-    res['name'] = "GRBL1"
+    res['name'] = "GRBL3"
     res = json.dumps(res)
     return Response(res, status=200, mimetype='application/json')
 
@@ -35,7 +35,7 @@ def moveabs(xyz:str):
     # grbl.blocking_moveabs(x, y, z)
     res = dict()
     res['success'] = True
-    res['name'] = 'GRBL1'
+    res['name'] = 'GRBL3'
     res['message'] = "Moved to target position"
     res['target'] = [x, y, z]
     res = json.dumps(res)

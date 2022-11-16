@@ -93,8 +93,8 @@
                         "radian"
                     ],
                     "ManualUnit": "degree",
-                    "ManualPosition": 60.0,
-                    "ManualStep": 60.0,
+                    "ManualPosition": 0.0,
+                    "ManualStep": 1.0,
                     "Multiples": 1,
                     "SoftLimitMin": -999.0,
                     "SoftLimitMax": 999.0,
@@ -259,7 +259,7 @@
                         "Range",
                         "ExternalFile"
                     ],
-                    "ScanMode": "Manual",
+                    "ScanMode": "Range",
                     "RangeScanStart": 0,
                     "RangeScanStop": 360,
                     "RangeScanStep": 60,
@@ -320,7 +320,7 @@
                         },
                         {
                             "Name": "Unused",
-                            "Position": 20.0
+                            "Position": 60.0
                         },
                         {
                             "Name": "Unused",
@@ -1018,12 +1018,11 @@
                     "Name": "GRBL1.X",
                     "Comment": "Horizontal Motor",
                     "WorkingUnits": [
-                        "second",
-                        "minute",
-                        "degree",
-                        "radian"
+                        "nm",
+                        "um",
+                        "mm"
                     ],
-                    "WorkingUnit": "degree",
+                    "WorkingUnit": "mm",
                     "ScanModes": [
                         "Manual",
                         "Range",
@@ -1041,23 +1040,21 @@
                         8.0
                     ],
                     "PositionUnits": [
-                        "second",
-                        "minute",
-                        "degree",
-                        "radian"
+                        "nm",
+                        "um",
+                        "mm"
                     ],
-                    "PositionUnit": "degree",
-                    "ZeroPointAbsolutePosition": 0.0,
+                    "PositionUnit": "mm",
+                    "ZeroPointAbsolutePosition": 2.0,
                     "ManualUnits": [
-                        "second",
-                        "minute",
-                        "degree",
-                        "radian"
+                        "nm",
+                        "um",
+                        "mm"
                     ],
-                    "ManualUnit": "degree",
-                    "ManualPosition": 4.2,
-                    "ManualStep": 1.0,
-                    "Multiples": 2,
+                    "ManualUnit": "mm",
+                    "ManualPosition": 6.2,
+                    "ManualStep": 1500.0,
+                    "Multiples": 1.0,
                     "SoftLimitMin": -999.0,
                     "SoftLimitMax": 999.0,
                     "WorkingDirections": [
@@ -1066,63 +1063,94 @@
                     ],
                     "WorkingDirection": "Positive",
                     "DrivingSpeedUnits": [
-                        "second/s",
-                        "minute/s",
-                        "degree/s",
-                        "radian/s"
+                        "nm/s",
+                        "um/s",
+                        "mm/s"
                     ],
-                    "DrivingSpeedUnit": "degree/s",
+                    "DrivingSpeedUnit": "mm/s",
                     "DrivingSpeed": 30,
                     "DrivingAccelerationUnits": [
-                        "second/s^2",
-                        "minute/s^2",
-                        "degree/s^2",
-                        "radian/s^2"
+                        "nm/s^2",
+                        "um/s^2",
+                        "mm/s^2"
                     ],
-                    "DrivingAccelerationUnit": "degree/s^2",
+                    "DrivingAccelerationUnit": "mm/s^2",
                     "DrivingAcceleration": 30
                 },
                 {
                     "Name": "GRBL1.Y",
-                    "Comment": "Vertical Motor",
+                    "Comment": "Horizontal Motor",
                     "WorkingUnits": [
-                        "second",
-                        "minute",
-                        "degree",
-                        "radian"
+                        "nm",
+                        "um",
+                        "mm"
                     ],
-                    "WorkingUnit": "degree",
+                    "WorkingUnit": "mm",
                     "ScanModes": [
                         "Manual",
                         "Range",
                         "ExternalFile"
                     ],
-                    "ScanMode": "Range",
+                    "ScanMode": "ExternalFile",
                     "RangeScanStart": -5.0,
                     "RangeScanStop": 5.0,
                     "RangeScanStep": 0.2,
                     "LoadedExternalScanList": [
+                        -10.0,
+                        -9.0,
+                        -8.0,
+                        -7.0,
+                        -6.0,
+                        -5.0,
+                        -4.5,
+                        -4.0,
+                        -3.5,
+                        -3.0,
+                        -2.5,
+                        -2.0,
+                        -1.5,
+                        -1.0,
+                        -0.5,
                         0.0,
+                        0.5,
                         1.0,
+                        1.5,
                         2.0,
+                        2.5,
+                        3.0,
+                        3.5,
                         4.0,
-                        8.0
+                        4.5,
+                        5.0,
+                        6.0,
+                        7.0,
+                        8.0,
+                        9.0,
+                        10.0,
+                        11.0,
+                        12.0,
+                        13.0,
+                        14.0,
+                        15.0,
+                        16.0,
+                        17.0,
+                        18.0,
+                        19.0,
+                        10.0
                     ],
                     "PositionUnits": [
-                        "second",
-                        "minute",
-                        "degree",
-                        "radian"
+                        "nm",
+                        "um",
+                        "mm"
                     ],
-                    "PositionUnit": "degree",
+                    "PositionUnit": "mm",
                     "ZeroPointAbsolutePosition": 0.0,
                     "ManualUnits": [
-                        "second",
-                        "minute",
-                        "degree",
-                        "radian"
+                        "nm",
+                        "um",
+                        "mm"
                     ],
-                    "ManualUnit": "degree",
+                    "ManualUnit": "mm",
                     "ManualPosition": 4.2,
                     "ManualStep": 1.0,
                     "Multiples": 2,
@@ -1134,38 +1162,36 @@
                     ],
                     "WorkingDirection": "Positive",
                     "DrivingSpeedUnits": [
-                        "second/s",
-                        "minute/s",
-                        "degree/s",
-                        "radian/s"
+                        "nm/s",
+                        "um/s",
+                        "mm/s"
                     ],
-                    "DrivingSpeedUnit": "degree/s",
+                    "DrivingSpeedUnit": "mm/s",
                     "DrivingSpeed": 30,
                     "DrivingAccelerationUnits": [
-                        "second/s^2",
-                        "minute/s^2",
-                        "degree/s^2",
-                        "radian/s^2"
+                        "nm/s^2",
+                        "um/s^2",
+                        "mm/s^2"
                     ],
-                    "DrivingAccelerationUnit": "degree/s^2",
-                    "DrivingAcceleration": 30
+                    "DrivingAccelerationUnit": "mm/s^2",
+                    "DrivingAcceleration": 30,
+                    "Mode": "ExternalFile"
                 },
                 {
                     "Name": "GRBL1.Z",
-                    "Comment": "NOT USED",
+                    "Comment": "Unused",
                     "WorkingUnits": [
-                        "second",
-                        "minute",
-                        "degree",
-                        "radian"
+                        "nm",
+                        "um",
+                        "mm"
                     ],
-                    "WorkingUnit": "degree",
+                    "WorkingUnit": "mm",
                     "ScanModes": [
                         "Manual",
                         "Range",
                         "ExternalFile"
                     ],
-                    "ScanMode": "Range",
+                    "ScanMode": "Manual",
                     "RangeScanStart": -5.0,
                     "RangeScanStop": 5.0,
                     "RangeScanStep": 0.2,
@@ -1177,23 +1203,21 @@
                         8.0
                     ],
                     "PositionUnits": [
-                        "second",
-                        "minute",
-                        "degree",
-                        "radian"
+                        "nm",
+                        "um",
+                        "mm"
                     ],
-                    "PositionUnit": "degree",
+                    "PositionUnit": "mm",
                     "ZeroPointAbsolutePosition": 0.0,
                     "ManualUnits": [
-                        "second",
-                        "minute",
-                        "degree",
-                        "radian"
+                        "nm",
+                        "um",
+                        "mm"
                     ],
-                    "ManualUnit": "degree",
+                    "ManualUnit": "mm",
                     "ManualPosition": 4.2,
                     "ManualStep": 1.0,
-                    "Multiples": 2,
+                    "Multiples": 3.0,
                     "SoftLimitMin": -999.0,
                     "SoftLimitMax": 999.0,
                     "WorkingDirections": [
@@ -1202,41 +1226,38 @@
                     ],
                     "WorkingDirection": "Positive",
                     "DrivingSpeedUnits": [
-                        "second/s",
-                        "minute/s",
-                        "degree/s",
-                        "radian/s"
+                        "nm/s",
+                        "um/s",
+                        "mm/s"
                     ],
-                    "DrivingSpeedUnit": "degree/s",
+                    "DrivingSpeedUnit": "mm/s",
                     "DrivingSpeed": 30,
                     "DrivingAccelerationUnits": [
-                        "second/s^2",
-                        "minute/s^2",
-                        "degree/s^2",
-                        "radian/s^2"
+                        "nm/s^2",
+                        "um/s^2",
+                        "mm/s^2"
                     ],
-                    "DrivingAccelerationUnit": "degree/s^2",
+                    "DrivingAccelerationUnit": "mm/s^2",
                     "DrivingAcceleration": 30
                 }
             ]
         },
         "GRBL2": {
-            "Name": "GRBL1",
+            "Name": "GRBL2",
             "Comment": "GRBL1.1 G-Code compatible motion controller, used for motorized mirror support",
             "Host": "127.0.0.1",
             "Port": 5050,
             "NumberOfAxes": 3,
             "Axes": [
                 {
-                    "Name": "GRBL1.X",
+                    "Name": "GRBL2.X",
                     "Comment": "Horizontal Motor",
                     "WorkingUnits": [
-                        "second",
-                        "minute",
-                        "degree",
-                        "radian"
+                        "nm",
+                        "um",
+                        "mm"
                     ],
-                    "WorkingUnit": "degree",
+                    "WorkingUnit": "mm",
                     "ScanModes": [
                         "Manual",
                         "Range",
@@ -1254,20 +1275,18 @@
                         8.0
                     ],
                     "PositionUnits": [
-                        "second",
-                        "minute",
-                        "degree",
-                        "radian"
+                        "nm",
+                        "um",
+                        "mm"
                     ],
-                    "PositionUnit": "degree",
+                    "PositionUnit": "mm",
                     "ZeroPointAbsolutePosition": 0.0,
                     "ManualUnits": [
-                        "second",
-                        "minute",
-                        "degree",
-                        "radian"
+                        "nm",
+                        "um",
+                        "mm"
                     ],
-                    "ManualUnit": "degree",
+                    "ManualUnit": "mm",
                     "ManualPosition": 4.2,
                     "ManualStep": 1.0,
                     "Multiples": 2,
@@ -1279,32 +1298,29 @@
                     ],
                     "WorkingDirection": "Positive",
                     "DrivingSpeedUnits": [
-                        "second/s",
-                        "minute/s",
-                        "degree/s",
-                        "radian/s"
+                        "nm/s",
+                        "um/s",
+                        "mm/s"
                     ],
-                    "DrivingSpeedUnit": "degree/s",
+                    "DrivingSpeedUnit": "mm/s",
                     "DrivingSpeed": 30,
                     "DrivingAccelerationUnits": [
-                        "second/s^2",
-                        "minute/s^2",
-                        "degree/s^2",
-                        "radian/s^2"
+                        "nm/s^2",
+                        "um/s^2",
+                        "mm/s^2"
                     ],
-                    "DrivingAccelerationUnit": "degree/s^2",
+                    "DrivingAccelerationUnit": "mm/s^2",
                     "DrivingAcceleration": 30
                 },
                 {
-                    "Name": "GRBL1.Y",
-                    "Comment": "Vertical Motor",
+                    "Name": "GRBL2.Y",
+                    "Comment": "Horizontal Motor",
                     "WorkingUnits": [
-                        "second",
-                        "minute",
-                        "degree",
-                        "radian"
+                        "nm",
+                        "um",
+                        "mm"
                     ],
-                    "WorkingUnit": "degree",
+                    "WorkingUnit": "mm",
                     "ScanModes": [
                         "Manual",
                         "Range",
@@ -1322,20 +1338,18 @@
                         8.0
                     ],
                     "PositionUnits": [
-                        "second",
-                        "minute",
-                        "degree",
-                        "radian"
+                        "nm",
+                        "um",
+                        "mm"
                     ],
-                    "PositionUnit": "degree",
+                    "PositionUnit": "mm",
                     "ZeroPointAbsolutePosition": 0.0,
                     "ManualUnits": [
-                        "second",
-                        "minute",
-                        "degree",
-                        "radian"
+                        "nm",
+                        "um",
+                        "mm"
                     ],
-                    "ManualUnit": "degree",
+                    "ManualUnit": "mm",
                     "ManualPosition": 4.2,
                     "ManualStep": 1.0,
                     "Multiples": 2,
@@ -1347,32 +1361,29 @@
                     ],
                     "WorkingDirection": "Positive",
                     "DrivingSpeedUnits": [
-                        "second/s",
-                        "minute/s",
-                        "degree/s",
-                        "radian/s"
+                        "nm/s",
+                        "um/s",
+                        "mm/s"
                     ],
-                    "DrivingSpeedUnit": "degree/s",
+                    "DrivingSpeedUnit": "mm/s",
                     "DrivingSpeed": 30,
                     "DrivingAccelerationUnits": [
-                        "second/s^2",
-                        "minute/s^2",
-                        "degree/s^2",
-                        "radian/s^2"
+                        "nm/s^2",
+                        "um/s^2",
+                        "mm/s^2"
                     ],
-                    "DrivingAccelerationUnit": "degree/s^2",
+                    "DrivingAccelerationUnit": "mm/s^2",
                     "DrivingAcceleration": 30
                 },
                 {
-                    "Name": "GRBL1.Z",
-                    "Comment": "NOT USED",
+                    "Name": "GRBL2.Z",
+                    "Comment": "Unused",
                     "WorkingUnits": [
-                        "second",
-                        "minute",
-                        "degree",
-                        "radian"
+                        "nm",
+                        "um",
+                        "mm"
                     ],
-                    "WorkingUnit": "degree",
+                    "WorkingUnit": "mm",
                     "ScanModes": [
                         "Manual",
                         "Range",
@@ -1390,20 +1401,18 @@
                         8.0
                     ],
                     "PositionUnits": [
-                        "second",
-                        "minute",
-                        "degree",
-                        "radian"
+                        "nm",
+                        "um",
+                        "mm"
                     ],
-                    "PositionUnit": "degree",
+                    "PositionUnit": "mm",
                     "ZeroPointAbsolutePosition": 0.0,
                     "ManualUnits": [
-                        "second",
-                        "minute",
-                        "degree",
-                        "radian"
+                        "nm",
+                        "um",
+                        "mm"
                     ],
-                    "ManualUnit": "degree",
+                    "ManualUnit": "mm",
                     "ManualPosition": 4.2,
                     "ManualStep": 1.0,
                     "Multiples": 2,
@@ -1415,20 +1424,18 @@
                     ],
                     "WorkingDirection": "Positive",
                     "DrivingSpeedUnits": [
-                        "second/s",
-                        "minute/s",
-                        "degree/s",
-                        "radian/s"
+                        "nm/s",
+                        "um/s",
+                        "mm/s"
                     ],
-                    "DrivingSpeedUnit": "degree/s",
+                    "DrivingSpeedUnit": "mm/s",
                     "DrivingSpeed": 30,
                     "DrivingAccelerationUnits": [
-                        "second/s^2",
-                        "minute/s^2",
-                        "degree/s^2",
-                        "radian/s^2"
+                        "nm/s^2",
+                        "um/s^2",
+                        "mm/s^2"
                     ],
-                    "DrivingAccelerationUnit": "degree/s^2",
+                    "DrivingAccelerationUnit": "mm/s^2",
                     "DrivingAcceleration": 30
                 }
             ]
