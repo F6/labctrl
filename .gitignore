@@ -4,6 +4,8 @@ deprecated/
 # user inputed lists, probably useful for other users so commented out
 # scanlists/*
 # program generated files
+last_config.json
+last_stat.json
 scandata/*
 servers/cameras/EMCCD/raw/*.sif
 # proprietary programs or files from providers
