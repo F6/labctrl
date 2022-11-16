@@ -9,7 +9,7 @@ definations.
 
 __author__ = "Zhi Zi"
 __email__ = "x@zzi.io"
-__version__ = "20221115"
+__version__ = "20221116"
 
 import base64
 
@@ -19,18 +19,15 @@ from bokeh.models.widgets import Button, FileInput, RadioButtonGroup, TextInput
 from labctrl.labconfig import LabConfig
 from labctrl.labstat import LabStat
 
-from .abstract import (AbstractBundleSingleAxis,
-                       AbstractBundleMultiAxisController)
-from .remote import RemoteHandlerThreeAxes
+from .abstract import AbstractBundleLinearStage
+from .remote import RemoteLinearStage
 from .utils import eval_float, ignore_connection_error, eval_int, calculate_dx
 
 
-class BundleBokehSingleAxis(AbstractBundleSingleAxis):
+class BundleBokehLinearStage(AbstractBundleLinearStage):
     def __init__(self, bundle_config: dict, lcfg: LabConfig, lstat: LabStat) -> None:
         super().__init__()
-        # all axes share the same remote, so use remote_handler to
-        # coordinate motions between axes.
-        self.remote_handler = bundle_config["RemoteHandler"]
+
         self.config: dict = bundle_config["Config"]  # Axis Config
         self.name: str = self.config["Name"]
         self.lcfg = lcfg
@@ -40,9 +37,13 @@ class BundleBokehSingleAxis(AbstractBundleSingleAxis):
         config = self.config  # Alias for easier access
         name = self.name  # Alias for easier access
 
+        self.remote = RemoteLinearStage(config)
+
         self.update_scanlist(config)
 
         # ======== Param Configs ========
+        self.host = TextInput(title="Host", value=config["Host"])
+        self.port = TextInput(title="Port", value=str(config["Port"]))
         self.working_unit = RadioButtonGroup(
             labels=config["WorkingUnits"],
             active=(config["WorkingUnits"].index(config["WorkingUnit"]))
@@ -98,6 +99,7 @@ class BundleBokehSingleAxis(AbstractBundleSingleAxis):
             title="Driving Acceleration", value=str(
                 config["DrivingAcceleration"]))
         # ======== Interactive Elements ========
+        self.test_online = Button(label="Test Motion Controller Online")
         self.manual_move = Button(label='Move Stage', button_type='warning')
         self.manual_step_forward = Button(
             label="Step forward", button_type='warning')
@@ -105,8 +107,31 @@ class BundleBokehSingleAxis(AbstractBundleSingleAxis):
             label="Step backward", button_type='warning')
         # ======== Composites ========
 
-        # region working_unit
+        # region host
+        @update_config
+        def __callback_host(attr, old, new):
+            # no validation here because host can be literally anything,
+            # it is just a param passed to remote API
+            config["Host"] = self.host.value
+            # regenerate remote when config updated
+            self.remote = RemoteLinearStage(config)
 
+        self.host.on_change('value', __callback_host)
+        # endregion host
+
+        # region port
+        @update_config
+        def __callback_port(attr, old, new):
+            # no validation here because port can be literally anything,
+            # it is just a param passed to remote API
+            config["Port"] = eval_int(self.port.value)
+            # regenerate remote when config updated
+            self.remote = RemoteLinearStage(config)
+
+        self.port.on_change('value', __callback_port)
+        # endregion port
+
+        # region working_unit
         @update_config
         def __callback_working_unit(attr, old, new):
             unit_index = int(self.working_unit.active)
@@ -319,6 +344,18 @@ class BundleBokehSingleAxis(AbstractBundleSingleAxis):
         self.driving_acceleration.disabled = True
         # endregion driving_acceleration
 
+        # region test_online
+        def __callback_test_online():
+            try:
+                self.lstat.fmtmsg(self.remote.online())
+            except Exception as inst:
+                print(type(inst), inst.args)
+                self.lstat.expmsg(
+                    "[Error] Nothing from remote, server is probably down.")
+
+        self.test_online.on_click(__callback_test_online)
+        # endregion test_online
+
         # region manual_move
         @ignore_connection_error
         @update_config
@@ -328,8 +365,7 @@ class BundleBokehSingleAxis(AbstractBundleSingleAxis):
             config["ManualPosition"] = config["ZeroPointAbsolutePosition"] + \
                 calculate_dx(
                     offset, config["ManualUnit"], config["Multiples"], config["WorkingDirection"])
-            response = self.remote_handler.axis_moveabs(
-                name, config["ManualPosition"])
+            response = self.remote.moveabs(config["ManualPosition"])
             self.lstat.fmtmsg(response)
 
         self.manual_move.on_click(__callback_manual_move)
@@ -341,8 +377,7 @@ class BundleBokehSingleAxis(AbstractBundleSingleAxis):
         def __callback_manual_step_forward():
             config["ManualPosition"] += calculate_dx(
                 config["ManualStep"], config["ManualUnit"], config["Multiples"], config["WorkingDirection"])
-            response = self.remote_handler.axis_moveabs(
-                name, config["ManualPosition"])
+            response = self.remote.moveabs(config["ManualPosition"])
             self.lstat.fmtmsg(response)
 
         self.manual_step_forward.on_click(__callback_manual_step_forward)
@@ -354,8 +389,7 @@ class BundleBokehSingleAxis(AbstractBundleSingleAxis):
         def __callback_manual_step_backward():
             config["ManualPosition"] -= calculate_dx(
                 config["ManualStep"], config["ManualUnit"], config["Multiples"], config["WorkingDirection"])
-            response = self.remote_handler.axis_moveabs(
-                name, config["ManualPosition"])
+            response = self.remote.moveabs(config["ManualPosition"])
             self.lstat.fmtmsg(response)
 
         self.manual_step_backward.on_click(__callback_manual_step_backward)
@@ -379,8 +413,7 @@ class BundleBokehSingleAxis(AbstractBundleSingleAxis):
                             "[{name}][scan_range] Setting position to {pos} {unit}".format(name=name, pos=pos, unit=config["WorkingUnit"]))
                         target_abs_pos = config["ZeroPointAbsolutePosition"] + calculate_dx(
                             pos, config["WorkingUnit"], config["Multiples"], config["WorkingDirection"])
-                        response = self.remote_handler.axis_moveabs(
-                            name, target_abs_pos)
+                        response = self.remote.moveabs(target_abs_pos)
                         self.lstat.fmtmsg(response)
                         self.lstat.stat[name]["Delay"] = pos
                         self.lstat.stat[name]["iDelay"] = i
@@ -395,10 +428,14 @@ class BundleBokehSingleAxis(AbstractBundleSingleAxis):
 
         self.scan_range = scan_range
 
-    def set_position(self, position):
+    def set_position(self, position: float):
+        response = self.remote.moveabs(position)
+        self.lstat.fmtmsg(response)
+    
+    def set_delay(self, delay: float):
         pos = self.config["ZeroPointAbsolutePosition"] + calculate_dx(
-            position, self.config["WorkingUnit"], self.config["Multiples"], self.config["WorkingDirection"])
-        response = self.remote_handler.axis_moveabs(self.name, pos)
+            delay, self.config["WorkingUnit"], self.config["Multiples"], self.config["WorkingDirection"])
+        response = self.remote.moveabs(pos)
         self.lstat.fmtmsg(response)
 
     def update_scanlist(self, config) -> list:
@@ -427,81 +464,3 @@ class BundleBokehSingleAxis(AbstractBundleSingleAxis):
             self.lstat.stat[name]["ScanList"]))
         self.lstat.dump_stat("last_stat.json")
         return self.lstat.stat[name]["ScanList"]
-
-
-class BundleBokehMultiAxisController(AbstractBundleMultiAxisController):
-    def __init__(self, bundle_config: dict, lcfg: LabConfig, lstat: LabStat) -> None:
-        super().__init__()
-        self.config: dict = bundle_config["Config"]  # Controller Config
-        self.name: str = self.config["Name"]  # Controller Name
-        self.lcfg = lcfg
-        self.lstat = lstat
-
-        update_config = self.lcfg.update_config  # Alias for easier access
-        config = self.config  # Alias for easier access
-        name = self.name  # Alias for easier access
-
-        # ======== Param Configs ========
-        self.host = TextInput(title="Host", value=config["Host"])
-        self.port = TextInput(title="Port", value=str(config["Port"]))
-        self.test_online = Button(label="Test Motion Controller Online")
-        # all axes share the same remote, so use remote_handler to
-        # coordinate motions between axes.
-        self.remote_handler = RemoteHandlerThreeAxes(config, [
-            config["Axes"][0]["ManualPosition"],
-            config["Axes"][1]["ManualPosition"],
-            config["Axes"][2]["ManualPosition"]
-        ])
-        bundle_config_axis = dict()
-        bundle_config_axis["Config"] = config["Axes"][0]
-        bundle_config_axis["RemoteHandler"] = self.remote_handler
-        self.axis_0 = BundleBokehSingleAxis(
-            bundle_config_axis, lcfg, lstat)
-
-        bundle_config_axis = dict()
-        bundle_config_axis["Config"] = config["Axes"][1]
-        bundle_config_axis["RemoteHandler"] = self.remote_handler
-        self.axis_1 = BundleBokehSingleAxis(
-            bundle_config_axis, lcfg, lstat)
-
-        bundle_config_axis = dict()
-        bundle_config_axis["Config"] = config["Axes"][2]
-        bundle_config_axis["RemoteHandler"] = self.remote_handler
-        self.axis_2 = BundleBokehSingleAxis(
-            bundle_config_axis, lcfg, lstat)
-
-        # region host
-        @update_config
-        def __callback_host(attr, old, new):
-            # no validation here because host can be literally anything,
-            # it is just a param passed to remote API
-            config["Host"] = self.host.value
-            # regenerate remote when config updated
-            self.remote_handler.switch_remote(config)
-
-        self.host.on_change('value', __callback_host)
-        # endregion host
-
-        # region port
-        @update_config
-        def __callback_port(attr, old, new):
-            # no validation here because port can be literally anything,
-            # it is just a param passed to remote API
-            config["Port"] = eval_int(self.port.value)
-            # regenerate remote when config updated
-            self.remote_handler.switch_remote(config)
-
-        self.port.on_change('value', __callback_port)
-        # endregion port
-
-        # region test_online
-        def __callback_test_online():
-            try:
-                self.lstat.fmtmsg(self.remote_handler.online())
-            except Exception as inst:
-                print(type(inst), inst.args)
-                self.lstat.expmsg(
-                    "[Error] Nothing from remote, server is probably down.")
-
-        self.test_online.on_click(__callback_test_online)
-        # endregion test_online

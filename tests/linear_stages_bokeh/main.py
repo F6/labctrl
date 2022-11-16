@@ -1,35 +1,24 @@
 # -*- coding: utf-8 -*-
 
 """main.py:
-This is a simple test for linear stage widgets generated with bokeh library.
+This is a simple test for single axis movement (linear stage) widgets generated with bokeh library.
 """
 
 __author__ = "Zhi Zi"
 __email__ = "x@zzi.io"
-__version__ = "20221113"
+__version__ = "20221116"
 
 
-import time
-import numpy as np
-
-from functools import partial
 from threading import Thread
 
-from scipy.fft import fft, fftfreq, fftshift
-
 from bokeh.layouts import column, row
-from bokeh.models.widgets import Button, Div, TextInput, PreText
+from bokeh.models.widgets import Button, Div
 from bokeh.models import Panel, Tabs
-from tornado import gen
 
 from labctrl.labconfig import lcfg
 from labctrl.labstat import lstat
 from labctrl.components.linear_stages.factory import FactoryLinearStage
-from labctrl.components.cameras.factory import FactoryCamera
 from labctrl.main_doc import doc
-from labctrl.dashboard import taskoverview
-from labctrl.methods.generic import FactoryGenericMethods
-from labctrl.methods.figure import FactoryFigure1D, FactoryImageRGBA
 
 from .utils import ignore_connection_error
 
@@ -38,18 +27,20 @@ doc.template_variables["app_name"] = app_name
 
 app_config = lcfg.config["tests"][app_name]
 
-delay_stage = app_config["LinearStageUnderTesting"]
+motion_controller_name = app_config["ControllerUnderTesting"]
 
 
 class LinearStagesBokehWidgetTester:
     def __init__(self) -> None:
-        self.linear_stage_config = lcfg.config["linear_stages"][delay_stage]
+        self.motion_controller_config = lcfg.config["linear_stages"][motion_controller_name]
         factory = FactoryLinearStage(lcfg, lstat)
-        linear_stage_bundle_config = dict()
-        linear_stage_bundle_config["Config"] = self.linear_stage_config
-        self.delay_stage = factory.generate_bundle(linear_stage_bundle_config)
+        motion_controller_bundle_config = dict()
+        motion_controller_bundle_config["Config"] = self.motion_controller_config
+        self.motion_controller = factory.generate_bundle(
+            motion_controller_bundle_config)
         self.start = Button(label="Start Range Scan", button_type="success")
-        self.terminate = Button(label="Terminate Range Scan", button_type="warning")
+        self.terminate = Button(
+            label="Terminate Range Scan", button_type="warning")
         self.flags = {
             "RUNNING": False,
             # "PAUSE": False,
@@ -57,18 +48,19 @@ class LinearStagesBokehWidgetTester:
             "FINISH": False,
         }
 
+
 tester = LinearStagesBokehWidgetTester()
 
 
-@tester.delay_stage.scan_delay
+@tester.motion_controller.scan_range
 def range_scan_unit_operation(meta=dict()):
     if tester.flags["TERMINATE"]:
         meta["TERMINATE"] = True
         lstat.expmsg(
             "[ALERT] Range Scan Test operation received signal TERMINATE, trying graceful Thread exit")
         return
-    lstat.expmsg("[range_scan_unit_operation] Range Scan Task Running, meta: {}".format(meta))
-
+    lstat.expmsg(
+        "[range_scan_unit_operation] Range Scan Task Running, meta: {}".format(meta))
 
 
 def range_scan_task():
@@ -89,6 +81,7 @@ def __callback_range_scan_start():
     thread = Thread(target=range_scan_task)
     thread.start()
 
+
 tester.start.on_click(__callback_range_scan_start)
 
 
@@ -98,54 +91,67 @@ def __callback_range_scan_terminate():
     tester.flags["FINISH"] = False
     tester.flags["RUNNING"] = False
 
+
 tester.terminate.on_click(__callback_range_scan_terminate)
 
-
-foo = column(
+# region basic
+foo0 = column(
     # basic config
-    Div(text="<b>Stage Under Test: {}</b>".format(tester.linear_stage_config["Name"])),
-    tester.delay_stage.host,
-    tester.delay_stage.port,
-    tester.delay_stage.multiples,
-    tester.delay_stage.working_direction,
-    Div(text="Position and Limitation Unit:"),
-    tester.delay_stage.position_unit,
-    tester.delay_stage.zero_delay_absolute_position,
-    tester.delay_stage.soft_limit_min,
-    tester.delay_stage.soft_limit_max,
-    tester.delay_stage.driving_speed,
-    tester.delay_stage.driving_speed_unit,
-    tester.delay_stage.driving_acceleration,
-    tester.delay_stage.driving_acceleration_unit,
-)
-foo2 = column(
-    # exp params
-    Div(text="<b>Range Scan Param Settings:</b>"),
-    tester.delay_stage.scan_mode,
-    tester.delay_stage.working_unit,
-    tester.delay_stage.range_scan_start,
-    tester.delay_stage.range_scan_stop,
-    tester.delay_stage.range_scan_step,
-    tester.delay_stage.external_scan_list_file,
+    Div(text="<b>Linear Stage Under Test: {}</b>".format(
+        tester.motion_controller_config["Name"])),
+    tester.motion_controller.host,
+    tester.motion_controller.port,
+    tester.motion_controller.test_online,
     # schedule
     tester.start,
     tester.terminate,
 )
-foo3 = column(
-    # manual
-    Div(text="<b>Manual Operations:</b>"),
-    tester.delay_stage.test_online,
-    Div(text="Manual Operation Unit:"),
-    tester.delay_stage.manual_unit,
-    tester.delay_stage.manual_position,
-    tester.delay_stage.manual_move,
-    tester.delay_stage.manual_step,
-    tester.delay_stage.manual_step_forward,
-    tester.delay_stage.manual_step_backward,
+bar0 = Panel(child=foo0, title="Linear Stage Controller")
+# endregion basic
+
+# region axis_0
+foo0 = column(
+    tester.motion_controller.multiples,
+    tester.motion_controller.working_direction,
+    Div(text="Position and Limitation Unit:"),
+    tester.motion_controller.position_unit,
+    tester.motion_controller.zero_point_absolute_position,
+    tester.motion_controller.soft_limit_min,
+    tester.motion_controller.soft_limit_max,
+    tester.motion_controller.driving_speed,
+    tester.motion_controller.driving_speed_unit,
+    tester.motion_controller.driving_acceleration,
+    tester.motion_controller.driving_acceleration_unit,
 )
 
-bar = row(foo, foo2, foo3)
-p = Panel(child=bar, title="Linear Stage Under Test")
-t = Tabs(tabs=[p], name="dashboard")
+foo1 = column(
+    # exp params
+    Div(text="<b>Range Scan Param Settings:</b>"),
+    tester.motion_controller.scan_mode,
+    tester.motion_controller.working_unit,
+    tester.motion_controller.range_scan_start,
+    tester.motion_controller.range_scan_stop,
+    tester.motion_controller.range_scan_step,
+    tester.motion_controller.external_scan_list_file,
+)
+
+foo2 = column(
+    # manual
+    Div(text="<b>Manual Operations:</b>"),
+    Div(text="Manual Operation Unit:"),
+    tester.motion_controller.manual_unit,
+    tester.motion_controller.manual_position,
+    tester.motion_controller.manual_move,
+    tester.motion_controller.manual_step,
+    tester.motion_controller.manual_step_forward,
+    tester.motion_controller.manual_step_backward,
+)
+
+bar = row(foo0, foo1, foo2)
+bar1 = Panel(child=bar, title="Axis 0")
+# endregion axis_0
+
+
+t = Tabs(tabs=[bar0, bar1], name="dashboard")
 
 doc.add_root(t)

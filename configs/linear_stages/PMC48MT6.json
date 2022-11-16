@@ -10,7 +10,7 @@
     "RangeScanStep": 0.2,
     "LoadedExternalScanList": [0.0, 1.0, 2.0, 4.0, 8.0],
     "PositionUnit": "mm",
-    "ZeroDelayAbsolutePosition": 4.2,
+    "ZeroPointAbsolutePosition": 4.2,
     "ManualUnit": "ps",
     "ManualPosition": 4.2,
     "ManualStep": 1.0,

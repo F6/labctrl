@@ -1,4 +1,4 @@
 {
     "Name": "linear_stages_bokeh",
-    "LinearStageUnderTesting": "CDHD2"
+    "ControllerUnderTesting": "CDHD2"
 }

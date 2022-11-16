@@ -372,7 +372,7 @@
                 8.0
             ],
             "PositionUnit": "mm",
-            "ZeroDelayAbsolutePosition": 4.2,
+            "ZeroPointAbsolutePosition": 4.2,
             "ManualUnit": "ps",
             "ManualPosition": 4.2,
             "ManualStep": 1.0,
@@ -417,7 +417,8 @@
                 "nm/s^2",
                 "um/s^2",
                 "mm/s^2"
-            ]
+            ],
+            "ZeroDelayAbsolutePosition": 4.2
         },
         "AeroTech_THz": {
             "Name": "AeroTech_THz",
@@ -437,7 +438,7 @@
                 8.0
             ],
             "PositionUnit": "mm",
-            "ZeroDelayAbsolutePosition": 4.2,
+            "ZeroPointAbsolutePosition": 4.2,
             "ManualUnit": "ps",
             "ManualPosition": 4.2,
             "ManualStep": 1.0,
@@ -482,18 +483,19 @@
                 "nm/s^2",
                 "um/s^2",
                 "mm/s^2"
-            ]
+            ],
+            "ZeroDelayAbsolutePosition": 4.2
         },
         "CDHD2": {
             "Name": "CDHD2",
             "Comment": "The long delay line now for psTopas at A304",
             "Host": "127.0.0.1",
             "Port": 5002,
-            "WorkingUnit": "ps",
+            "WorkingUnit": "fs",
             "ScanMode": "Range",
-            "RangeScanStart": -5.0,
-            "RangeScanStop": 5.0,
-            "RangeScanStep": 0.2,
+            "RangeScanStart": -5000.0,
+            "RangeScanStop": 5000.0,
+            "RangeScanStep": 10.0,
             "LoadedExternalScanList": [
                 0.0,
                 1.0,
@@ -502,11 +504,11 @@
                 8.0
             ],
             "PositionUnit": "mm",
-            "ZeroDelayAbsolutePosition": 4.2,
+            "ZeroPointAbsolutePosition": 0.0,
             "ManualUnit": "ps",
-            "ManualPosition": 4.2,
+            "ManualPosition": 0.0,
             "ManualStep": 1.0,
-            "Multiples": 2,
+            "Multiples": 0.5,
             "SoftLimitMin": -999.0,
             "SoftLimitMax": 999.0,
             "WorkingDirection": "Positive",
@@ -547,7 +549,8 @@
                 "nm/s^2",
                 "um/s^2",
                 "mm/s^2"
-            ]
+            ],
+            "ZeroDelayAbsolutePosition": 4.2
         },
         "CRD507": {
             "Name": "CRD507",
@@ -567,7 +570,7 @@
                 8.0
             ],
             "PositionUnit": "mm",
-            "ZeroDelayAbsolutePosition": 4.2,
+            "ZeroPointAbsolutePosition": 4.2,
             "ManualUnit": "ps",
             "ManualPosition": 4.2,
             "ManualStep": 1.0,
@@ -612,7 +615,8 @@
                 "nm/s^2",
                 "um/s^2",
                 "mm/s^2"
-            ]
+            ],
+            "ZeroDelayAbsolutePosition": 4.2
         },
         "ETHGASN": {
             "Name": "ETHGASN",
@@ -632,7 +636,7 @@
                 8.0
             ],
             "PositionUnit": "mm",
-            "ZeroDelayAbsolutePosition": 4.2,
+            "ZeroPointAbsolutePosition": 4.2,
             "ManualUnit": "ps",
             "ManualPosition": 4.2,
             "ManualStep": 1.0,
@@ -677,7 +681,8 @@
                 "nm/s^2",
                 "um/s^2",
                 "mm/s^2"
-            ]
+            ],
+            "ZeroDelayAbsolutePosition": 4.2
         },
         "ETHGASN_leisai": {
             "Name": "ETHGASN_leisai",
@@ -697,7 +702,7 @@
                 8.0
             ],
             "PositionUnit": "mm",
-            "ZeroDelayAbsolutePosition": 4.2,
+            "ZeroPointAbsolutePosition": 4.2,
             "ManualUnit": "ps",
             "ManualPosition": 4.2,
             "ManualStep": 1.0,
@@ -742,7 +747,8 @@
                 "nm/s^2",
                 "um/s^2",
                 "mm/s^2"
-            ]
+            ],
+            "ZeroDelayAbsolutePosition": 4.2
         },
         "ETHGASN_yaskawa": {
             "Name": "ETHGASN_yaskawa",
@@ -762,7 +768,7 @@
                 8.0
             ],
             "PositionUnit": "mm",
-            "ZeroDelayAbsolutePosition": 4.2,
+            "ZeroPointAbsolutePosition": 4.2,
             "ManualUnit": "ps",
             "ManualPosition": 4.2,
             "ManualStep": 1.0,
@@ -807,7 +813,8 @@
                 "nm/s^2",
                 "um/s^2",
                 "mm/s^2"
-            ]
+            ],
+            "ZeroDelayAbsolutePosition": 4.2
         },
         "PMC48MT6": {
             "Name": "PMC48MT6",
@@ -827,7 +834,7 @@
                 8.0
             ],
             "PositionUnit": "mm",
-            "ZeroDelayAbsolutePosition": 4.2,
+            "ZeroPointAbsolutePosition": 4.2,
             "ManualUnit": "ps",
             "ManualPosition": 4.2,
             "ManualStep": 1.0,
@@ -872,7 +879,8 @@
                 "nm/s^2",
                 "um/s^2",
                 "mm/s^2"
-            ]
+            ],
+            "ZeroDelayAbsolutePosition": 4.2
         },
         "USB1020": {
             "Name": "USB1020",
@@ -892,7 +900,7 @@
                 8.0
             ],
             "PositionUnit": "mm",
-            "ZeroDelayAbsolutePosition": 4.2,
+            "ZeroPointAbsolutePosition": 4.2,
             "ManualUnit": "ps",
             "ManualPosition": 4.2,
             "ManualStep": 1.0,
@@ -937,7 +945,8 @@
                 "nm/s^2",
                 "um/s^2",
                 "mm/s^2"
-            ]
+            ],
+            "ZeroDelayAbsolutePosition": 4.2
         }
     },
     "lockin_and_boxcars": {
@@ -1045,16 +1054,16 @@
                         "mm"
                     ],
                     "PositionUnit": "mm",
-                    "ZeroPointAbsolutePosition": 2.0,
+                    "ZeroPointAbsolutePosition": 0.0,
                     "ManualUnits": [
                         "nm",
                         "um",
                         "mm"
                     ],
                     "ManualUnit": "mm",
-                    "ManualPosition": 6.2,
-                    "ManualStep": 1500.0,
-                    "Multiples": 1.0,
+                    "ManualPosition": 4.2,
+                    "ManualStep": 1.0,
+                    "Multiples": 2,
                     "SoftLimitMin": -999.0,
                     "SoftLimitMax": 999.0,
                     "WorkingDirections": [
@@ -1091,52 +1100,16 @@
                         "Range",
                         "ExternalFile"
                     ],
-                    "ScanMode": "ExternalFile",
+                    "ScanMode": "Range",
                     "RangeScanStart": -5.0,
                     "RangeScanStop": 5.0,
                     "RangeScanStep": 0.2,
                     "LoadedExternalScanList": [
-                        -10.0,
-                        -9.0,
-                        -8.0,
-                        -7.0,
-                        -6.0,
-                        -5.0,
-                        -4.5,
-                        -4.0,
-                        -3.5,
-                        -3.0,
-                        -2.5,
-                        -2.0,
-                        -1.5,
-                        -1.0,
-                        -0.5,
                         0.0,
-                        0.5,
                         1.0,
-                        1.5,
                         2.0,
-                        2.5,
-                        3.0,
-                        3.5,
                         4.0,
-                        4.5,
-                        5.0,
-                        6.0,
-                        7.0,
-                        8.0,
-                        9.0,
-                        10.0,
-                        11.0,
-                        12.0,
-                        13.0,
-                        14.0,
-                        15.0,
-                        16.0,
-                        17.0,
-                        18.0,
-                        19.0,
-                        10.0
+                        8.0
                     ],
                     "PositionUnits": [
                         "nm",
@@ -1174,8 +1147,7 @@
                         "mm/s^2"
                     ],
                     "DrivingAccelerationUnit": "mm/s^2",
-                    "DrivingAcceleration": 30,
-                    "Mode": "ExternalFile"
+                    "DrivingAcceleration": 30
                 },
                 {
                     "Name": "GRBL1.Z",
@@ -1191,7 +1163,7 @@
                         "Range",
                         "ExternalFile"
                     ],
-                    "ScanMode": "Manual",
+                    "ScanMode": "Range",
                     "RangeScanStart": -5.0,
                     "RangeScanStop": 5.0,
                     "RangeScanStep": 0.2,
@@ -1217,7 +1189,7 @@
                     "ManualUnit": "mm",
                     "ManualPosition": 4.2,
                     "ManualStep": 1.0,
-                    "Multiples": 3.0,
+                    "Multiples": 2,
                     "SoftLimitMin": -999.0,
                     "SoftLimitMax": 999.0,
                     "WorkingDirections": [
@@ -1498,7 +1470,7 @@
         },
         "linear_stages_bokeh": {
             "Name": "linear_stages_bokeh",
-            "LinearStageUnderTesting": "CDHD2"
+            "ControllerUnderTesting": "CDHD2"
         },
         "multiaxis_stages_bokeh": {
             "Name": "multiaxis_stages_bokeh",
