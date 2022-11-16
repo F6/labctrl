@@ -1,40 +1,48 @@
+# -*- coding: utf-8 -*-
+
+"""
+utils.py:
+auxiliary functions, temporarily collected here, probably moving to other modules later.
+"""
+
+__author__ = "Zhi Zi"
+__email__ = "x@zzi.io"
+__version__ = "20221115"
+
 import requests
+import numpy as np
 
 
-def ps_to_mm(ps:float) -> float:
-    """v = 1.0003 in air, so
-    speed of light = 299,702,547 meters per second in air.
-    For a retroreflector delay line setup, the light travels
-    forth and back so the optical path difference is twice
-    the distance traveled by mirror, thus the division by 2
+def calculate_dx(value: float, unit: str, multiples: float, direction: str):
     """
-    return ps*0.299702547*0.5
-
-
-def dt_to_mm(dt:float, unit:str, multiples:float, direction:str) -> float:
+    Converts working unit to standard internal unit mm
+     so we can send currect values to remote controller
     """
-    accepts dt, returns dx in mm
-    v = 1.0003 in air, so
-    speed of light = 299,702,547 meters per second in air.
-    """
-    # convert dt to ps unit
-    if unit == "ns":
-        dt = dt * 1000
-    elif unit == "ps":
-        dt = dt
-    elif unit == "fs":
-        dt = dt / 1000
+    # Basic coefficient (mm/degree)
+    c = 1.0
 
-    dx = dt*0.299702547/multiples
+    if unit == "radian":  # pi radian = 180 degree
+        dx = value * 180 / np.pi
+    elif unit == "degree":
+        dx = value
+    elif unit == "minute":
+        dx = value / 60
+    elif unit == "second":
+        dx = value / 3600
+    else:
+        pass
+
     if direction == "Positive":
         pass
     elif direction == "Negative":
         dx = -dx
+    else:
+        pass
+
+    dx = dx * c * multiples
+
     return dx
 
-
-def mm_to_ps(dx:float, multiples:float) -> float:
-    return multiples*dx/0.299702547
 
 def eval_float(f):
     try:
@@ -43,6 +51,7 @@ def eval_float(f):
     except Exception as e:
         print("Non-float number inputed")
         return 0.0
+
 
 def eval_int(i):
     try:

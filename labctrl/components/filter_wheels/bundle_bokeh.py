@@ -23,7 +23,7 @@ from .abstract import (AbstractBundleFilterWheelController,
                        AbstractBundleSingleFilterWheelAxis,
                        AbstractBundleSixSlots)
 from .remote import RemoteHandlerThreeAxes
-from .utils import eval_float, ignore_connection_error, eval_int
+from .utils import eval_float, ignore_connection_error, eval_int, calculate_dx
 
 
 def generate_callback(i: int):
@@ -74,9 +74,10 @@ class BundleBokehSixSlots(AbstractBundleSixSlots):
 
         # Attach callbacks to switch_to_slot_list widgets
         def __create_closure_switch_to_slot(i: int):
+            @ignore_connection_error
             @lcfg.update_config
             def __callback_switch_to_slot():
-                # Clicking Switch To Slot is also considered manual operation, 
+                # Clicking Switch To Slot is also considered manual operation,
                 #  so let's update the manual position in the backside
                 self.config["ManualPosition"] = self.slot_configs[i]["Position"]
                 # Notice that we did not update manual position at front panel,
@@ -399,12 +400,14 @@ class BundleBokehSingleFilterWheelAxis(AbstractBundleSingleFilterWheelAxis):
         # endregion driving_acceleration
 
         # region manual_move
+        @ignore_connection_error
         @update_config
         def __callback_manual_move():
             """before actual movement, make sure it's sync with what is at the front panel"""
             offset = eval_float(self.manual_position.value)
-            config["ManualPosition"] = offset + \
-                config["ZeroPointAbsolutePosition"]
+            config["ManualPosition"] = config["ZeroPointAbsolutePosition"] + \
+                calculate_dx(
+                    offset, config["ManualUnit"], config["Multiples"], config["WorkingDirection"])
             response = self.remote_handler.axis_moveabs(
                 name, config["ManualPosition"])
             self.lstat.fmtmsg(response)
@@ -416,7 +419,8 @@ class BundleBokehSingleFilterWheelAxis(AbstractBundleSingleFilterWheelAxis):
         @ignore_connection_error
         @update_config
         def __callback_manual_step_forward():
-            config["ManualPosition"] += config["ManualStep"]
+            config["ManualPosition"] += calculate_dx(
+                config["ManualStep"], config["ManualUnit"], config["Multiples"], config["WorkingDirection"])
             response = self.remote_handler.axis_moveabs(
                 name, config["ManualPosition"])
             self.lstat.fmtmsg(response)
@@ -428,7 +432,8 @@ class BundleBokehSingleFilterWheelAxis(AbstractBundleSingleFilterWheelAxis):
         @ignore_connection_error
         @update_config
         def __callback_manual_step_backward():
-            config["ManualPosition"] -= config["ManualStep"]
+            config["ManualPosition"] -= calculate_dx(
+                config["ManualStep"], config["ManualUnit"], config["Multiples"], config["WorkingDirection"])
             response = self.remote_handler.axis_moveabs(
                 name, config["ManualPosition"])
             self.lstat.fmtmsg(response)
@@ -452,7 +457,8 @@ class BundleBokehSingleFilterWheelAxis(AbstractBundleSingleFilterWheelAxis):
                             break
                         self.lstat.expmsg(
                             "[{name}][scan_range] Setting position to {pos} {unit}".format(name=name, pos=pos, unit=config["WorkingUnit"]))
-                        target_abs_pos = config["ZeroPointAbsolutePosition"] + pos
+                        target_abs_pos = config["ZeroPointAbsolutePosition"] + calculate_dx(
+                            pos, config["WorkingUnit"], config["Multiples"], config["WorkingDirection"])
                         response = self.remote_handler.axis_moveabs(
                             name, target_abs_pos)
                         self.lstat.fmtmsg(response)
@@ -470,7 +476,8 @@ class BundleBokehSingleFilterWheelAxis(AbstractBundleSingleFilterWheelAxis):
         self.scan_range = scan_range
 
     def set_position(self, position):
-        pos = self.config["ZeroPointAbsolutePosition"] + position
+        pos = self.config["ZeroPointAbsolutePosition"] + calculate_dx(
+            position, self.config["WorkingUnit"], self.config["Multiples"], self.config["WorkingDirection"])
         response = self.remote_handler.axis_moveabs(self.name, pos)
         self.lstat.fmtmsg(response)
 

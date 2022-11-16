@@ -11,6 +11,9 @@ ver 20221115:
     filter wheels are just multiaxis stages, modified multiaxis stages factory
     for filter wheels.
 
+ver 20221116:
+    because increasing size and complexity, add abstract class to better 
+    define widgets needed.
 """
 
 __author__ = "Zhi Zi"

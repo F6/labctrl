@@ -94,7 +94,7 @@
                     ],
                     "ManualUnit": "degree",
                     "ManualPosition": 60.0,
-                    "ManualStep": 1.0,
+                    "ManualStep": 60.0,
                     "Multiples": 1,
                     "SoftLimitMin": -999.0,
                     "SoftLimitMax": 999.0,
@@ -285,7 +285,7 @@
                         "radian"
                     ],
                     "ManualUnit": "degree",
-                    "ManualPosition": 120.0,
+                    "ManualPosition": 0.0,
                     "ManualStep": 1.0,
                     "Multiples": 1,
                     "SoftLimitMin": -999.0,
