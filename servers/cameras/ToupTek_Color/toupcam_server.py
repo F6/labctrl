@@ -131,7 +131,10 @@ def setvid():
 
 @app.route('/setExposureTime/<t>')
 def set_exposure_time(t):
+    t = float(t)
     t = int(t)
+    if t < 1:
+        t = 1
     camera.setExposureTime(t)
     res = dict()
     res['success'] = True

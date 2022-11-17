@@ -50,7 +50,7 @@
       "YName": "2D Figure Test Y Name",
       "DataName": "2D Figure Test Data Name",
       "PlotWidth": 640,
-      "PlotHeight": 640
+      "PlotHeight": 480
     },
     {
       "Name": "figures_bokeh_test_image",

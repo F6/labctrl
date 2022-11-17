@@ -29,7 +29,9 @@ class FigureWidgetTester():
         self.figure_bundles: list[AbstractBundleFigure] = list()
         factory = FactoryFigure(lcfg, lstat)
         # ======== Test 1D Figure ========
-        for bundle_config in config["TestFigures"]:
+        for figure_config in config["TestFigures"]:
+            bundle_config = dict()
+            bundle_config["Config"] = figure_config
             figure_bundle = factory.generate_bundle(bundle_config)
             self.figure_bundles.append(figure_bundle)
         self.phase = 0

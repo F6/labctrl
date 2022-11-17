@@ -48,7 +48,7 @@ from bokeh.models.widgets import FileInput as BokehFileInput
 
 from labctrl.widgets.generic import (
     GenericButton, GenericRadioButtonGroup, GenericTextInput)
-from labctrl.widgets.figure import AbstractBundleFigure
+from labctrl.widgets.figure import AbstractBundleImageRGBA
 
 
 from .remote import RemoteCamera
@@ -65,16 +65,20 @@ class AbstractBundleCamera(ABC):
     port:                               Union[GenericTextInput, BokehTextInput]
     working_mode:                       Union[GenericRadioButtonGroup,
                                               BokehRadioButtonGroup]
+    change_working_mode:                Union[GenericButton, BokehButton]
     exposure_time_unit:                 Union[GenericRadioButtonGroup,
                                               BokehRadioButtonGroup]
     exposure_time:                      Union[GenericTextInput, BokehTextInput]
+    change_exposure_time:               Union[GenericButton, BokehButton]
+
     # Interactive Elements
     test_online:                        Union[GenericButton, BokehButton]
+    apply_all_settings:                 Union[GenericButton, BokehButton]
     manual_take_sample:                 Union[GenericButton, BokehButton]
     start_continuous_video_streaming:   Union[GenericButton, BokehButton]
     stop_continuous_video_streaming:    Union[GenericButton, BokehButton]
     # Composite
-    preview_figure:                     AbstractBundleFigure
+    preview_figure:                     AbstractBundleImageRGBA
     # Other
     remote:                             RemoteCamera
 

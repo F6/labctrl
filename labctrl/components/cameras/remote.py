@@ -16,12 +16,14 @@ import base64
 import numpy as np
 from PIL import Image
 
+
 class RemoteCamera():
     def __init__(self, config, max_retry=3) -> None:
         self.host = config["Host"]
         self.port = config["Port"]
         self.max_retry = max_retry
-        self.api_url = 'http://{host}:{port}/'.format(host=self.host, port=self.port)
+        self.api_url = 'http://{host}:{port}/'.format(
+            host=self.host, port=self.port)
 
     def apicall(self, command):
         for i in range(self.max_retry):
@@ -41,6 +43,21 @@ class RemoteCamera():
         Does not test if the remote server actually works, however."""
         return self.apicall('')
 
+    def set_exposure_time(self, exposure_time: float):
+        # unit: us
+        return self.apicall('setExposureTime/{:.6f}'.format(exposure_time))
+
+    def set_working_mode(self, working_mode: str):
+        if working_mode == "SoftwareTrigger":
+            return self.apicall('setTriggerMode')
+        elif working_mode == "HardwareTrigger":
+            return self.apicall('setTriggerMode')
+        elif working_mode == "Continuous":
+            return self.apicall('setVideoMode')
+        else:
+            raise ValueError(
+                "Unsupported working mode under current API {}".format(working_mode))
+
     def get_image(self):
         """Triggers the remote camera once, and retrive the new image
         """
@@ -50,5 +67,5 @@ class RemoteCamera():
         image = Image.frombuffer("RGB", (r["width"], r["height"]), buffer)
         image = np.array(image)
         return image
-    
+
 # camera = RemoteCamera({"Host":"127.0.0.1", "Port":5058})

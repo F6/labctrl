@@ -68,46 +68,47 @@ class FactoryFigure:
         self.lstat = lstat
 
     def generate_bundle(self, bundle_config: dict):
-        figure_type: str = bundle_config["FigureType"]
+        config: dict = bundle_config["Config"]
+        figure_type: str = config["FigureType"]
         if figure_type == "1D":
-            return self.generate_bundle_figure_1d(bundle_config)
+            return self.generate_bundle_figure_1d(config)
         elif figure_type == "2D":
-            return self.generate_bundle_figure_2d(bundle_config)
+            return self.generate_bundle_figure_2d(config)
         elif figure_type == "Image":
-            return self.generate_bundle_figure_image_RGBA(bundle_config)
+            return self.generate_bundle_figure_image_RGBA(config)
         else:
             raise ValueError(
                 "Unknown figure type to generate: {}".format(figure_type))
 
-    def generate_bundle_figure_1d(self, bundle_config: dict):
-        title = bundle_config["Title"]
-        x_name = bundle_config["XName"]
-        y_name = bundle_config["YName"]
+    def generate_bundle_figure_1d(self, config: dict):
+        title = config["Title"]
+        x_name = config["XName"]
+        y_name = config["YName"]
         # Load default values if not present in config
-        plot_height = bundle_config["PlotHeight"] if "PlotHeight" in bundle_config else 360
-        plot_width = bundle_config["PlotWidth"] if "PlotWidth" in bundle_config else 640
-        if "Whiskers" in bundle_config:
-            if bundle_config["Whiskers"]:
+        plot_height = config["PlotHeight"] if "PlotHeight" in config else 360
+        plot_width = config["PlotWidth"] if "PlotWidth" in config else 640
+        if "Whiskers" in config:
+            if config["Whiskers"]:
                 return BundleFigure1DWithWhiskers(title, x_name, y_name, plot_width, plot_height)
         return BundleFigure1D(title, x_name, y_name, plot_width, plot_height)
 
-    def generate_bundle_figure_2d(self, bundle_config: dict):
-        title = bundle_config["Title"]
-        x_name = bundle_config["XName"]
-        y_name = bundle_config["YName"]
-        d_name = bundle_config["DataName"]
+    def generate_bundle_figure_2d(self, config: dict):
+        title = config["Title"]
+        x_name = config["XName"]
+        y_name = config["YName"]
+        d_name = config["DataName"]
         # Load default values if not present in config
-        plot_height = bundle_config["PlotHeight"] if "PlotHeight" in bundle_config else 640
-        plot_width = bundle_config["PlotWidth"] if "PlotWidth" in bundle_config else 640
+        plot_height = config["PlotHeight"] if "PlotHeight" in config else 480
+        plot_width = config["PlotWidth"] if "PlotWidth" in config else 640
         return BundleFigure2D(title, x_name, y_name, d_name, plot_width, plot_height)
 
-    def generate_bundle_figure_image_RGBA(self, bundle_config: dict):
-        title = bundle_config["Title"]
-        x_name = bundle_config["XName"]
-        y_name = bundle_config["YName"]
+    def generate_bundle_figure_image_RGBA(self, config: dict):
+        title = config["Title"]
+        x_name = config["XName"]
+        y_name = config["YName"]
         # Load default values if not present in config
-        plot_height = bundle_config["PlotHeight"] if "PlotHeight" in bundle_config else 360
-        plot_width = bundle_config["PlotWidth"] if "PlotWidth" in bundle_config else 640
+        plot_height = config["PlotHeight"] if "PlotHeight" in config else 360
+        plot_width = config["PlotWidth"] if "PlotWidth" in config else 640
         return BundleImageRGBA(title, x_name, y_name, plot_width, plot_height)
 
 
@@ -148,8 +149,8 @@ class BundleFigure1DWithWhiskers(AbstractBundleFigure1DWithWhiskers):
         spectrum_tools = "box_zoom,pan,undo,redo,reset,save,crosshair"
         length = 100
         self.figure = figure(title=title, x_axis_label=x_name,
-                          y_axis_label=y_name, plot_width=plot_width,
-                          plot_height=plot_height, tools=spectrum_tools)
+                             y_axis_label=y_name, plot_width=plot_width,
+                             plot_height=plot_height, tools=spectrum_tools)
         self.y = np.zeros(length)
         self.x = np.arange(length)
         self.base = np.arange(length)
@@ -256,8 +257,8 @@ class BundleImageRGBA(AbstractBundleImageRGBA):
     def __init__(self, title: str, x_name: str, y_name: str, plot_width: int, plot_height: int) -> None:
         spectrum_tools = "box_zoom,pan,undo,redo,reset,save,crosshair"
         self.figure = figure(title=title, x_axis_label=x_name,
-                          y_axis_label=y_name, plot_width=plot_width,
-                          plot_height=plot_height, tools=spectrum_tools)
+                             y_axis_label=y_name, plot_width=plot_width,
+                             plot_height=plot_height, tools=spectrum_tools)
         self.d = np.zeros((100, 100), dtype=np.uint32)
         self.ds = ColumnDataSource({
             'image': [self.d],
