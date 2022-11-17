@@ -69,6 +69,9 @@ class ToupCamera:
         # toupcam.Toupcam.put_Option(toupcam.TOUPCAM_OPTION_BITDEPTH, 1)
 
     def setExposureTime(self, t: int):
+        """
+        Set exporure time of camera, unit=us
+        """
         self.exposure = t
         toupcam.Toupcam.put_ExpoTime(self.hcam, self.exposure)
 

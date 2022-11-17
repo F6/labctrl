@@ -61,7 +61,7 @@ from labctrl.components.lockin_and_boxcars.factory import FactoryBoxcarControlle
 from labctrl.main_doc import doc
 from labctrl.dashboard import taskoverview
 from labctrl.methods.generic import FactoryGenericMethods
-from labctrl.methods.figure import FactoryFigure1D, FactoryFigure1DWithWhiskers
+from labctrl.widgets.figure import FactoryFigure1D, FactoryFigure1DWithWhiskers
 
 doc.template_variables["app_name"] = "kerr_gating"
 

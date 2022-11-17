@@ -21,7 +21,7 @@ class LabStat(metaclass=Singleton):
     def __init__(self) -> None:
         self.msg_list = list()
         self.pre_exp_msg = PreText(
-            text='''After setting up params and remote servers, click Start to start.''', width=800, height=800, name="messages")
+            text='''After setting up params and remote servers, click Start to start.''', width=1080, height=800, name="messages")
 
         self.stat = dict()
 
@@ -29,8 +29,6 @@ class LabStat(metaclass=Singleton):
         self.root_names = ["dashboard", "setup",
                           "params", "schedule", "reports", "messages", "manual"]
         self.doc = doc
-
-        self.doc.add_root(self.pre_exp_msg)
 
     def dump_stat(self, filename) -> None:
         with open(filename, 'w') as f:

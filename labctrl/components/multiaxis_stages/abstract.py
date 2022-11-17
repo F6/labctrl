@@ -54,11 +54,11 @@ from .remote import RemoteHandlerThreeAxes
 
 
 
-class AbstractBundleSingleAxis:
+class AbstractBundleSingleAxis(ABC):
     """
     This bundle provides the following widgets and methods
-        to set motion parameters of a single axis
-        which a filter wheel is attached to:
+        to set motion parameters of a single axis of a
+        multiaxis motion controller:
     """
     # Param Configs
     working_unit:                   Union[GenericRadioButtonGroup,
@@ -107,7 +107,7 @@ class AbstractBundleSingleAxis:
 class AbstractBundleMultiAxisController(ABC):
     """
     This bundle provides the following widgets and methods
-        to set parameters of a 3-axis filter wheel controller
+        to set parameters of a 3-axis motion controller
     """
     # Param Configs
     host:           Union[GenericTextInput, BokehTextInput]

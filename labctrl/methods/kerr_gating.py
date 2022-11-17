@@ -47,7 +47,7 @@ from functools import partial
 from bokeh.layouts import column, row
 from bokeh.models.widgets import Button
 
-from .figure import FactoryFigure1D
+from ..widgets.figure import FactoryFigure1D
 from .generic import BundleGenericMethods, FactoryGenericMethods
 
 

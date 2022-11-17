@@ -1,0 +1,4 @@
+{
+    "WorkingModes": ["SoftwareTrigger", "HardwareTrigger", "Continuous"],
+    "ExposureTimeUnits": ["us", "ms", "s"]
+}

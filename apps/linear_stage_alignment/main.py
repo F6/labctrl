@@ -52,7 +52,7 @@ from labctrl.components.cameras.factory import FactoryCamera
 from labctrl.main_doc import doc
 from labctrl.dashboard import taskoverview
 from labctrl.methods.generic import FactoryGenericMethods
-from labctrl.methods.figure import FactoryFigure1D, FactoryImageRGBA
+from labctrl.widgets.figure import FactoryFigure1D, FactoryImageRGBA
 
 from .image_preprocessor import image_preprocess, image_preprocess_no_fit
 from .utils import eval_float, ignore_connection_error

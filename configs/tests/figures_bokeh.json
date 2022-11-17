@@ -1,0 +1,65 @@
+{
+  "TestFigures": [
+    {
+      "Name": "figures_bokeh_test_1d",
+      "FigureType": "1D",
+      "Title": "1D Figure Test Title",
+      "XName": "1D Figure Test X Name",
+      "YName": "1D Figure Test Y Name",
+      "PlotWidth": 650,
+      "PlotHeight": 350
+    },
+    {
+      "Name": "figures_bokeh_test_1d_default_width",
+      "FigureType": "1D",
+      "Title": "1D Figure Test Title, Default Width",
+      "XName": "1D Figure Test X Name",
+      "YName": "1D Figure Test Y Name",
+      "PlotHeight": 350
+    },
+    {
+      "Name": "figures_bokeh_test_1d_default_height",
+      "FigureType": "1D",
+      "Title": "1D Figure Test Title, Default Height",
+      "XName": "1D Figure Test X Name",
+      "YName": "1D Figure Test Y Name",
+      "PlotWidth": 650
+    },
+    {
+      "Name": "figures_bokeh_test_1d_default_width_and_height",
+      "FigureType": "1D",
+      "Title": "1D Figure Test Title, Default Width and Height",
+      "XName": "1D Figure Test X Name",
+      "YName": "1D Figure Test Y Name"
+    },
+    {
+      "Name": "figures_bokeh_test_1d_with_whiskers",
+      "FigureType": "1D",
+      "Whiskers": true,
+      "Title": "1D Figure Test Title",
+      "XName": "1D Figure Test X Name",
+      "YName": "1D Figure Test Y Name",
+      "PlotWidth": 640,
+      "PlotHeight": 360
+    },
+    {
+      "Name": "figures_bokeh_test_2d",
+      "FigureType": "2D",
+      "Title": "2D Figure Test Title",
+      "XName": "2D Figure Test X Name",
+      "YName": "2D Figure Test Y Name",
+      "DataName": "2D Figure Test Data Name",
+      "PlotWidth": 640,
+      "PlotHeight": 640
+    },
+    {
+      "Name": "figures_bokeh_test_image",
+      "FigureType": "Image",
+      "Title": "Image Test Title",
+      "XName": "Image Test X Name",
+      "YName": "Image Test Y Name",
+      "PlotWidth": 640,
+      "PlotHeight": 360
+    }
+  ]
+}

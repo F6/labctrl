@@ -62,7 +62,7 @@ from labctrl.components.linear_image_sensors.factory import FactoryLinearImageSe
 from labctrl.main_doc import doc
 from labctrl.dashboard import taskoverview
 from labctrl.methods.generic import FactoryGenericMethods
-from labctrl.methods.figure import FactoryFigure1D, FactoryFigure2D
+from labctrl.widgets.figure import FactoryFigure1D, FactoryFigure2D
 
 doc.template_variables["app_name"] = "frog"
 

@@ -26,3 +26,7 @@ class GenericRadioButtonGroup:
 
 class GenericFileInput:
     pass
+
+
+class GenericFigure:
+    pass

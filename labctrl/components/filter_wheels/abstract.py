@@ -82,7 +82,7 @@ class AbstractBundleSixSlots(ABC):
         pass
 
 
-class AbstractBundleSingleFilterWheelAxis:
+class AbstractBundleSingleFilterWheelAxis(ABC):
     """
     This bundle provides the following widgets and methods
         to set motion parameters of a single axis

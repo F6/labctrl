@@ -2,5 +2,17 @@
     "Name": "ToupTek_Color",
     "Comment": "ToupTek Camera",
     "Host": "127.0.0.1",
-    "Port": 5058
+    "Port": 5058,
+    "WorkingMode": "SoftwareTrigger",
+    "ExposureTimeUnit": "us",
+    "ExposureTime": 100,
+    "PreviewFigure": {
+        "Name": "ToupTek_Color_Priview",
+        "FigureType": "Image",
+        "Title": "ToupTek Camera Preview",
+        "XName": "Horizontal/Pixel",
+        "YName": "Vertical/Pixel",
+        "PlotWidth": 640,
+        "PlotHeight": 360
+    }
 }

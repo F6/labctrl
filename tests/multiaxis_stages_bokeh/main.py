@@ -241,3 +241,5 @@ bar3 = Panel(child=bar, title="Axis 2")
 t = Tabs(tabs=[bar0, bar1, bar2, bar3], name="dashboard")
 
 doc.add_root(t)
+# Experiment Message
+doc.add_root(lstat.pre_exp_msg)

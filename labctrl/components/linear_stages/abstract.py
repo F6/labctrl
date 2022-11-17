@@ -51,11 +51,10 @@ from labctrl.widgets.generic import (
 
 from .remote import RemoteLinearStage
 
-class AbstractBundleLinearStage:
+class AbstractBundleLinearStage(ABC):
     """
     This bundle provides the following widgets and methods
-        to set motion parameters of a single axis
-        which a filter wheel is attached to:
+        to set motion parameters of and interact with a linear stage:
     """
     # Param Configs
     host:                           Union[GenericTextInput, BokehTextInput]

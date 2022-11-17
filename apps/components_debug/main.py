@@ -12,7 +12,7 @@ from labctrl.labconfig import lcfg
 from labctrl.labstat import lstat
 from labctrl.components.lockin_and_boxcars.factory import FactoryBoxcarController
 from labctrl.main_doc import doc
-from labctrl.methods.figure import FactoryFigure1D, FactoryFigure2D
+from labctrl.widgets.figure import FactoryFigure1D, FactoryFigure2D
 
 
 boxcar_name = "generic_boxcar"
