@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """main.py:
-This module implements the
+This module implements
 a method to automatically align input laser beam direction with a linear delay line.
 
 Delay lines are commonly used in coherent or ultrafast laser labs to introduce
@@ -11,25 +11,25 @@ input laser direction precisely with the moving direction of the linear stage.
 If the laser beam is misaligned, the output beam from the delay line will shift
 in space when the linear stage moves.
 
-Due to temperature drifting, for time-critical or precise experiments,
+Due to temperature drifting and material aging, for time-critical or precise experiments,
 delay lines are generally re-aligned manually before experiment start.
 One simple way to align the linear stage is to put a beam analyzer after the
-delay line, then move the delay line from one end to another, and check if
-the beam center moves with the beam analyzer.
+delay line, then move the delay line from one end to another, and check with the 
+beam analyzer if the beam center moves during linear stage movement.
 Adjust the input coupling mirror and repeat until no movement of beam center is observed
 on the beam analyzer.
 
 Module requires a motorized 2-axis adjustable mirror mount and a beam analyzer
 to work. Before starts, insert the beam analyzer after the delay line (or 
 permenently install the beam analyzer after the delay line with a beam sampler.
-In our lab we generally use backside-polished 45 degree laser line mirrors
-as a simple beam sampler. 99% of the laser energy is reflected and around 0.5%
-of energy can pass through the laser line mirror for us to analyze.)
+In our lab we usually use a backside-polished 45 degree laser line mirror
+as a simple beam sampler. 99% of the laser energy is reflected at front surface
+and around 0.5% of energy can pass through the laser line mirror for us to analyze.)
 """
 
 __author__ = "Zhi Zi"
 __email__ = "x@zzi.io"
-__version__ = "20221028"
+__version__ = "20221117"
 
 
 import time
@@ -38,85 +38,112 @@ import numpy as np
 from functools import partial
 from threading import Thread
 
-from scipy.fft import fft, fftfreq, fftshift
-
 from bokeh.layouts import column, row
 from bokeh.models.widgets import Button, Div, TextInput, PreText
 from bokeh.models import Panel, Tabs
 from tornado import gen
 
-from labctrl.labconfig import lcfg
-from labctrl.labstat import lstat
+from labctrl.labconfig import lcfg, LabConfig
+from labctrl.labstat import lstat, LabStat
 from labctrl.components.linear_stages.factory import FactoryLinearStage
+from labctrl.components.multiaxis_stages.factory import FactoryMultiAxis
 from labctrl.components.cameras.factory import FactoryCamera
 from labctrl.main_doc import doc
 from labctrl.dashboard import taskoverview
 from labctrl.methods.generic import FactoryGenericMethods
-from labctrl.widgets.figure import FactoryFigure1D, FactoryImageRGBA
+from labctrl.widgets.figure import FactoryFigure
 
 from .image_preprocessor import image_preprocess, image_preprocess_no_fit
 from .utils import eval_float, ignore_connection_error
 
 app_name = "linear_stage_alignment"
 doc.template_variables["app_name"] = app_name
-
-app_config = lcfg.config["apps"][app_name]
-
-delay_stage = app_config["StageToAlign"]
-motorized_mirror_mount = app_config["InputCoupler"]
-
-
-class AlignPreviewFigure:
-    """Images to be showed in the Preview tab
-    """
-
-    def __init__(self) -> None:
-        factory = FactoryFigure1D()
-        self.horizontal_max = factory.generate_fig1d(
-            "Horizontal Section", "Pixel", "Intensity", 256)
-        self.vertical_max = factory.generate_fig1d(
-            "Vertical Section", "Pixel", "Intensity", 256)
-        factory = FactoryImageRGBA()
-        self.denoised_image = factory.generate_bundle(
-            "Beam Profile Denoised", "Horizontal", "Vertical", "Intensity")
-        self.camera_image = factory.generate_bundle(
-            "Beam Profile", "Horizontal", "Vertical", "Intensity")
-
-
-class AlignExpData:
-    """Holds all temporary data generated in the experiment.
-    The data memory are reallocated according to labconfig just before experiment
-     starts. So it is necessary for the init to read the labconfig.
-    """
-
-    def __init__(self, lcfg, lstat) -> None:
-        # save a reference for later use. Each time lcfg get updated, expdata
-        # instances are always lazy generated just before experiment starts,
-        #  so no need to bother copying lcfg
-        self.lcfg = lcfg
-        self.lstat = lstat
-
-    def export(self, filestem: str) -> None:
-        pass
+app_config: dict = lcfg.config["apps"][app_name]
+delay_stage_name: str = app_config["StageToAlign"]
+motorized_mirror_mount_name: str = app_config["InputCoupler"]
+beam_analyzer_name: str = app_config["BeamAnalyzerCamera"]
 
 
 class AlignExperiment:
     """
-    this holds all the UI widgets, unit operations and thread 
+    this holds all the UI widgets, unit operations, bundles and thread 
     tasks for the experiment
     """
 
-    def __init__(self) -> None:
-        init_str = 'Initialize at {}'.format(self)
-        self.start = Button(label="Start Aligning", button_type='success')
-        self.terminate = Button(
-            label="Terminate Aligning", button_type='warning')
-        self.align_min = TextInput(title="Align Min (ps)", value="")
-        self.align_max = TextInput(title="Align Max (ps)", value="")
+    def __init__(self, lcfg: LabConfig, lstat: LabStat) -> None:
+        factory = FactoryLinearStage(lcfg, lstat)
+        linear_stage_bundle_config = dict()
+        linear_stage_bundle_config["BundleType"] = "Bokeh"
+        linear_stage_bundle_config["Config"] = lcfg.config["linear_stages"][delay_stage_name]
+        self.delay_stage = factory.generate_bundle(linear_stage_bundle_config)
+
+        factory = FactoryMultiAxis(lcfg, lstat)
+        input_coupler_bundle_config = dict()
+        input_coupler_bundle_config["BundleType"] = "Bokeh"
+        input_coupler_bundle_config["Config"] = lcfg.config["multiaxis_stages"][motorized_mirror_mount_name]
+        self.input_coupler = factory.generate_bundle(input_coupler_bundle_config)
+
+        factory = FactoryCamera(lcfg, lstat)
+        camera_bundle_config = dict()
+        camera_bundle_config["BundleType"] = "Bokeh"
+        camera_bundle_config["Config"] = lcfg.config["cameras"][beam_analyzer_name]
+        self.camera = factory.generate_bundle(camera_bundle_config)
+
+        factory = FactoryFigure(lcfg, lstat)
+        denoised_figure_bundle_config = dict()
+        denoised_figure_bundle_config["BundleType"] = "Bokeh"
+        denoised_figure_bundle_config["Config"] = app_config["BeamAnalyzerDenoisedFigure"]
+        self.denoised_figure_bundle = factory.generate_bundle(
+            denoised_figure_bundle_config)
+        original_figure_bundle_config = dict()
+        original_figure_bundle_config["BundleType"] = "Bokeh"
+        original_figure_bundle_config["Config"] = app_config["BeamAnalyzerOriginalFigure"]
+        self.original_figure_bundle = factory.generate_bundle(
+            original_figure_bundle_config)
+
+        factory = FactoryGenericMethods()
+        self.generic = factory.generate(lcfg, lstat)
+
+        # region align_min_max
+        self.align_min = TextInput(
+            title="Align Min (ps)", value=str(app_config["AlignMin"]))
+        self.align_max = TextInput(
+            title="Align Max (ps)", value=str(app_config["AlignMax"]))
         self.move_to_align_min = Button(
             label="Move Stage to Align Min", button_type='warning')
         self.move_to_align_max = Button(
             label="Move Stage to Align Max", button_type='warning')
+
+        @lcfg.update_config
+        def __callback_align_min(attr, old, new):
+            app_config["AlignMin"] = self.align_min.value
+
+        self.align_min.on_change('value', __callback_align_min)
+
+        @lcfg.update_config
+        def __callback_align_max(attr, old, new):
+            app_config["AlignMax"] = self.align_max.value
+
+        self.align_max.on_change('value', __callback_align_max)
+
+        @ignore_connection_error
+        def __callback_move_to_align_min():
+            lstat.expmsg("Moving delay stage to minimum")
+            self.delay_stage.set_delay(app_config["AlignMin"])
+
+        self.move_to_align_min.on_click(__callback_move_to_align_min)
+
+        @ignore_connection_error
+        def __callback_move_to_align_max():
+            lstat.expmsg("Moving delay stage to maximum")
+            self.delay_stage.set_delay(app_config["AlignMax"])
+
+        self.move_to_align_max.on_click(__callback_move_to_align_max)
+        # endregion align_min_max
+
+        # region analyze_beam
+        self.retrive_beam_running_flag = False
+
         self.retrive_beam = Button(
             label="Start Retriving Beam Profile", button_type='success')
         self.terminate_retrive_beam = Button(
@@ -127,29 +154,127 @@ class AlignExperiment:
             text='''Fit Report: ''', width=300, height=300)
         self.fit_report_previous = PreText(
             text='''Previous Fit Report: ''', width=300, height=300)
-        self.preview = AlignPreviewFigure()
-        self.data = AlignExpData(lcfg, lstat)
-        factory = FactoryLinearStage(lcfg, lstat)
-        linear_stage_bundle_config = dict()
-        linear_stage_bundle_config["Config"] = lcfg.config["linear_stages"][delay_stage]
-        self.delay_stage = factory.generate_bundle(linear_stage_bundle_config)
-        factory = FactoryCamera(lcfg, lstat)
-        # Preparing to generate camera bundle... This should be moved to front end configurable zone but
-        # i'm lazy for now
-        camera_bundle_config = dict()
-        camera_bundle_config["Name"] = "ToupTek_Color"
-        camera_bundle_config["BundleType"] = "Bokeh"
-        camera_bundle_config["PreviewImage"] = self.preview.camera_image
-        self.camera = factory.generate_bundle(camera_bundle_config)
-        factory = FactoryGenericMethods()
-        self.generic = factory.generate(lcfg, lstat)
+
+        def retrive_task():
+            while self.retrive_beam_running_flag:
+                lstat.expmsg("Retriving signal from sensor...")
+                img = self.camera.get_image()
+                lstat.expmsg("Adding latest signal to dataset...")
+                img_denoise_fs, img_fs = image_preprocess_no_fit(img)
+                xmin = 0
+                ymin = 0
+                xmax = img_denoise_fs.shape[1]
+                ymax = img_denoise_fs.shape[0]
+                self.denoised_figure_bundle.update(
+                    img_denoise_fs, xmin, xmax, ymin, ymax, lstat)
+                self.original_figure_bundle.update(
+                    img_fs, xmin, xmax, ymin, ymax, lstat)
+
+        @ignore_connection_error
+        def __callback_retrive_beam():
+            self.retrive_beam_running_flag = True
+            thread = Thread(target=retrive_task)
+            thread.start()
+
+        self.retrive_beam.on_click(__callback_retrive_beam)
+
+        @ignore_connection_error
+        def __callback_terminate_retrive_beam():
+            self.retrive_beam_running_flag = False
+
+        self.terminate_retrive_beam.on_click(__callback_terminate_retrive_beam)
+
+        self.fit_report_template = """Fit Report:
+    Center X : {centerx},
+    Center Y : {centery},
+    FWHM X   : {fwhmx},
+    FWHM Y   : {fwhmy},
+    Amplitude: {amplitude},
+    Height   : {height},
+    Sigma X  : {sigmax},
+    Sigma Y  : {sigmay}
+        """
+
+        @ignore_connection_error
+        def __callback_analyze_beam():
+            lstat.expmsg("Retriving signal from sensor...")
+            img = self.camera.get_image()
+            lstat.expmsg("Adding latest signal to dataset...")
+            img_denoise_fs, img_fs, fit_result = image_preprocess(img)
+            xmin = 0
+            ymin = 0
+            xmax = img_denoise_fs.shape[1]
+            ymax = img_denoise_fs.shape[0]
+            self.denoised_figure_bundle.update(
+                img_denoise_fs, xmin, xmax, ymin, ymax, lstat)
+            self.original_figure_bundle.update(
+                img_fs, xmin, xmax, ymin, ymax, lstat)
+            self.update_fit_report(
+                self.fit_report_template.format(**fit_result))
+
+        self.analyze_beam.on_click(__callback_analyze_beam)
+        # endregion analyze_beam
+
+        # region schedule
         self.flags = {
             "RUNNING": False,
             # "PAUSE": False,
             "TERMINATE": False,
             "FINISH": False,
         }
-        self.retrive_beam_running_flag = False  # Video Mode
+
+        self.start = Button(label="Start Aligning", button_type='success')
+        self.terminate = Button(
+            label="Terminate Aligning", button_type='warning')
+
+        @self.generic.scan_round
+        def unit_operation(meta=dict()):
+            if self.flags["TERMINATE"]:
+                meta["TERMINATE"] = True
+                lstat.expmsg(
+                    "AutoAlign operation received signal TERMINATE, trying graceful Thread exit")
+                return
+            lstat.expmsg("Retriving signal from sensor...")
+            img = self.camera.get_image()
+            lstat.expmsg("Adding latest signal to dataset...")
+            img_denoise_fs, img_fs, fit_result = image_preprocess(img)
+            xmin = 0
+            ymin = 0
+            xmax = img_denoise_fs.shape[1]
+            ymax = img_denoise_fs.shape[0]
+            self.denoised_figure_bundle.update(
+                img_denoise_fs, xmin, xmax, ymin, ymax, lstat)
+            self.original_figure_bundle.update(
+                img_fs, xmin, xmax, ymin, ymax, lstat)
+            self.update_fit_report(
+                self.fit_report_template.format(**fit_result))
+
+        def task():
+            lstat.expmsg("Starting experiment")
+            meta = dict()
+            meta["TERMINATE"] = False
+            unit_operation(meta=meta)
+            self.flags["FINISH"] = True
+            self.flags["RUNNING"] = False
+            lstat.expmsg("Experiment done")
+
+        def __callback_start():
+            self.flags["TERMINATE"] = False
+            self.flags["FINISH"] = False
+            self.flags["RUNNING"] = True
+            thread = Thread(target=task)
+            thread.start()
+
+        self.start.on_click(__callback_start)
+
+        def __callback_terminate():
+            lstat.expmsg("Terminating current job")
+            self.flags["TERMINATE"] = True
+            self.flags["FINISH"] = False
+            self.flags["RUNNING"] = False
+
+        self.terminate.on_click(__callback_terminate)
+        # endregion schedule
 
     @gen.coroutine
     def __callback_update_fit_report(self, text):
@@ -161,185 +286,7 @@ class AlignExperiment:
             partial(self.__callback_update_fit_report, text))
 
 
-AutoAlign = AlignExperiment()
-
-
-@AutoAlign.generic.scan_round
-def unit_operation(meta=dict()):
-    if AutoAlign.flags["TERMINATE"]:
-        meta["TERMINATE"] = True
-        lstat.expmsg(
-            "AutoAlign operation received signal TERMINATE, trying graceful Thread exit")
-        return
-    lstat.expmsg("Retriving signal from sensor...")
-    img = AutoAlign.camera.get_image()
-    lstat.expmsg("Adding latest signal to dataset...")
-    img_denoise_fs, img_fs = image_preprocess(img)
-    xmin = 0
-    ymin = 0
-    xmax = img_denoise_fs.shape[1]
-    ymax = img_denoise_fs.shape[0]
-    lstat.doc.add_next_tick_callback(
-        partial(AutoAlign.preview.camera_image.callback_update,
-                img_denoise_fs,
-                xmin, xmax,
-                ymin, ymax)
-    )
-
-
-def task():
-    lstat.expmsg("Allocating memory for experiment")
-    AutoAlign.data = AlignExpData(lcfg, lstat)
-    lstat.expmsg("Starting experiment")
-    meta = dict()
-    meta["TERMINATE"] = False
-    unit_operation(meta=meta)
-    AutoAlign.flags["FINISH"] = True
-    AutoAlign.flags["RUNNING"] = False
-    lstat.expmsg("Experiment done")
-
-
-def __callback_start():
-    AutoAlign.flags["TERMINATE"] = False
-    AutoAlign.flags["FINISH"] = False
-    AutoAlign.flags["RUNNING"] = True
-    thread = Thread(target=task)
-    thread.start()
-
-
-AutoAlign.start.on_click(__callback_start)
-
-
-def __callback_terminate():
-    lstat.expmsg("Terminating current job")
-    AutoAlign.flags["TERMINATE"] = True
-    AutoAlign.flags["FINISH"] = False
-    AutoAlign.flags["RUNNING"] = False
-
-
-AutoAlign.terminate.on_click(__callback_terminate)
-
-# region align_min_max
-
-
-@lcfg.update_config
-def __callback_align_min(attr, old, new):
-    app_config["AlignMin"] = AutoAlign.align_min.value
-
-
-AutoAlign.align_min.value = str(app_config["AlignMin"])
-AutoAlign.align_min.on_change('value', __callback_align_min)
-
-
-@ignore_connection_error
-def __callback_move_to_align_min():
-    lstat.expmsg("Moving delay stage to minimum")
-    AutoAlign.delay_stage.set_delay(app_config["AlignMin"])
-
-
-AutoAlign.move_to_align_min.on_click(__callback_move_to_align_min)
-
-
-@lcfg.update_config
-def __callback_align_max(attr, old, new):
-    app_config["AlignMax"] = AutoAlign.align_max.value
-
-
-AutoAlign.align_max.value = str(app_config["AlignMax"])
-AutoAlign.align_max.on_change('value', __callback_align_max)
-
-
-@ignore_connection_error
-def __callback_move_to_align_max():
-    lstat.expmsg("Moving delay stage to maximum")
-    AutoAlign.delay_stage.set_delay(app_config["AlignMax"])
-
-
-AutoAlign.move_to_align_max.on_click(__callback_move_to_align_max)
-# endregion align_min_max
-
-# region analyze_beam
-
-
-def retrive_task():
-    while AutoAlign.retrive_beam_running_flag:
-        lstat.expmsg("Retriving signal from sensor...")
-        img = AutoAlign.camera.get_image()
-        lstat.expmsg("Adding latest signal to dataset...")
-        img_denoise_fs, img_fs = image_preprocess_no_fit(img)
-        xmin = 0
-        ymin = 0
-        xmax = img_denoise_fs.shape[1]
-        ymax = img_denoise_fs.shape[0]
-        lstat.doc.add_next_tick_callback(
-            partial(AutoAlign.preview.denoised_image.callback_update,
-                    img_denoise_fs,
-                    xmin, xmax,
-                    ymin, ymax)
-        )
-        lstat.doc.add_next_tick_callback(
-            partial(AutoAlign.preview.camera_image.callback_update,
-                    img_fs,
-                    xmin, xmax,
-                    ymin, ymax)
-        )
-
-
-@ignore_connection_error
-def __callback_retrive_beam():
-    AutoAlign.retrive_beam_running_flag = True
-    thread = Thread(target=retrive_task)
-    thread.start()
-
-AutoAlign.retrive_beam.on_click(__callback_retrive_beam)
-
-
-@ignore_connection_error
-def __callback_terminate_retrive_beam():
-    AutoAlign.retrive_beam_running_flag = False
-
-AutoAlign.terminate_retrive_beam.on_click(__callback_terminate_retrive_beam)
-
-
-fit_report_template = """Fit Report:
-    Center X : {centerx},
-    Center Y : {centery},
-    FWHM X   : {fwhmx},
-    FWHM Y   : {fwhmy},
-    Amplitude: {amplitude},
-    Height   : {height},
-    Sigma X  : {sigmax},
-    Sigma Y  : {sigmay}
-"""
-
-
-@ignore_connection_error
-def __callback_analyze_beam():
-    lstat.expmsg("Retriving signal from sensor...")
-    img = AutoAlign.camera.get_image()
-    lstat.expmsg("Adding latest signal to dataset...")
-    img_denoise_fs, img_fs, fit_result = image_preprocess(img)
-    xmin = 0
-    ymin = 0
-    xmax = img_denoise_fs.shape[1]
-    ymax = img_denoise_fs.shape[0]
-    lstat.doc.add_next_tick_callback(
-        partial(AutoAlign.preview.denoised_image.callback_update,
-                img_denoise_fs,
-                xmin, xmax,
-                ymin, ymax)
-    )
-    lstat.doc.add_next_tick_callback(
-        partial(AutoAlign.preview.camera_image.callback_update,
-                img_fs,
-                xmin, xmax,
-                ymin, ymax)
-    )
-    AutoAlign.update_fit_report(fit_report_template.format(**fit_result))
-
-
-AutoAlign.analyze_beam.on_click(__callback_analyze_beam)
-# endregion analyze_beam
+align = AlignExperiment(lcfg, lstat)
 
 
 # roots: ["dashboard", "setup", "param", "schedule", "reports", "messages"]
@@ -352,37 +299,54 @@ dashboard_tabs = Tabs(tabs=[dashboard_tab1], name="dashboard")
 doc.add_root(dashboard_tabs)
 # endregion dashboard
 
+# region messages
+# ================ Experiment Message ================ 
+doc.add_root(lstat.pre_exp_msg)
+# endregion messages
+
 # region setup
 # ================ setup ================
 foo = column(
-    AutoAlign.delay_stage.host,
-    AutoAlign.delay_stage.port,
-    AutoAlign.delay_stage.multiples,
-    AutoAlign.delay_stage.working_direction,
+    align.delay_stage.host,
+    align.delay_stage.port,
+    align.delay_stage.multiples,
+    align.delay_stage.working_direction,
     Div(text="Position and Limitation Unit:"),
-    AutoAlign.delay_stage.position_unit,
-    AutoAlign.delay_stage.zero_delay_absolute_position,
-    AutoAlign.delay_stage.soft_limit_min,
-    AutoAlign.delay_stage.soft_limit_max,
-    AutoAlign.delay_stage.driving_speed,
-    AutoAlign.delay_stage.driving_speed_unit,
-    AutoAlign.delay_stage.driving_acceleration,
-    AutoAlign.delay_stage.driving_acceleration_unit,
+    align.delay_stage.position_unit,
+    align.delay_stage.zero_point_absolute_position,
+    align.delay_stage.soft_limit_min,
+    align.delay_stage.soft_limit_max,
+    align.delay_stage.driving_speed,
+    align.delay_stage.driving_speed_unit,
+    align.delay_stage.driving_acceleration,
+    align.delay_stage.driving_acceleration_unit,
 )
 setup_tab1 = Panel(child=foo, title="Aligning Delay Line")
-setup_tabs = Tabs(tabs=[setup_tab1], name="setup")
+foo = column(
+    align.camera.host,
+    align.camera.port,
+    Div(text="Camera Working Mode:"),
+    align.camera.working_mode,
+    align.camera.change_working_mode,
+    align.camera.exposure_time,
+    align.camera.exposure_time_unit,
+    align.camera.change_exposure_time,
+    align.camera.apply_all_settings,
+)
+setup_tab2 = Panel(child=foo, title="Beam Analyzer")
+setup_tabs = Tabs(tabs=[setup_tab1, setup_tab2], name="setup")
 doc.add_root(setup_tabs)
 # endregion setup
 
 # region params
 # ================ params ================
 foo = column(
-    AutoAlign.delay_stage.scan_mode,
-    AutoAlign.delay_stage.working_unit,
-    AutoAlign.delay_stage.range_scan_start,
-    AutoAlign.delay_stage.range_scan_stop,
-    AutoAlign.delay_stage.range_scan_step,
-    AutoAlign.delay_stage.external_scan_list_file,
+    align.delay_stage.scan_mode,
+    align.delay_stage.working_unit,
+    align.delay_stage.range_scan_start,
+    align.delay_stage.range_scan_stop,
+    align.delay_stage.range_scan_step,
+    align.delay_stage.external_scan_list_file,
 )
 param_tab1 = Panel(child=foo, title="Aligning Delay Line")
 param_tabs = Tabs(tabs=[param_tab1], name="param")
@@ -392,19 +356,20 @@ doc.add_root(param_tabs)
 # region manual
 # ================ manual ================
 foo = column(
-    AutoAlign.delay_stage.test_online,
+    align.delay_stage.test_online,
     Div(text="Manual Operation Unit:"),
-    AutoAlign.delay_stage.manual_unit,
-    AutoAlign.delay_stage.manual_position,
-    AutoAlign.delay_stage.manual_move,
-    AutoAlign.delay_stage.manual_step,
-    AutoAlign.delay_stage.manual_step_forward,
-    AutoAlign.delay_stage.manual_step_backward,
+    align.delay_stage.manual_unit,
+    align.delay_stage.manual_position,
+    align.delay_stage.manual_move,
+    align.delay_stage.manual_step,
+    align.delay_stage.manual_step_forward,
+    align.delay_stage.manual_step_backward,
 )
 manual_tab1 = Panel(child=foo, title="Aligning Delay Line")
 foo = column(
-    AutoAlign.camera.test_online,
-    AutoAlign.camera.manual_take_sample,
+    align.camera.preview_figure.figure,
+    align.camera.test_online,
+    align.camera.manual_take_sample,
 )
 manual_tab2 = Panel(child=foo, title="Camera")
 manual_tabs = Tabs(tabs=[manual_tab1, manual_tab2], name="manual")
@@ -414,10 +379,10 @@ doc.add_root(manual_tabs)
 # region schedule
 # ================ schedule ================
 foo = column(
-    AutoAlign.generic.filestem,
-    AutoAlign.generic.scanrounds,
-    AutoAlign.start,
-    AutoAlign.terminate
+    align.generic.filestem,
+    align.generic.scanrounds,
+    align.start,
+    align.terminate
 )
 schedule_tab1 = Panel(child=foo, title="Auto Align")
 schedule_tabs = Tabs(tabs=[schedule_tab1], name="schedule")
@@ -426,27 +391,36 @@ doc.add_root(schedule_tabs)
 
 # region reports
 # ================ reports ================
-image_panel0 = Panel(child=AutoAlign.preview.denoised_image.fig,
+image_panel0 = Panel(child=align.denoised_figure_bundle.figure,
                      title="Denoised Beam Profile")
-image_panel1 = Panel(child=AutoAlign.preview.camera_image.fig,
+image_panel1 = Panel(child=align.original_figure_bundle.figure,
                      title="Full Scaled Beam Profile")
 image_panel = Tabs(tabs=[image_panel0, image_panel1])
 foo = column(
     image_panel,
-    row(AutoAlign.fit_report, AutoAlign.fit_report_previous)
+    row(align.fit_report, align.fit_report_previous)
     # AutoAlign.preview.horizontal_max.fig,
     # AutoAlign.preview.vertical_max.fig,
 )
 foo2 = column(
-    # Div(text="<h5>Delay Stage</h5>"),
-    AutoAlign.align_min,
-    AutoAlign.move_to_align_min,
-    AutoAlign.align_max,
-    AutoAlign.move_to_align_max,
-    # Div(text="<h5>Beam Analyzer</h5>"),
-    AutoAlign.retrive_beam,
-    AutoAlign.terminate_retrive_beam,
-    AutoAlign.analyze_beam,
+    Div(text="<b>Delay Stage:</b>"),
+    align.align_min,
+    align.move_to_align_min,
+    align.align_max,
+    align.move_to_align_max,
+    Div(text="<b>Beam Analyzer:</b>"),
+    align.retrive_beam,
+    align.terminate_retrive_beam,
+    align.analyze_beam,
+    Div(text="<b>Input Coupler:</b>"),
+    Div(text="X Axis:"),
+    align.input_coupler.axis_0.manual_step,
+    align.input_coupler.axis_0.manual_step_forward,
+    align.input_coupler.axis_0.manual_step_backward,
+    Div(text="Y Axis:"),
+    align.input_coupler.axis_1.manual_step,
+    align.input_coupler.axis_1.manual_step_forward,
+    align.input_coupler.axis_1.manual_step_backward,
 )
 bar = row(foo, foo2)
 reports_tab1 = Panel(child=bar, title="Auto Align")

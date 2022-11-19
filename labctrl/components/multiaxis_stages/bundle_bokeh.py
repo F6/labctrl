@@ -68,9 +68,9 @@ class BundleBokehSingleAxis(AbstractBundleSingleAxis):
             active=(config["ManualUnits"].index(config["WorkingUnit"]))
         )
         self.manual_position = TextInput(
-            title="Manually set delay to", value=str(config["ManualPosition"]))
+            title="Manually set position to", value=str(config["ManualPosition"]))
         self.manual_step = TextInput(
-            title="Manually step delay", value=str(config["ManualStep"]))
+            title="Manually step position", value=str(config["ManualStep"]))
         self.multiples = TextInput(
             title="Multiples", value=str(config["Multiples"]))
         self.soft_limit_min = TextInput(

@@ -4,6 +4,24 @@
     "StageToAlign": "ETHGASN_leisai",
     "InputCoupler": "GRBL1",
     "BeamAnalyzerCamera": "ToupTek_Color",
+    "BeamAnalyzerDenoisedFigure":{
+        "Name": "Beam Analyzer Denoised Figure",
+        "FigureType": "Image",
+        "Title": "Beam Analyzer, Denoised",
+        "XName": "Horizontal / Pixel",
+        "YName": "Vertical / Pixel",
+        "PlotWidth": 640,
+        "PlotHeight": 480
+    },
+    "BeamAnalyzerOriginalFigure":{
+        "Name": "Beam Analyzer Original Figure",
+        "FigureType": "Image",
+        "Title": "Beam Analyzer, Original",
+        "XName": "Horizontal / Pixel",
+        "YName": "Vertical / Pixel",
+        "PlotWidth": 640,
+        "PlotHeight": 480
+    },
     "InputCouplerDimensionality": 2,
     "AlignLimitationsUnit": "ps",
     "AlignMin": -100,
