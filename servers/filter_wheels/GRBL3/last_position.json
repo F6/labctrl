@@ -6,10 +6,10 @@
     "MachineZ": 0.0,
     "CurrentFeedRate": 0.0,
     "CurrentSpindleSpeed": 0.0,
-    "WorkingCoordinateOffsetX": -1.0,
-    "WorkingCoordinateOffsetY": -2.0,
-    "WorkingCoordinateOffsetZ": -4.0,
     "OverrideFeed": 100,
-    "OverrideRapid": 100,
-    "OverrideSpindle": 100
+    "OverrideRapid": 5,
+    "OverrideSpindle": 100,
+    "WorkingCoordinateOffsetX": 0.0,
+    "WorkingCoordinateOffsetY": 0.0,
+    "WorkingCoordinateOffsetZ": 0.0
 }

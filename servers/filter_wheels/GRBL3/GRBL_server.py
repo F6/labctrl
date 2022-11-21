@@ -14,7 +14,7 @@ import json
 from flask import Flask, Response
 from grbl_controller import GRBLController
 
-grbl = GRBLController('COM14')
+grbl = GRBLController('COM11')
 
 app = Flask(__name__)
 

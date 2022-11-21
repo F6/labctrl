@@ -38,7 +38,7 @@ class GRBLController:
         self.stream_gcode("$102=100")
         # Set basic feedrate for all axis to 100
         print("Setting basic feedrate")
-        self.stream_gcode("G1 F100")
+        self.stream_gcode("G1 F500")
         if self.position_storage_file in os.listdir():
             print("Loading stored state...")
             with open(self.position_storage_file, 'r') as f:
@@ -148,7 +148,8 @@ current system, homing is recommanded to re-establish absolute coordinates.""")
         self.block_until_idle()
 
     def moved_to_target(self, x, y, z):
-        epsilon_in_place = 0.001
+        epsilon_in_place = 0.01
+        print(self.parser.vars["MachineX"], self.parser.vars["MachineY"], self.parser.vars["MachineZ"])
         x_in_place = abs(self.parser.vars["MachineX"] - x) < epsilon_in_place
         y_in_place = abs(self.parser.vars["MachineY"] - y) < epsilon_in_place
         z_in_place = abs(self.parser.vars["MachineZ"] - z) < epsilon_in_place
