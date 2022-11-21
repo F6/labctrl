@@ -54,41 +54,41 @@ from bokeh.layouts import column, row
 from bokeh.models.widgets import Button, Div
 from bokeh.models import Panel, Tabs
 
-from labctrl.labconfig import lcfg
-from labctrl.labstat import lstat
+from labctrl.labconfig import lcfg, LabConfig
+from labctrl.labstat import lstat, LabStat
 from labctrl.components.linear_stages.factory import FactoryLinearStage
 from labctrl.components.lockin_and_boxcars.factory import FactoryBoxcarController
 from labctrl.main_doc import doc
 from labctrl.dashboard import taskoverview
 from labctrl.methods.generic import FactoryGenericMethods
-from labctrl.widgets.figure import FactoryFigure1D, FactoryFigure1DWithWhiskers
+from labctrl.widgets.figure import FactoryFigure
 
-doc.template_variables["app_name"] = "kerr_gating"
-
-
-# META SETTINGS
-delay_stage = 'ETHGASN_leisai'
-boxcar_name = 'generic_boxcar'
-# boxcar_name = 'ziUHF'
+app_name = "kerr_gating"
+doc.template_variables["app_name"] = app_name
+app_config: dict = lcfg.config["apps"][app_name]
+delay_stage_name = app_config["DelayLine"]
+boxcar_name = app_config["Boxcar"]
 
 
 class KerrGatingPreviewFigure:
-    def __init__(self) -> None:
-        factory = FactoryFigure1D()
-        self.signal = factory.generate_fig1d(
-            "Boxcar Signal", "Data #", "Intensity (V)", 256)
-        self.background = factory.generate_fig1d(
-            "Boxcar Background", "Data #", "Intensity (V)", 256)
-        self.delta = factory.generate_fig1d(
-            "Shot-to-shot Boxcar Delta", "Data #", "Intensity (V)", 256)
-        self.PWA = factory.generate_fig1d(
-            "PWA", "Time/us", "Intensity (V)", 1024)
-        # factory = FactoryFigure1DWithWhiskers()
-        self.delay = factory.generate_fig1d(
-            "Delay Scan", "Time Delay (ps)", "Intensity (V)", 40)
-        # factory = FactoryFigure2D()
-        # self.twodim = factory.generate_fig2d(
-        #     "KerrGating Raw Intensity", "Linear Array Pixel", "Time Delay Point #", "Intensity (counts)")
+    def __init__(self, lcfg: LabConfig, lstat: LabStat) -> None:
+        factory = FactoryFigure(lcfg, lstat)
+        figure_bundle_config = dict()
+        figure_bundle_config["BundleType"] = "Bokeh"
+        figure_bundle_config["Config"] = app_config["SignalFigure"]
+        self.signal = factory.generate_bundle(figure_bundle_config)
+        figure_bundle_config["BundleType"] = "Bokeh"
+        figure_bundle_config["Config"] = app_config["BackgroundFigure"]
+        self.background = factory.generate_bundle(figure_bundle_config)
+        figure_bundle_config["BundleType"] = "Bokeh"
+        figure_bundle_config["Config"] = app_config["DeltaFigure"]
+        self.delta = factory.generate_bundle(figure_bundle_config)
+        figure_bundle_config["BundleType"] = "Bokeh"
+        figure_bundle_config["Config"] = app_config["PeriodicWaveformAnalyzerFigure"]
+        self.pwa = factory.generate_bundle(figure_bundle_config)
+        figure_bundle_config["BundleType"] = "Bokeh"
+        figure_bundle_config["Config"] = app_config["DelayScanFigure"]
+        self.delay_scan = factory.generate_bundle(figure_bundle_config)
 
 
 class KerrGatingExpData:
@@ -97,12 +97,12 @@ class KerrGatingExpData:
      starts. So it is necessary for the init to read the labconfig.
     """
 
-    def __init__(self, lcfg, lstat) -> None:
+    def __init__(self, lcfg: LabConfig, lstat: LabStat) -> None:
         # save a reference for later use. Each time lcfg get updated, expdata
         # instances are always lazy generated just before experiment starts,
         #  so no need to bother copying lcfg
         self.lcfg = lcfg
-        self.delays = lstat.stat[delay_stage]["ScanList"]
+        self.delays = lstat.stat[delay_stage_name]["ScanList"]
         self.ymin = np.min(self.delays)
         self.ymax = np.max(self.delays)
         self.signal = np.zeros(len(self.delays), dtype=np.float64)
@@ -147,8 +147,7 @@ class KerrGatingExperiment:
     tasks for the experiment
     """
 
-    def __init__(self) -> None:
-        init_str = 'Initialize at {}'.format(self)
+    def __init__(self, lcfg: LabConfig, lstat: LabStat) -> None:
         self.start = Button(label="Start Kerr Gating Scan",
                             button_type='success')
         # self.pause = Button(label="Pause Kerr Gating Scan", button_type='warning')
@@ -158,14 +157,17 @@ class KerrGatingExperiment:
             label="Start Boxcar PWA", button_type='success')
         self.terminate_PWA = Button(
             label="Terminate Boxcar PWA", button_type='warning')
-        self.preview = KerrGatingPreviewFigure()
-        self.data = KerrGatingExpData(lcfg, lstat)
-        factory = FactoryLinearStage()
-        self.linear_stage = factory.generate_bundle(delay_stage, lcfg, lstat)
+        self.preview = KerrGatingPreviewFigure(lcfg, lstat)
+        factory = FactoryLinearStage(lcfg, lstat)
+        delayline_bundle_config = dict()
+        delayline_bundle_config["BundleType"] = "Bokeh"
+        delayline_bundle_config["Config"] = lcfg.config["linear_stages"][delay_stage_name]
+        self.linear_stage = factory.generate_bundle(delayline_bundle_config)
         factory = FactoryBoxcarController()
         self.boxcar = factory.generate_bundle(boxcar_name, lcfg, lstat)
         factory = FactoryGenericMethods()
         self.generic = factory.generate(lcfg, lstat)
+        self.data = KerrGatingExpData(lcfg, lstat)
         self.flags = {
             "RUNNING": False,
             # "PAUSE": False,
@@ -180,127 +182,131 @@ class KerrGatingExperiment:
         }
 
 
-KerrGating = KerrGatingExperiment()
+kerr = KerrGatingExperiment(lcfg, lstat)
 
 
-@KerrGating.generic.scan_round
-@KerrGating.linear_stage.scan_delay
+@kerr.generic.scan_round
+@kerr.linear_stage.scan_range
 def unit_operation(meta=dict()):
-    if KerrGating.flags["TERMINATE"]:
+    if kerr.flags["TERMINATE"]:
         meta["TERMINATE"] = True
         lstat.expmsg(
             "KerrGating operation received signal TERMINATE, trying graceful Thread exit")
         return
-    lstat.expmsg("Retriving signal from sensor...")
-    data = KerrGating.boxcar.get_boxcar_data()
-    lstat.expmsg("Adding latest signal to dataset...")
+    lstat.expmsg("[KerrGatingUnit] Retriving signal from sensor...")
+    data = kerr.boxcar.get_boxcar_data()
+    lstat.expmsg("[KerrGatingUnit] Adding latest signal to dataset...")
     ds = np.size(data)
+
+    # [TODO] [ALERT]: Temporary: we are using ziUHF's own background subtraction to 
+    #   do the shot-to-shot subtraction here, so no need to subtract background.
+    #   This is temporary, when we switch back to our own boxcar controller, the
+    #   subtraction is done locally (This can be done in the server side, but it is
+    #   more flexible to do it at client side.)
     # sig = data[:ds//2]
     sig = data
     bg = data[ds//2:]
-
     # delta = sig - bg
-
     # delta = np.log10(sig/bg)
     delta = sig
+    # [ENDTODO]
+
     sig_average = np.average(sig)
     bg_average = np.average(bg)
     delta_average = np.average(delta)
     delta_stddev = np.std(delta)
-    stat = lstat.stat[delay_stage]
+    stat = lstat.stat[delay_stage_name]
 
-    KerrGating.data.signal[stat["iDelay"]] = sig_average
-    KerrGating.data.signal_sum[stat["iDelay"]] += sig_average
-    lstat.doc.add_next_tick_callback(
-        partial(KerrGating.preview.signal.callback_update, np.arange(np.size(sig)), sig))
+    kerr.data.signal[stat["iDelay"]] = sig_average
+    kerr.data.signal_sum[stat["iDelay"]] += sig_average
+    kerr.preview.signal.update(np.arange(np.size(sig)), sig, lstat)
 
-    KerrGating.data.background[stat["iDelay"]] = bg_average
-    KerrGating.data.background_sum[stat["iDelay"]] += bg_average
-    lstat.doc.add_next_tick_callback(
-        partial(KerrGating.preview.background.callback_update, np.arange(np.size(bg)), bg))
+    kerr.data.background[stat["iDelay"]] = bg_average
+    kerr.data.background_sum[stat["iDelay"]] += bg_average
+    kerr.preview.background.update(np.arange(np.size(bg)), bg, lstat)
 
-    KerrGating.data.delta[stat["iDelay"]] = delta_average
-    KerrGating.data.delta_sum[stat["iDelay"]] += delta_average
-    KerrGating.data.delta_stddev[stat["iDelay"]] = delta_stddev
-    lstat.doc.add_next_tick_callback(
-        partial(KerrGating.preview.delta.callback_update, np.arange(np.size(delta)), delta))
-    lstat.doc.add_next_tick_callback(
-        partial(KerrGating.preview.delay.callback_update,
-                KerrGating.data.delays, KerrGating.data.delta)
-                # , KerrGating.data.delays
-                # KerrGating.data.delta + KerrGating.data.delta_stddev,
-                # KerrGating.data.delta - KerrGating.data.delta_stddev)
-    )
+    kerr.data.delta[stat["iDelay"]] = delta_average
+    kerr.data.delta_sum[stat["iDelay"]] += delta_average
+    kerr.data.delta_stddev[stat["iDelay"]] = delta_stddev
+    kerr.preview.delta.update(np.arange(np.size(delta)), delta, lstat)
+    kerr.preview.delay_scan.update(kerr.data.delays, kerr.data.delta, lstat)
+    # If whiskers are used, add these two param as upper and lower to .update
+    # KerrGating.data.delta + KerrGating.data.delta_stddev,
+    # KerrGating.data.delta - KerrGating.data.delta_stddev
 
     # if this the end of delay scan, call export
     if stat["iDelay"] + 1 == len(stat["ScanList"]):
         lstat.expmsg("End of delay scan round, exporting data...")
-        KerrGating.data.export("scandata/" + lcfg.config["basic"]["FileStem"] +
+        kerr.data.export("scandata/" + lcfg.config["basic"]["FileStem"] +
                                "-Round{rd}".format(rd=lstat.stat["basic"]["iRound"]))
 
 
 def task():
     lstat.expmsg("Allocating memory for experiment")
-    KerrGating.data = KerrGatingExpData(lcfg, lstat)
+    kerr.data = KerrGatingExpData(lcfg, lstat)
     lstat.expmsg("Starting experiment")
     meta = dict()
     meta["TERMINATE"] = False
     unit_operation(meta=meta)
-    KerrGating.flags["FINISH"] = True
-    KerrGating.flags["RUNNING"] = False
+    kerr.flags["FINISH"] = True
+    kerr.flags["RUNNING"] = False
     lstat.expmsg("Experiment done")
 
 
 def __callback_start():
-    KerrGating.flags["TERMINATE"] = False
-    KerrGating.flags["FINISH"] = False
-    KerrGating.flags["RUNNING"] = True
-    KerrGating.boxcar.set_working_mode("Boxcar")
+    kerr.flags["TERMINATE"] = False
+    kerr.flags["FINISH"] = False
+    kerr.flags["RUNNING"] = True
+    kerr.boxcar.set_working_mode("Boxcar")
     thread = Thread(target=task)
     thread.start()
 
 
-KerrGating.start.on_click(__callback_start)
+kerr.start.on_click(__callback_start)
 
 
 def __callback_terminate():
     lstat.expmsg("Terminating current job")
-    KerrGating.flags["TERMINATE"] = True
-    KerrGating.flags["FINISH"] = False
-    KerrGating.flags["RUNNING"] = False
+    kerr.flags["TERMINATE"] = True
+    kerr.flags["FINISH"] = False
+    kerr.flags["RUNNING"] = False
 
 
-KerrGating.terminate.on_click(__callback_terminate)
+kerr.terminate.on_click(__callback_terminate)
 
 
 def PWA_task():
     lstat.expmsg("Starting PWA...")
-    KerrGating.PWA_flags["TERMINATE"] = False
-    while not KerrGating.PWA_flags["TERMINATE"]:
-        data = KerrGating.boxcar.get_PWA_data()
+    kerr.PWA_flags["TERMINATE"] = False
+    while not kerr.PWA_flags["TERMINATE"]:
+        data = kerr.boxcar.get_PWA_data()
         ds = np.size(data)
-        doc.add_next_tick_callback(partial(KerrGating.preview.PWA.callback_update, np.linspace(0, ds//2, ds), data))
+        kerr.preview.pwa.update(np.linspace(0, ds//2, ds), data, lstat)
     lstat.expmsg("PWA Terminated.")
-    KerrGating.PWA_flags["RUNNING"] = False
+    kerr.PWA_flags["RUNNING"] = False
+
 
 def __callback_PWA_start():
-    KerrGating.PWA_flags["TERMINATE"] = False
-    KerrGating.PWA_flags["FINISH"] = False
-    KerrGating.PWA_flags["RUNNING"] = True
-    KerrGating.boxcar.set_working_mode("PWA")
+    kerr.PWA_flags["TERMINATE"] = False
+    kerr.PWA_flags["FINISH"] = False
+    kerr.PWA_flags["RUNNING"] = True
+    kerr.boxcar.set_working_mode("PWA")
     thread = Thread(target=PWA_task)
     thread.start()
 
-KerrGating.start_PWA.on_click(__callback_PWA_start)
+
+kerr.start_PWA.on_click(__callback_PWA_start)
+
 
 def __callback_PWA_terminate():
     lstat.expmsg("Terminating current PWA job")
-    KerrGating.PWA_flags["TERMINATE"] = True
-    KerrGating.PWA_flags["FINISH"] = False
-    KerrGating.PWA_flags["RUNNING"] = False
-    KerrGating.boxcar.set_working_mode("Boxcar")
+    kerr.PWA_flags["TERMINATE"] = True
+    kerr.PWA_flags["FINISH"] = False
+    kerr.PWA_flags["RUNNING"] = False
+    kerr.boxcar.set_working_mode("Boxcar")
 
-KerrGating.terminate_PWA.on_click(__callback_PWA_terminate)
+
+kerr.terminate_PWA.on_click(__callback_PWA_terminate)
 
 
 # roots: ["dashboard", "setup", "param", "schedule", "reports", "messages"]
@@ -310,29 +316,57 @@ dashboard_tab1 = Panel(child=taskoverview.div, title="Tasks")
 dashboard_tabs = Tabs(tabs=[dashboard_tab1], name="dashboard")
 doc.add_root(dashboard_tabs)
 
+# region messages
+# ================ Experiment Message ================
+doc.add_root(lstat.pre_exp_msg)
+# endregion messages
+
+
+# region setup
+# ================ setup ================
+foo = column(
+    kerr.linear_stage.host,
+    kerr.linear_stage.port,
+    kerr.linear_stage.multiples,
+    kerr.linear_stage.working_direction,
+    Div(text="Position and Limitation Unit:"),
+    kerr.linear_stage.position_unit,
+    kerr.linear_stage.zero_point_absolute_position,
+    kerr.linear_stage.soft_limit_min,
+    kerr.linear_stage.soft_limit_max,
+    kerr.linear_stage.driving_speed,
+    kerr.linear_stage.driving_speed_unit,
+    kerr.linear_stage.driving_acceleration,
+    kerr.linear_stage.driving_acceleration_unit,
+)
+setup_tab1 = Panel(child=foo, title="Delay Line")
+setup_tabs = Tabs(tabs=[setup_tab1], name="setup")
+doc.add_root(setup_tabs)
+# endregion setup
+
 # ================ params ================
 foo = column(
-    KerrGating.linear_stage.scan_mode,
-    KerrGating.linear_stage.scan_zero,
-    KerrGating.linear_stage.scan_start,
-    KerrGating.linear_stage.scan_stop,
-    KerrGating.linear_stage.scan_step,
-    KerrGating.linear_stage.scan_file
+    kerr.linear_stage.scan_mode,
+    kerr.linear_stage.zero_point_absolute_position,
+    kerr.linear_stage.range_scan_start,
+    kerr.linear_stage.range_scan_stop,
+    kerr.linear_stage.range_scan_step,
+    kerr.linear_stage.external_scan_list_file
 )
 param_tab1 = Panel(child=foo, title="Linear Stage")
 foo = column(
-    KerrGating.boxcar.delay_background_sampling,
-    KerrGating.boxcar.delay_integrate,
-    KerrGating.boxcar.delay_hold,
-    KerrGating.boxcar.delay_signal_sampling,
-    KerrGating.boxcar.delay_reset,
-    KerrGating.boxcar.submit_config,
-    KerrGating.boxcar.working_mode
+    kerr.boxcar.delay_background_sampling,
+    kerr.boxcar.delay_integrate,
+    kerr.boxcar.delay_hold,
+    kerr.boxcar.delay_signal_sampling,
+    kerr.boxcar.delay_reset,
+    kerr.boxcar.submit_config,
+    kerr.boxcar.working_mode
 )
 foo2 = column(
-    KerrGating.start_PWA,
-    KerrGating.terminate_PWA,
-    KerrGating.preview.PWA.fig,
+    kerr.start_PWA,
+    kerr.terminate_PWA,
+    kerr.preview.pwa.figure,
 )
 bar = row(foo, foo2)
 param_tab2 = Panel(child=bar, title="Boxcar Controller")
@@ -341,16 +375,16 @@ doc.add_root(param_tabs)
 
 # ================ manual ================
 foo = column(
-    KerrGating.linear_stage.test_online,
-    KerrGating.linear_stage.manual_position,
-    KerrGating.linear_stage.manual_move,
-    KerrGating.linear_stage.manual_step,
-    KerrGating.linear_stage.manual_step_forward,
-    KerrGating.linear_stage.manual_step_backward,
+    kerr.linear_stage.test_online,
+    kerr.linear_stage.manual_position,
+    kerr.linear_stage.manual_move,
+    kerr.linear_stage.manual_step,
+    kerr.linear_stage.manual_step_forward,
+    kerr.linear_stage.manual_step_backward,
 )
 manual_tab1 = Panel(child=foo, title="Linear Stage")
 foo = column(
-    KerrGating.boxcar.test_online,
+    kerr.boxcar.test_online,
 )
 manual_tab2 = Panel(child=foo, title="Boxcar Controller")
 manual_tabs = Tabs(tabs=[manual_tab1, manual_tab2], name="manual")
@@ -358,10 +392,10 @@ doc.add_root(manual_tabs)
 
 # ================ schedule ================
 foo = column(
-    KerrGating.generic.filestem,
-    KerrGating.generic.scanrounds,
-    KerrGating.start,
-    KerrGating.terminate
+    kerr.generic.filestem,
+    kerr.generic.scanrounds,
+    kerr.start,
+    kerr.terminate
 )
 schedule_tab1 = Panel(child=foo, title="KerrGating")
 schedule_tabs = Tabs(tabs=[schedule_tab1], name="schedule")
@@ -369,10 +403,10 @@ doc.add_root(schedule_tabs)
 
 # ================ reports ================
 foo = column(
-    KerrGating.preview.delay.fig,
-    KerrGating.preview.delta.fig,
-    KerrGating.preview.signal.fig,
-    KerrGating.preview.background.fig,
+    kerr.preview.delay_scan.figure,
+    kerr.preview.delta.figure,
+    kerr.preview.signal.figure,
+    kerr.preview.background.figure,
 )
 reports_tab1 = Panel(child=foo, title="KerrGating")
 reports_tabs = Tabs(tabs=[reports_tab1], name="reports")

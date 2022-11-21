@@ -14,7 +14,7 @@
     "ManualUnit": "ps",
     "ManualPosition": 4.2,
     "ManualStep": 1.0,
-    "Multiples": 2,
+    "Multiples": 0.5,
     "SoftLimitMin": -999.0,
     "SoftLimitMax": 999.0,
     "WorkingDirection": "Positive",

@@ -1,0 +1,51 @@
+{
+    "Name": "Kerr Gating",
+    "Comment": "Kerr gating experiment, see app comment for more",
+    "DelayLine": "ETHGASN_leisai",
+    "Boxcar": "generic_boxcar",
+    "SignalFigure":{
+        "Name": "Boxcar Signal",
+        "FigureType": "1D",
+        "Title": "Boxcar Signal",
+        "XName": "Data #",
+        "YName": "Intensity (V)",
+        "PlotWidth": 640,
+        "PlotHeight": 360
+    },
+    "BackgroundFigure":{
+        "Name": "Boxcar Background",
+        "FigureType": "1D",
+        "Title": "Boxcar Background",
+        "XName": "Data #",
+        "YName": "Intensity (V)",
+        "PlotWidth": 640,
+        "PlotHeight": 360
+    },
+    "DeltaFigure":{
+        "Name": "Boxcar Delta",
+        "FigureType": "1D",
+        "Title": "Boxcar Delta",
+        "XName": "Data #",
+        "YName": "Intensity (V)",
+        "PlotWidth": 640,
+        "PlotHeight": 360
+    },
+    "PeriodicWaveformAnalyzerFigure":{
+        "Name": "Periodic Waveform Analyzer",
+        "FigureType": "1D",
+        "Title": "Periodic Waveform Analyzer",
+        "XName": "Time (us)",
+        "YName": "Intensity (V)",
+        "PlotWidth": 640,
+        "PlotHeight": 360
+    },
+    "DelayScanFigure":{
+        "Name": "Delay Scan",
+        "FigureType": "1D",
+        "Title": "Delay Scan",
+        "XName": "Time Delay (ps)",
+        "YName": "Intensity (V)",
+        "PlotWidth": 640,
+        "PlotHeight": 360
+    }
+}

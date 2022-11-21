@@ -81,7 +81,8 @@ class AlignExperiment:
         input_coupler_bundle_config = dict()
         input_coupler_bundle_config["BundleType"] = "Bokeh"
         input_coupler_bundle_config["Config"] = lcfg.config["multiaxis_stages"][motorized_mirror_mount_name]
-        self.input_coupler = factory.generate_bundle(input_coupler_bundle_config)
+        self.input_coupler = factory.generate_bundle(
+            input_coupler_bundle_config)
 
         factory = FactoryCamera(lcfg, lstat)
         camera_bundle_config = dict()
@@ -300,7 +301,7 @@ doc.add_root(dashboard_tabs)
 # endregion dashboard
 
 # region messages
-# ================ Experiment Message ================ 
+# ================ Experiment Message ================
 doc.add_root(lstat.pre_exp_msg)
 # endregion messages
 
@@ -334,7 +335,61 @@ foo = column(
     align.camera.apply_all_settings,
 )
 setup_tab2 = Panel(child=foo, title="Beam Analyzer")
-setup_tabs = Tabs(tabs=[setup_tab1, setup_tab2], name="setup")
+foo = column(
+    align.input_coupler.host,
+    align.input_coupler.port,
+)
+setup_tab3 = Panel(child=foo, title="Input Coupler (IC)")
+foo0 = column(
+    Div(text="<b>Axis 0</b>"),
+    align.input_coupler.axis_0.multiples,
+    align.input_coupler.axis_0.working_direction,
+    Div(text="Position and Limitation Unit:"),
+    align.input_coupler.axis_0.position_unit,
+    align.input_coupler.axis_0.zero_point_absolute_position,
+    align.input_coupler.axis_0.soft_limit_min,
+    align.input_coupler.axis_0.soft_limit_max,
+    align.input_coupler.axis_0.driving_speed,
+    align.input_coupler.axis_0.driving_speed_unit,
+    align.input_coupler.axis_0.driving_acceleration,
+    align.input_coupler.axis_0.driving_acceleration_unit,
+)
+
+foo1 = column(
+    Div(text="<b>Axis 1</b>"),
+    align.input_coupler.axis_1.multiples,
+    align.input_coupler.axis_1.working_direction,
+    Div(text="Position and Limitation Unit:"),
+    align.input_coupler.axis_1.position_unit,
+    align.input_coupler.axis_1.zero_point_absolute_position,
+    align.input_coupler.axis_1.soft_limit_min,
+    align.input_coupler.axis_1.soft_limit_max,
+    align.input_coupler.axis_1.driving_speed,
+    align.input_coupler.axis_1.driving_speed_unit,
+    align.input_coupler.axis_1.driving_acceleration,
+    align.input_coupler.axis_1.driving_acceleration_unit,
+)
+
+foo2 = column(
+    Div(text="<b>Axis 2</b>"),
+    align.input_coupler.axis_2.multiples,
+    align.input_coupler.axis_2.working_direction,
+    Div(text="Position and Limitation Unit:"),
+    align.input_coupler.axis_2.position_unit,
+    align.input_coupler.axis_2.zero_point_absolute_position,
+    align.input_coupler.axis_2.soft_limit_min,
+    align.input_coupler.axis_2.soft_limit_max,
+    align.input_coupler.axis_2.driving_speed,
+    align.input_coupler.axis_2.driving_speed_unit,
+    align.input_coupler.axis_2.driving_acceleration,
+    align.input_coupler.axis_2.driving_acceleration_unit,
+)
+bar = row(foo0, foo1, foo2)
+setup_tab4 = Panel(child=bar, title="IC Axes")
+setup_tabs = Tabs(tabs=[setup_tab1,
+                        setup_tab2,
+                        setup_tab3,
+                        setup_tab4], name="setup")
 doc.add_root(setup_tabs)
 # endregion setup
 
@@ -349,6 +404,7 @@ foo = column(
     align.delay_stage.external_scan_list_file,
 )
 param_tab1 = Panel(child=foo, title="Aligning Delay Line")
+
 param_tabs = Tabs(tabs=[param_tab1], name="param")
 doc.add_root(param_tabs)
 # endregion params
@@ -371,8 +427,50 @@ foo = column(
     align.camera.test_online,
     align.camera.manual_take_sample,
 )
-manual_tab2 = Panel(child=foo, title="Camera")
-manual_tabs = Tabs(tabs=[manual_tab1, manual_tab2], name="manual")
+manual_tab2 = Panel(child=foo, title="Beam Analyzer")
+foo = column(
+    align.input_coupler.test_online,
+)
+manual_tab3 = Panel(child=foo, title="Input Coupler (IC)")
+foo0 = column(
+    Div(text="<b>Axis 0</b>"),
+    Div(text="Manual Operation Unit:"),
+    align.input_coupler.axis_0.manual_unit,
+    align.input_coupler.axis_0.manual_position,
+    align.input_coupler.axis_0.manual_move,
+    align.input_coupler.axis_0.manual_step,
+    align.input_coupler.axis_0.manual_step_forward,
+    align.input_coupler.axis_0.manual_step_backward,
+)
+
+foo1 = column(
+    Div(text="<b>Axis 1</b>"),
+    Div(text="Manual Operation Unit:"),
+    align.input_coupler.axis_1.manual_unit,
+    align.input_coupler.axis_1.manual_position,
+    align.input_coupler.axis_1.manual_move,
+    align.input_coupler.axis_1.manual_step,
+    align.input_coupler.axis_1.manual_step_forward,
+    align.input_coupler.axis_1.manual_step_backward,
+)
+
+foo2 = column(
+    Div(text="<b>Axis 2</b>"),
+    Div(text="Manual Operation Unit:"),
+    align.input_coupler.axis_2.manual_unit,
+    align.input_coupler.axis_2.manual_position,
+    align.input_coupler.axis_2.manual_move,
+    align.input_coupler.axis_2.manual_step,
+    align.input_coupler.axis_2.manual_step_forward,
+    align.input_coupler.axis_2.manual_step_backward,
+)
+
+bar = row(foo0, foo1, foo2)
+manual_tab4 = Panel(child=bar, title="IC Axes")
+manual_tabs = Tabs(tabs=[manual_tab1,
+                         manual_tab2,
+                         manual_tab3,
+                         manual_tab4,], name="manual")
 doc.add_root(manual_tabs)
 # endregion manual
 
@@ -399,8 +497,6 @@ image_panel = Tabs(tabs=[image_panel0, image_panel1])
 foo = column(
     image_panel,
     row(align.fit_report, align.fit_report_previous)
-    # AutoAlign.preview.horizontal_max.fig,
-    # AutoAlign.preview.vertical_max.fig,
 )
 foo2 = column(
     Div(text="<b>Delay Stage:</b>"),
