@@ -69,6 +69,7 @@ The "port" section in configs also needs to be changed if the server port has be
         ziUHF               5013
         SR830               5014
         boxcar_selfmade     5055
+        ziUHF_sync          5060
     
 * Digital single point detectors - Photodiodes and SiPM(MPPC):
 
