@@ -71,8 +71,11 @@ class AbstractInterlockRule(ABC):
 
     @abstractmethod
     def check(self) -> bool:
-        # pure function, please do not introduce any side effect
-        # check with self.interlock.states
+        """ 
+        Pure function, please do not introduce any side effect
+        to ensure thread safety.
+        Check with self.interlock.states
+        """
         pass
 
     def lock(self):

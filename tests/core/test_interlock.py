@@ -11,6 +11,7 @@ __email__ = "x@zzi.io"
 __version__ = "20221122"
 
 import time
+import random
 from threading import Thread
 
 from labctrl.interlock import Interlock, AbstractInterlockRule, InterlockError
@@ -88,7 +89,7 @@ def callback_open_shutter(shutter_name: str):
         # this should update frontend GUI to notify user what happend
         # because this is just a test, let's print
         print(e)
-        print("callback_open_shutter did not success, restored previous state")
+        print("callback_open_shutter did not success, restoring to previous state")
         states[shutter_name] = previous_shutter_state
 
 
@@ -108,7 +109,7 @@ def callback_close_shutter(shutter_name: str):
         # this should update frontend GUI to notify user what happend
         # because this is just a test, let's print
         print(e, e.args)
-        print("callback_open_shutter did not success, restoring to previous states")
+        print("callback_close_shutter did not success, restoring to previous states")
         states[shutter_name] = previous_shutter_state
 
 
@@ -161,22 +162,68 @@ def monitor_test():
             else:
                 print("Temperature rule passed, temperature: {}".format(
                     states["SampleTemperature"]))
-            time.sleep(0.07)
+            time.sleep(0.05)
     print("================ MONITOR TEST START ================")
     thread = Thread(target=monitor_task)
     thread.start()
-    # let's fake some data here, in actual enviroment the state 
+    # let's fake some data here, in actual enviroment the state
     # should be updated by sensor thread
     for i in range(30, 100):
-        print("Updating temperature")
+        print("Updating temperature to {}".format(i))
         states["SampleTemperature"] = float(i)
-        time.sleep(0.11)
+        time.sleep(0.07)
 
     monitoring = False
+    states["SampleTemperature"] = 30.0
     print("================ END OF MONITOR TEST ================")
 
+
+def multithread_test():
+    """
+    check thread safety
+    """
+    running = True
+    shutters_list = ["ShutterLaser", "ShutterCamera", "ShutterEyepiece"]
+    shutter_states_list = ["Open", "Closed"]
+
+    def thread_generator(i: int):
+        def task():
+            while running:
+                # randomly update shutter states around every 0.1s
+                sleeptime = random.random() * 0.2
+                time.sleep(sleeptime)
+                shutter_i = random.randint(0, 2)
+                shutter_name = shutters_list[shutter_i]
+                shutter_state_i = random.randint(0, 1)
+                shutter_state = shutter_states_list[shutter_state_i]
+                print(
+                    "[Thread {}]: Switch random shutter state: {} -> {}".format(
+                        i, shutter_name, shutter_state
+                    )
+                )
+                if shutter_state == "Closed":
+                    callback_close_shutter(shutter_name=shutter_name)
+                else:
+                    callback_open_shutter(shutter_name=shutter_name)
+
+        thread = Thread(target=task)
+        thread.start()
+    
+    print("================ MULTITHREAD TEST START ================")
+
+    for i in range(5):
+        thread_generator(i)
+
+    # test for 10 seconds, print current state every 1 second
+    for i in range(10):
+        time.sleep(1)
+        print("[Multithread Test]: Current state: ", states)
+
+    running = False
+    print("================ END OF MULTITHREAD TEST ================")
 
 
 def test():
     serial_test()
     monitor_test()
+    multithread_test()
