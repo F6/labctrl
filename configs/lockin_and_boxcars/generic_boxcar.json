@@ -3,11 +3,13 @@
     "Comment": "The self made one",
     "Host": "127.0.0.1",
     "Port": 5055,
-    "DelayBackgroundSampling": 10,
-    "DelayIntegrate":400,
-    "DelayHold":500,
-    "DelaySignalSampling":550,
-    "DelayReset":800,
+    "WorkingUnits":["ns", "us", "ms"],
+    "WorkingUnit": "us",
+    "DelayBackgroundSampling": 10.0,
+    "DelayIntegrate":400.0,
+    "DelayHold":500.0,
+    "DelaySignalSampling":550.0,
+    "DelayReset":800.0,
     "WorkingModes":["PWA", "Boxcar"],
-    "Mode":"Boxcar"
+    "WorkingMode":"Boxcar"
 }

@@ -42,8 +42,8 @@ class RemoteBoxcarController():
         Does not test if the remote server actually works, however."""
         return self.apicall('')
 
-    def get_boxcar_data(self):
-        boxcar_data = self.apicall('getBoxcarData')
+    def get_new_data(self, n_samples: int):
+        boxcar_data = self.apicall('getNewData/{}'.format(n_samples))
         boxcar_data = np.frombuffer(base64.b64decode(
             boxcar_data["result"]), dtype=np.float64)
         return boxcar_data
@@ -54,26 +54,26 @@ class RemoteBoxcarController():
             PWA_data["result"]), dtype=np.float64)
         return PWA_data
 
-    def set_delay_background_sampling(self, delay):
-        return self.apicall('setDelayBackgroundSampling/{delay}'.format(delay=delay))
+    def set_delay_background_sampling(self, delay: float):
+        return self.apicall('setDelayBackgroundSampling/{delay:.6f}'.format(delay=delay))
 
-    def set_delay_integrate(self, delay):
-        return self.apicall('setDelayIntegrate/{delay}'.format(delay=delay))
+    def set_delay_integrate(self, delay: float):
+        return self.apicall('setDelayIntegrate/{delay:.6f}'.format(delay=delay))
 
-    def set_delay_hold(self, delay):
-        return self.apicall('setDelayHold/{delay}'.format(delay=delay))
+    def set_delay_hold(self, delay: float):
+        return self.apicall('setDelayHold/{delay:.6f}'.format(delay=delay))
 
-    def set_delay_signal_sampling(self, delay):
-        return self.apicall('setDelaySignalSampling/{delay}'.format(delay=delay))
+    def set_delay_signal_sampling(self, delay: float):
+        return self.apicall('setDelaySignalSampling/{delay:.6f}'.format(delay=delay))
 
-    def set_delay_reset(self, delay):
-        return self.apicall('setDelayReset/{delay}'.format(delay=delay))
+    def set_delay_reset(self, delay: float):
+        return self.apicall('setDelayReset/{delay:.6f}'.format(delay=delay))
 
-    def set_adc_sampling_interval(self, delay):
-        return self.apicall('setADCSamplingInterval/{delay}'.format(delay=delay))
+    def set_adc_sampling_interval(self, delay: float):
+        return self.apicall('setADCSamplingInterval/{delay:.6f}'.format(delay=delay))
 
-    def set_adc_sample_number(self, n_sample):
-        return self.apicall('setADCSampleNumber/{n_sample}'.format(n_sample=n_sample))
+    def set_adc_sample_number(self, n_samples: int):
+        return self.apicall('setADCSampleNumber/{n_samples}'.format(n_samples=n_samples))
 
-    def set_working_mode(self, mode):
+    def set_working_mode(self, mode: str):
         return self.apicall('setWorkingMode/{mode}'.format(mode=mode))

@@ -43,11 +43,17 @@ def get_value(sample_count):
 @app.route("/getNewData/<sample_count>")
 def get_new_data(sample_count):
     # makes sure you can get new results every query
-    r = uhf.get_new_data(sample_count=sample_count)
-    res = dict()
-    res['success'] = True
-    res['message'] = "Boxcar data retrived"
-    res['result'] = base64.b64encode(r).decode()
-    res = json.dumps(res)
-    return Response(res, status=200, mimetype='application/json')
-
+    try:
+        r = uhf.get_new_data(sample_count=sample_count)
+        res = dict()
+        res['success'] = True
+        res['message'] = "Boxcar data retrived"
+        res['result'] = base64.b64encode(r).decode()
+        res = json.dumps(res)
+        return Response(res, status=200, mimetype='application/json')
+    except TimeoutError:
+        r = np.array([])
+        res = dict()
+        res['success'] = False
+        res['message'] = "Timeout waiting for {} samples! Check trigger or other connection issues.".format(sample_count)
+        res['result'] = base64.b64encode(r).decode()
