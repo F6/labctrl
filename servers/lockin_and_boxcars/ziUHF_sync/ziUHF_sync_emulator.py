@@ -46,6 +46,7 @@ def online():
 
 @app.route("/getValue/<sample_count>")
 def get_value(sample_count):
+    sample_count = int(sample_count)
     # value = uhf.get_value(sample_count=sample_count)
     value = fake.get_single()
     res = dict()
@@ -59,6 +60,7 @@ def get_value(sample_count):
 @app.route("/getNewData/<sample_count>")
 def get_new_data(sample_count):
     # makes sure you can get new results every query
+    sample_count = int(sample_count)
     # r = uhf.get_new_data(sample_count=sample_count)
     r = fake.get_new(sample_count)
     res = dict()
@@ -68,3 +70,62 @@ def get_new_data(sample_count):
     res = json.dumps(res)
     return Response(res, status=200, mimetype='application/json')
 
+
+@app.route("/setDelayBackgroundSampling/<delay>")
+def set_delay_background_sampling(delay: str):
+    res = dict()
+    res['success'] = False
+    res['message'] = "Background Sampling Delay not implemented for ziUHF"
+    res['param_bounce_back'] = delay
+    res = json.dumps(res)
+    return Response(res, status=200, mimetype='application/json')
+
+
+@app.route("/setDelayIntegrate/<delay>")
+def set_delay_integrate(delay: str):
+    res = dict()
+    res['success'] = False
+    res['message'] = "Integrate Delay not implemented for ziUHF"
+    res['param_bounce_back'] = delay
+    res = json.dumps(res)
+    return Response(res, status=200, mimetype='application/json')
+
+
+@app.route("/setDelayHold/<delay>")
+def set_delay_hold(delay: str):
+    res = dict()
+    res['success'] = False
+    res['message'] = "Hold Delay not implemented for ziUHF"
+    res['param_bounce_back'] = delay
+    res = json.dumps(res)
+    return Response(res, status=200, mimetype='application/json')
+
+
+@app.route("/setDelaySignalSampling/<delay>")
+def set_delay_signal_sampling(delay: str):
+    res = dict()
+    res['success'] = False
+    res['message'] = "Signal Sampling Delay not implemented for ziUHF"
+    res['param_bounce_back'] = delay
+    res = json.dumps(res)
+    return Response(res, status=200, mimetype='application/json')
+
+
+@app.route("/setDelayReset/<delay>")
+def set_delay_reset(delay: str):
+    res = dict()
+    res['success'] = False
+    res['message'] = "Reset Delay not implemented for ziUHF"
+    res['param_bounce_back'] = delay
+    res = json.dumps(res)
+    return Response(res, status=200, mimetype='application/json')
+
+
+@app.route("/setWorkingMode/<mode>")
+def set_working_mode(mode: str):
+    res = dict()
+    res['success'] = False
+    res['message'] = "No need to set working mode for ziUHF, both modes are already active"
+    res['param_bounce_back'] = mode
+    res = json.dumps(res)
+    return Response(res, status=200, mimetype='application/json')

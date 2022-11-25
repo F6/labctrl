@@ -76,6 +76,7 @@ class AbstractBundleBoxcar(ABC):
     start_PWA:                      Union[GenericButton, BokehButton]
     stop_PWA:                       Union[GenericButton, BokehButton]
     # Composite
+    boxcar_preview:                 AbstractBundleFigure1D
     PWA_figure:                     AbstractBundleFigure1D
     # Other
 

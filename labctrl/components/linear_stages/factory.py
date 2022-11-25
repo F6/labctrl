@@ -26,7 +26,7 @@ from .bundle_bokeh import BundleBokehLinearStage
 
 class FactoryLinearStage:
     """
-    This class is responsible for generating BundleFilterWheelController objects 
+    This class is responsible for generating BundleLinearStage objects 
     from given params
     """
 

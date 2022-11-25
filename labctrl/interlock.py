@@ -6,17 +6,18 @@ from __future__ import annotations
 interlock.py:
 
 This module provides the abstract class and implementation of an interlock.
+The interlock models all contradictions in a component, method or application.
 
 When handling experiments, we probably need to prohibit certain dangerous
 or erroneous states to be reached, for example in confocal Raman microscopes,
 the preview camera shutter and eyepiece shutter must be closed before 
 laser shutter is opened, and they are only allowed to be re-opend after
-the laser shutter is closed. If we fail to do it in right sequence, the
+the laser shutter is closed. If we fail to do it in correct sequence, the
 preview camera CMOS and naked eye of human may be damaged from intensive
 laser beam. The interlock detects such states before actual action and raises
 exceptions for erroneous commands.
 
-Another usage of a interlock is monitoring, for example automatically sending
+Another usage of an interlock is monitoring, for example automatically sending
 alarms to other units when humidity or temperature changes significantly, or
 when beam quality is deteriorated.
 
@@ -30,7 +31,7 @@ action upon rule violation.
 
 __author__ = "Zhi Zi"
 __email__ = "x@zzi.io"
-__version__ = "20221122"
+__version__ = "20221124"
 
 from abc import ABC, abstractmethod
 from typing import Any
@@ -122,9 +123,12 @@ class Interlock:
         all_pass: bool = True
         for rule in self.rules:
             check_pass = rule.check()
-            if not check_pass:
-                print("Interlock check failed for rule {rule}".format(
-                    rule=rule.name))
+            if check_pass:
+                # print("Interlock check OK for rule {rule}".format(rule=rule.name))
+                rule.restore()
+            else:
+                # print("Interlock check failed for rule {rule}".format(
+                #     rule=rule.name))
                 rule.lock()
                 all_pass = False
 

@@ -1,8 +1,8 @@
 {
-    "Name": "Generic Boxcar Controller",
-    "Comment": "The self made one",
+    "Name": "ziUHF_sync",
+    "Comment": "Zurich Instrument UHF, synchronized",
     "Host": "127.0.0.1",
-    "Port": 5055,
+    "Port": 5060,
     "WorkingUnits":["ns", "us", "ms"],
     "WorkingUnit": "us",
     "DelayBackgroundSampling": 10.0,
