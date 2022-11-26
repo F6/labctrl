@@ -1,0 +1,90 @@
+{
+    "Name": "Kerr Gating",
+    "Comment": "Kerr gating experiment, see app comment for more",
+    "FourierTransformDelayLine": "AeroTech_THz",
+    "PumpProbeDelayLine": "ETHGASN_leisai",
+    "Boxcar": "ziUHF_sync",
+    "SinglePointSampleSize": 512,
+    "SignalFigure":{
+        "Name": "Boxcar Signal (E-Field)",
+        "FigureType": "1D",
+        "Title": "Time Domain Boxcar Signal (E-Field)",
+        "XName": "Time (ps)",
+        "YName": "Intensity (V)",
+        "PlotWidth": 640,
+        "PlotHeight": 360
+    },
+    "BackgroundFigure":{
+        "Name": "Boxcar Background (E-Field)",
+        "FigureType": "1D",
+        "Title": "Time Domain Boxcar Background (E-Field)",
+        "XName": "Time (ps)",
+        "YName": "Intensity (V)",
+        "PlotWidth": 640,
+        "PlotHeight": 360
+    },
+    "DeltaFigure":{
+        "Name": "Boxcar Delta (E-Field)",
+        "FigureType": "1D",
+        "Title": "Time Domain Boxcar Delta (E-Field)",
+        "XName": "Time (ps)",
+        "YName": "Intensity (V)",
+        "PlotWidth": 640,
+        "PlotHeight": 360
+    },
+    "FourierTransformSignalFigure":{
+        "Name": "Fourier Transform THz Spectrum (Signal)",
+        "FigureType": "1D",
+        "Title": "Fourier Transform THz Spectrum (Signal)",
+        "XName": "Frequency (THz)",
+        "YName": "Intensity (V.ps)",
+        "PlotWidth": 640,
+        "PlotHeight": 360
+    },
+    "FourierTransformBackgroundFigure":{
+        "Name": "Fourier Transform THz Spectrum (Background)",
+        "FigureType": "1D",
+        "Title": "Fourier Transform THz Spectrum (Background)",
+        "XName": "Frequency (THz)",
+        "YName": "Intensity (V.ps)",
+        "PlotWidth": 640,
+        "PlotHeight": 360
+    },
+    "FourierTransformDeltaODFigure":{
+        "Name": "Fourier Transform THz Spectrum (Delta O.D.)",
+        "FigureType": "1D",
+        "Title": "Fourier Transform THz Spectrum (Delta O.D.)",
+        "XName": "Frequency (THz)",
+        "YName": "Intensity (V.ps)",
+        "PlotWidth": 640,
+        "PlotHeight": 360
+    },
+    "PumpProbeDelayScanFigure":{
+        "Name": "PumpProbeDelayScanFigure",
+        "FigureType": "2D",
+        "Title": "Pump Probe Delay Scan",
+        "XName": "Frequency (THz)",
+        "YName": "Time Delay",
+        "DataName": "Delta O.D.",
+        "PlotWidth": 640,
+        "PlotHeight": 360
+    },
+    "OriginalSignalFigure":{
+        "Name": "Boxcar Signal (Original)",
+        "FigureType": "1D",
+        "Title": "Boxcar Signal (Original)",
+        "XName": "Data #",
+        "YName": "Intensity (V)",
+        "PlotWidth": 640,
+        "PlotHeight": 360
+    },
+    "OriginalBackgroundFigure":{
+        "Name": "Boxcar Background (Original)",
+        "FigureType": "1D",
+        "Title": "Boxcar Background (Original)",
+        "XName": "Data #",
+        "YName": "Intensity (V)",
+        "PlotWidth": 640,
+        "PlotHeight": 360
+    }
+}

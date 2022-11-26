@@ -22,8 +22,10 @@ class FakeDataGenerator():
 
     def get_new(self, n:int):
         self.phase = self.phase + 0.1
-        return np.sin(np.linspace(self.phase, self.phase + 2 * np.pi, n))
-    
+        to_return = 10 * np.sin(2 * self.phase) * np.ones(n, dtype=np.float64)
+        to_return = to_return + np.random.rand(np.size(to_return))
+        return to_return
+
     def get_single(self):
         self.phase = self.phase + 0.1
         return self.phase

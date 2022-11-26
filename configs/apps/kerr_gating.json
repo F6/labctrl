@@ -34,7 +34,7 @@
         "Name": "Delay Scan",
         "FigureType": "1D",
         "Title": "Delay Scan",
-        "XName": "Time Delay (ps)",
+        "XName": "Time Delay",
         "YName": "Intensity (V)",
         "PlotWidth": 640,
         "PlotHeight": 360

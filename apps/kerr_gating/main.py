@@ -70,7 +70,8 @@ doc.template_variables["app_name"] = app_name
 app_config: dict = lcfg.config["apps"][app_name]
 delay_stage_name = app_config["DelayLine"]
 boxcar_name = app_config["Boxcar"]
-# Copy app+config to lstat so that other modules have reference to current settings
+
+# Create a reference to app_config in lstat so that other modules can access it
 lstat.stat[app_name] = app_config
 
 
@@ -273,7 +274,7 @@ doc.add_root(setup_tabs)
 # ================ params ================
 foo = column(
     kerr.linear_stage.scan_mode,
-    kerr.linear_stage.zero_point_absolute_position,
+    kerr.linear_stage.working_unit,
     kerr.linear_stage.range_scan_start,
     kerr.linear_stage.range_scan_stop,
     kerr.linear_stage.range_scan_step,
@@ -307,6 +308,8 @@ doc.add_root(param_tabs)
 # ================ manual ================
 foo = column(
     kerr.linear_stage.test_online,
+    Div(text="Manual Operation Unit:"),
+    kerr.linear_stage.manual_unit,
     kerr.linear_stage.manual_position,
     kerr.linear_stage.manual_move,
     kerr.linear_stage.manual_step,
