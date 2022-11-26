@@ -2,7 +2,7 @@
     "Name": "Kerr Gating",
     "Comment": "Kerr gating experiment, see app comment for more",
     "DelayLine": "ETHGASN_leisai",
-    "Boxcar": "generic_boxcar",
+    "Boxcar": "ziUHF_sync",
     "SignalFigure":{
         "Name": "Boxcar Signal",
         "FigureType": "1D",
@@ -26,15 +26,6 @@
         "FigureType": "1D",
         "Title": "Boxcar Delta",
         "XName": "Data #",
-        "YName": "Intensity (V)",
-        "PlotWidth": 640,
-        "PlotHeight": 360
-    },
-    "PeriodicWaveformAnalyzerFigure":{
-        "Name": "Periodic Waveform Analyzer",
-        "FigureType": "1D",
-        "Title": "Periodic Waveform Analyzer",
-        "XName": "Time (us)",
         "YName": "Intensity (V)",
         "PlotWidth": 640,
         "PlotHeight": 360

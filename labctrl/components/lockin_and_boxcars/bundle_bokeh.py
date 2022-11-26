@@ -218,9 +218,7 @@ class BundleBokehBoxcar(AbstractBundleBoxcar):
         # region set_working_mode
         @ignore_connection_error
         def __callback_set_working_mode():
-            response = self.remote.set_working_mode(config["WorkingMode"])
-            lstat.stat[name]["WorkingMode"] = config["WorkingMode"]
-            lstat.fmtmsg(response)
+            self.switch_working_mode(config["WorkingMode"])
 
         self.set_working_mode.on_click(__callback_set_working_mode)
         # endregion set_working_mode
@@ -255,3 +253,8 @@ class BundleBokehBoxcar(AbstractBundleBoxcar):
     def get_PWA_data(self, n_samples: int):
         # [TODO] Implementation of PWA
         pass
+
+    def switch_working_mode(self, working_mode:str):
+        response = self.remote.set_working_mode(working_mode)
+        self.lstat.stat[self.name]["WorkingMode"] = working_mode
+        self.lstat.fmtmsg(response)
