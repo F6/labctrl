@@ -1,6 +1,0 @@
-{
-    "ExperimentType": "Fluorescence2D",
-    "FileStem": "FLS-Sample",
-    "ScanRounds": 3,
-    "Mode": "SimpleRepetition"
-}

@@ -1,6 +1,0 @@
-{
-    "ExperimentType": "THz",
-    "FileStem": "THzSample",
-    "ScanRounds": 3,
-    "Mode": "SimpleRepetition"
-}

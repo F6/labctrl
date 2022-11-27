@@ -1,6 +1,0 @@
-{
-    "ExperimentType": "IRPumpVisibleProbe",
-    "FileStem": "PumpProbe-Sample",
-    "ScanRounds": 3,
-    "Mode": "SimpleRepetition"
-}
