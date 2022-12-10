@@ -1,0 +1,17 @@
+{
+    "Name": "drv2665",
+    "Comment": "DRV2665 High Voltage Signal Generator",
+    "Host": "127.0.0.1",
+    "Port": 5061,
+    "WorkingMode": "Cyclic",
+    "Waveform": [0],
+    "WaveformFigure": {
+        "Name": "Waveform",
+        "FigureType": "1D",
+        "Title": "Signal Waveform",
+        "XName": "Time",
+        "YName": "Voltage",
+        "PlotWidth": 640,
+        "PlotHeight": 360
+    }
+}

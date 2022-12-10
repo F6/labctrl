@@ -14,7 +14,7 @@ allowed_operators = {
     ast.Mult: op.mul,
     ast.Div: op.truediv, 
     # ast.Pow: op.pow, 
-    ast.BitXor: op.xor,
+    # ast.BitXor: op.xor,
     ast.USub: op.neg
 }
 

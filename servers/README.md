@@ -105,7 +105,12 @@ The "port" section in configs also needs to be changed if the server port has be
 
         Dazzler             5025
         LCD-PS-SelfMade1    5026
-    
+
+* Signal Generators:
+
+        drv2665             5061
+        rigol_dg4102        5062
+
 * Oscilloscopes:
 
         Rigol               5027
