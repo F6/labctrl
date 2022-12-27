@@ -1,0 +1,14 @@
+{
+    "Name": "ModelockWatchdog",
+    "Host": "127.0.0.1",
+    "Port": "5063",
+    "SensorConfig": {},
+    "AvailableDataFields": [
+        "Temperature1", 
+        "Temperature2", 
+        "Humidity1", 
+        "Humidity2", 
+        "Counter", 
+        "Timestamp"
+    ]
+}

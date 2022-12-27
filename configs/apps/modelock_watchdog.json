@@ -1,0 +1,58 @@
+{    
+    "PreviewFigures": [
+        {
+            "Name": "Temperature1",
+            "FigureType": "1D",
+            "Title": "Temperature 1",
+            "XName": "Time",
+            "YName": "Temperature (Degree Celsius)",
+            "PlotWidth": 640,
+            "PlotHeight": 360
+        },
+        {
+            "Name": "Temperature2",
+            "FigureType": "1D",
+            "Title": "Temperature 2",
+            "XName": "Time",
+            "YName": "Temperature (Degree Celsius)",
+            "PlotWidth": 640,
+            "PlotHeight": 360
+        },
+        {
+            "Name": "Humidity1",
+            "FigureType": "1D",
+            "Title": "Humidity 1",
+            "XName": "Time",
+            "YName": "Relative Humidity (%)",
+            "PlotWidth": 640,
+            "PlotHeight": 360
+        },
+        {
+            "Name": "Humidity2",
+            "FigureType": "1D",
+            "Title": "Humidity 2",
+            "XName": "Time",
+            "YName": "Relative Humidity (%)",
+            "PlotWidth": 640,
+            "PlotHeight": 360
+        },
+        {
+            "Name": "Pulse Frequency",
+            "FigureType": "1D",
+            "Title": "Pulse Frequency",
+            "XName": "Time",
+            "YName": "Frequency (Hz)",
+            "PlotWidth": 640,
+            "PlotHeight": 360
+        },
+        {
+            "Name": "Intensity",
+            "FigureType": "1D",
+            "Title": "Photodiode Intensity",
+            "XName": "Time",
+            "YName": "Intensity (V)",
+            "PlotWidth": 640,
+            "PlotHeight": 360
+        }
+    ]
+}

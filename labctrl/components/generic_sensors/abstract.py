@@ -36,7 +36,7 @@ that function.
 
 __author__ = "Zhi Zi"
 __email__ = "x@zzi.io"
-__version__ = "20221122"
+__version__ = "20221227"
 
 from abc import ABC, abstractmethod
 from typing import Any, NewType, Union
@@ -50,40 +50,32 @@ from labctrl.widgets.generic import (GenericButton, GenericFileInput,
                                      GenericRadioButtonGroup, GenericTextInput)
 from labctrl.widgets.figure import AbstractBundleFigure1D
 
-class AbstractBundleBoxcar(ABC):
+
+class AbstractBundleGenericSensor(ABC):
     """
     This bundle provides the following widgets and methods
-        to set parameters of and interact with a remote boxcar controller:
+        to set parameters of a remote sensor and read values from it.
+    The sensor may report multiple types of data, and we have no information
+        about the data for now, so the data are passed around as JSON/dict, 
+        and the final App using this bundle is responsible to handle the data.
     """
     # Param Configs
     host:                           Union[GenericTextInput, BokehTextInput]
     port:                           Union[GenericTextInput, BokehTextInput]
-    working_unit:                   Union[GenericRadioButtonGroup,
-                                          BokehRadioButtonGroup]
-    delay_background_sampling:      Union[GenericTextInput, BokehTextInput]
-    delay_integrate:                Union[GenericTextInput, BokehTextInput]
-    delay_hold:                     Union[GenericTextInput, BokehTextInput]
-    delay_signal_sampling:          Union[GenericTextInput, BokehTextInput]
-    delay_reset:                    Union[GenericTextInput, BokehTextInput]
-    working_mode:                   Union[GenericRadioButtonGroup,
-                                          BokehRadioButtonGroup]
+    sensor_config_file:             Union[GenericFileInput, BokehFileInput]
     # Interactive Elements
     test_online:                    Union[GenericButton, BokehButton]
     submit_config:                  Union[GenericButton, BokehButton]
-    set_working_mode:               Union[GenericButton, BokehButton]
-    manual_get_boxcar_data:         Union[GenericButton, BokehButton]
-    manual_get_PWA_data:            Union[GenericButton, BokehButton]
-    start_PWA:                      Union[GenericButton, BokehButton]
-    stop_PWA:                       Union[GenericButton, BokehButton]
+    manually_retrive_data:          Union[GenericButton, BokehButton]
+    start_retrive_data:             Union[GenericButton, BokehButton]
+    stop_retrive_data:              Union[GenericButton, BokehButton]
     # Composite
-    boxcar_preview:                 AbstractBundleFigure1D
-    PWA_figure:                     AbstractBundleFigure1D
     # Other
 
     @abstractmethod
-    def get_boxcar_data(self, n_samples: int):
+    def get_sensor_data(self, params: dict = dict()) -> dict:
         pass
 
     @abstractmethod
-    def get_PWA_data(self, n_samples: int):
+    def set_sensor_config(self, config: dict) -> dict:
         pass

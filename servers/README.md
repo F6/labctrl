@@ -178,3 +178,7 @@ The "port" section in configs also needs to be changed if the server port has be
 * Digital Pumps:
 
         MasterFlexLS        5047
+
+* Generic Composite Sensors:
+
+        ModelockWatchdog    5063
