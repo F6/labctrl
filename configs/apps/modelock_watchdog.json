@@ -1,58 +1,67 @@
-{    
-    "PreviewFigures": [
-        {
+{   
+    "Name": "Modelock Watchdog",
+    "Comment": "App used to monitor modelock laser status and environment",
+    "Sensor": "modelock_watchdog",
+    "PreviewFigures": {
+        "Temperature1": {
             "Name": "Temperature1",
             "FigureType": "1D",
             "Title": "Temperature 1",
             "XName": "Time",
+            "DatetimeX": true,
             "YName": "Temperature (Degree Celsius)",
             "PlotWidth": 640,
             "PlotHeight": 360
         },
-        {
+        "Temperature2": {
             "Name": "Temperature2",
             "FigureType": "1D",
             "Title": "Temperature 2",
             "XName": "Time",
+            "DatetimeX": true,
             "YName": "Temperature (Degree Celsius)",
             "PlotWidth": 640,
             "PlotHeight": 360
         },
-        {
+        "Humidity1": {
             "Name": "Humidity1",
             "FigureType": "1D",
             "Title": "Humidity 1",
             "XName": "Time",
+            "DatetimeX": true,
             "YName": "Relative Humidity (%)",
             "PlotWidth": 640,
             "PlotHeight": 360
         },
-        {
+        "Humidity2": {
             "Name": "Humidity2",
             "FigureType": "1D",
             "Title": "Humidity 2",
             "XName": "Time",
+            "DatetimeX": true,
             "YName": "Relative Humidity (%)",
             "PlotWidth": 640,
             "PlotHeight": 360
         },
-        {
+        "Frequency": {
             "Name": "Pulse Frequency",
             "FigureType": "1D",
             "Title": "Pulse Frequency",
             "XName": "Time",
+            "DatetimeX": true,
             "YName": "Frequency (Hz)",
             "PlotWidth": 640,
             "PlotHeight": 360
         },
-        {
+        "Intensity": {
             "Name": "Intensity",
             "FigureType": "1D",
             "Title": "Photodiode Intensity",
             "XName": "Time",
+            "DatetimeX": true,
             "YName": "Intensity (V)",
             "PlotWidth": 640,
             "PlotHeight": 360
         }
-    ]
+    }
 }

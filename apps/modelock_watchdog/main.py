@@ -1,64 +1,184 @@
 # -*- coding: utf-8 -*-
 
 """main.py:
-This is a simple test for signal generator widgets generated with bokeh library.
+This is a simple control panel for modelock watchdog generated with bokeh library.
 """
 
 __author__ = "Zhi Zi"
 __email__ = "x@zzi.io"
-__version__ = "20221117"
+__version__ = "20221227"
 
-
+import time
+import json
+import base64
+import os
+import pandas as pd
+from datetime import datetime
 from threading import Thread
 
 from bokeh.layouts import column, row
 from bokeh.models.widgets import Button, Div
 from bokeh.models import Panel, Tabs
 
-from labctrl.labconfig import lcfg
-from labctrl.labstat import lstat
+from labctrl.labconfig import lcfg, LabConfig
+from labctrl.labstat import lstat, LabStat
 from labctrl.main_doc import doc
-from labctrl.components.signal_generators.factory import FactorySignalGenerator
+from labctrl.widgets.figure import AbstractBundleFigure1D
+from labctrl.components.generic_sensors.factory import FactorySensor
+from labctrl.widgets.figure import FactoryFigure
+from labctrl.utilities import ignore_connection_error
 
-from .utils import ignore_connection_error
-
-app_name = "signal_generators_bokeh"
+app_name = "modelock_watchdog"
 doc.template_variables["app_name"] = app_name
-app_config = lcfg.config["tests"][app_name]
-signal_generator_name = app_config["SignalGeneratorUnderTesting"]
+app_config = lcfg.config["apps"][app_name]
+sensor_name = app_config["Sensor"]
 
 
-class SignalGeneratorBokehWidgetTester:
-    def __init__(self) -> None:
-        self.config = lcfg.config["signal_generators"][signal_generator_name]
-        factory = FactorySignalGenerator(lcfg, lstat)
-        signal_generator_bundle_config = dict()
-        signal_generator_bundle_config["Config"] = self.config
-        self.sg_bundle = factory.generate_bundle(signal_generator_bundle_config)
+class ModelockWatchdogApplication:
+    def __init__(self, lcfg:LabConfig, lstat:LabStat) -> None:
+        self.lcfg = lcfg
+        self.lstat = lstat
+        self.sensor_config = lcfg.config["generic_sensors"][sensor_name]
+        factory = FactorySensor(lcfg, lstat)
+        bundle_config = dict()
+        bundle_config["BundleType"] = "Bokeh"
+        bundle_config["Config"] = self.sensor_config
+        self.sensor_bundle = factory.generate_bundle(bundle_config)
+        factory = FactoryFigure(lcfg, lstat)
+        figure_bundle_config = dict()
+        figure_bundle_config["BundleType"] = "Bokeh"
+        self.data_preview_figures: dict[str, AbstractBundleFigure1D] = dict()
+        for figure_config_name in app_config["PreviewFigures"]:
+            figure_bundle_config["Config"] = app_config["PreviewFigures"][figure_config_name]
+            self.data_preview_figures[figure_config_name] = factory.generate_bundle(
+                figure_bundle_config)
 
+        self.watchdog_task_running = False
+        self.watchdog_thread = None
 
-tester = SignalGeneratorBokehWidgetTester()
+        self.enable_watchdog = Button(
+            label='Enable Watchdog', button_type="success")
+        self.disable_watchdog = Button(
+            label='Disable Watchdog', button_type="warning")
+
+        # region enable_watchdog
+        @ignore_connection_error
+        def __callback_enable_watchdog():
+            self.watchdog_task_running = True
+            self.watchdog_thread = Thread(target=self.watchdog_task)
+            self.watchdog_thread.start()
+
+        self.enable_watchdog.on_click(__callback_enable_watchdog)
+        # endregion enable_watchdog
+
+        # region disable_watchdog
+        def __callback_disable_watchdog():
+            self.watchdog_task_running = False
+
+        self.disable_watchdog.on_click(__callback_disable_watchdog)
+        # endregion disable_watchdog
+    
+    def parse_data(self, data):
+        """
+        [NOTE]: This should be done at server side, but we temporarily put
+        it here for some dev flexibility
+        [TODO]: Update and move this to server side later 
+        """
+        parsed = dict()
+        parsed["Temperature1"] = data["Temperature1"] / 1000
+        parsed["Temperature2"] = data["Temperature2"] / 1000
+        parsed["Humidity1"] = data["Humidity1"] / 1000
+        parsed["Humidity2"] = data["Humidity2"] / 1000
+        parsed["Frequency"] = data["Frequency"]
+        parsed["Intensity"] = 0 # no intensity data yet
+        parsed["Time"] = datetime.fromtimestamp(data["Timestamp"])
+        return parsed
+
+    def watchdog_task(self):
+        plot_length = 3600*24 # around 1 day
+        response = self.sensor_bundle.get_sensor_data()
+        self.lstat.fmtmsg(response)
+        data = self.parse_data(response["data"])
+        df = pd.DataFrame(data=data, index=[0])
+        while self.watchdog_task_running:
+            response = self.sensor_bundle.get_sensor_data()
+            self.lstat.fmtmsg(response)
+            data = self.parse_data(response["data"])
+            new_row = pd.Series(data)
+            df = pd.concat([df, new_row.to_frame().T], ignore_index=True)
+            # save data every hour
+            data_len = len(df)
+            if data_len > 3600:
+            # os.makedirs('logs', exist_ok=True)  
+                savename = datetime.fromtimestamp(time.time()).strftime("%Y-%m-%d-%H-%M-%S")
+                df.to_csv('logs/modelock_watchdog_{}.csv'.format(savename))
+                df = pd.DataFrame(data=data, index=[0]) # clear dataframe after save
+            watchdog_app.data_preview_figures["Temperature1"].stream(
+                    [data["Time"]], 
+                    [data["Temperature1"]],
+                    self.lstat,
+                    rollover=plot_length
+                    )
+            watchdog_app.data_preview_figures["Temperature2"].stream(
+                    [data["Time"]], 
+                    [data["Temperature2"]],
+                    self.lstat,
+                    rollover=plot_length
+                    )
+            watchdog_app.data_preview_figures["Humidity1"].stream(
+                    [data["Time"]], 
+                    [data["Humidity1"]],
+                    self.lstat,
+                    rollover=plot_length
+                    )
+            watchdog_app.data_preview_figures["Humidity2"].stream(
+                    [data["Time"]], 
+                    [data["Humidity2"]],
+                    self.lstat,
+                    rollover=plot_length
+                    )
+            watchdog_app.data_preview_figures["Frequency"].stream(
+                    [data["Time"]], 
+                    [data["Frequency"]],
+                    self.lstat,
+                    rollover=plot_length
+                    )
+            watchdog_app.data_preview_figures["Intensity"].stream(
+                    [data["Time"]], 
+                    [data["Intensity"]],
+                    self.lstat,
+                    rollover=plot_length
+                    )
+            time.sleep(1) # 1fps
+
+watchdog_app = ModelockWatchdogApplication(lcfg, lstat)
 
 
 # region basic
 foo1 = column(
     # basic config
-    Div(text="<b>Signal Generator Under Test: {}</b>".format(
-        tester.config["Name"])),
-    tester.sg_bundle.host,
-    tester.sg_bundle.port,
-    tester.sg_bundle.test_online,
-    Div(text="Signal Generator Working Mode:"),
-    tester.sg_bundle.working_mode,
-    tester.sg_bundle.change_working_mode,
-    tester.sg_bundle.waveform_file,
-    tester.sg_bundle.update_waveform_button
+    watchdog_app.sensor_bundle.host,
+    watchdog_app.sensor_bundle.port,
+    watchdog_app.sensor_bundle.test_online,
+    watchdog_app.sensor_bundle.sensor_config_file,
+    watchdog_app.sensor_bundle.submit_config,
+    watchdog_app.sensor_bundle.manually_retrive_data,
+    watchdog_app.enable_watchdog,
+    watchdog_app.disable_watchdog,
 )
+
 foo0 = column(
-    tester.sg_bundle.waveform_figure.figure
+    watchdog_app.data_preview_figures["Temperature1"].figure,
+    watchdog_app.data_preview_figures["Temperature2"].figure,
+    watchdog_app.data_preview_figures["Humidity1"].figure,
+    watchdog_app.data_preview_figures["Humidity2"].figure,
+    watchdog_app.data_preview_figures["Frequency"].figure,
+    watchdog_app.data_preview_figures["Intensity"].figure,
 )
-foooo = row(foo0, foo1)
-bar0 = Panel(child=foooo, title="Waveform")
+
+foo = row(foo1, foo0)
+
+bar0 = Panel(child=foo, title="Sensors")
 # endregion basic
 
 t = Tabs(tabs=[bar0], name="dashboard")

@@ -20,6 +20,8 @@ watchdog.start_continuous_read()
 
 app = Flask(__name__)
 
+counter_values = [0] * 10
+times = [0.0] * 10
 
 @app.route("/")
 def online():
@@ -34,10 +36,21 @@ def online():
 
 @app.route("/getSensorData")
 def get_sensor_data():
+    # ========= TEMPORARY =========
+    counter_values_last = watchdog.status["Counter"]
+    timestamp_last = watchdog.status["Timestamp"]
+    counter_values.append(counter_values_last)
+    times.append(timestamp_last)
+    counter_values_first = counter_values.pop(0)
+    timestamp_first = times.pop(0)
+    frequency = (counter_values_last - counter_values_first) / (timestamp_last - timestamp_first)
+    # print("Calculated Frequency: {} kHz".format(frequency/1000))
+    # ========= END TEMPORARY =========
     res = dict()
     res['success'] = True
     res['message'] = "data:dict"
     res['data'] = watchdog.status
+    res['data']['Frequency'] = frequency
     res = json.dumps(res)
     return Response(res, status=200, mimetype='application/json')
 

@@ -43,6 +43,9 @@ class AbstractBundleFigure1D(AbstractBundleFigure):
     def update(self, x, y, lstat: LabStat):
         pass
 
+    @abstractmethod
+    def stream(self, x, y, lstat: LabStat, rollover = None):
+        pass
 
 class AbstractBundleFigure1DWithWhiskers(AbstractBundleFigure):
     @abstractmethod
@@ -90,6 +93,9 @@ class FactoryFigure:
         if "Whiskers" in config:
             if config["Whiskers"]:
                 return BundleFigure1DWithWhiskers(title, x_name, y_name, plot_width, plot_height)
+        if "DatetimeX" in config:
+            if config["DatetimeX"]:
+                return BundleFigureDatetimeX1D(title, x_name, y_name, plot_width, plot_height)
         return BundleFigure1D(title, x_name, y_name, plot_width, plot_height)
 
     def generate_bundle_figure_2d(self, config: dict):
@@ -142,6 +148,44 @@ class BundleFigure1D(AbstractBundleFigure1D):
 
     def update(self, x, y, lstat: LabStat):
         lstat.doc.add_next_tick_callback(partial(self.callback_update, x, y))
+
+
+class BundleFigureDatetimeX1D(AbstractBundleFigure1D):
+    def __init__(self, title: str, x_name: str, y_name: str, plot_width: int, plot_height: int) -> None:
+        spectrum_tools = "box_zoom,pan,undo,redo,reset,save,crosshair"
+        self.figure = figure(title=title, x_axis_label=x_name, x_axis_type='datetime',
+                             y_axis_label=y_name, plot_width=plot_width,
+                             plot_height=plot_height, tools=spectrum_tools)
+        self.y = np.array([])
+        self.x = np.array([])
+        self.ds = ColumnDataSource(data=dict(x=self.x, y=self.y))
+        self.line = self.figure.line('x', 'y', line_width=1, source=self.ds)
+        ht = HoverTool(
+            tooltips=[
+                (x_name, '@x{0.000000}'),
+                (y_name, '@y{0.000000}'),
+            ],
+            # display a tooltip whenever the cursor is vertically in line with a glyph
+            mode='vline'
+        )
+        self.figure.add_tools(ht)
+
+    @gen.coroutine
+    def callback_update(self, x, y):
+        new_data = dict()
+        new_data['x'] = x
+        new_data['y'] = y
+        self.ds.data = new_data
+
+    def update(self, x, y, lstat: LabStat):
+        lstat.doc.add_next_tick_callback(partial(self.callback_update, x, y))
+    
+    @gen.coroutine
+    def callback_stream(self, x, y, rollover=None):
+        self.ds.stream({'x': x, 'y': y}, rollover=rollover)
+    
+    def stream(self, x, y, lstat: LabStat, rollover=None):
+        lstat.doc.add_next_tick_callback(partial(self.callback_stream, x, y, rollover))
 
 
 class BundleFigure1DWithWhiskers(AbstractBundleFigure1DWithWhiskers):

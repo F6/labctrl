@@ -60,15 +60,8 @@ class BundleSensor(AbstractBundleGenericSensor):
             label='Start Retriving Data', button_type="success")
         self.stop_retrive_data = Button(
             label='Stop Retriving Data', button_type="warning")
-        # # ======== Composites ========
-        # factory = FactoryFigure(lcfg, lstat)
-        # figure_bundle_config = dict()
-        # figure_bundle_config["BundleType"] = "Bokeh"
-        # self.data_preview_figures = list()
-        # for figure_config in config["PreviewFigures"]:
-        #     figure_bundle_config["Config"] = figure_config
-        #     self.data_preview_figures.append(
-        #         factory.generate_bundle(figure_bundle_config))
+        # ======== Composites ========
+        # no composites required
 
         # region host
         @update_config
