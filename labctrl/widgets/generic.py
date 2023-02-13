@@ -30,3 +30,7 @@ class GenericFileInput:
 
 class GenericFigure:
     pass
+
+
+class GenericTextDisplay:
+    pass

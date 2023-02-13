@@ -2,6 +2,15 @@
     "Name": "Modelock Watchdog",
     "Comment": "App used to monitor modelock laser status and environment",
     "Sensor": "modelock_watchdog",
+    "Alarms": {
+        "Frequency": {
+            "Type": "Range",
+            "Low": 900,
+            "High": 1100,
+            "EventCounts": 100,
+            "Enabled": true
+        }
+    },
     "PreviewFigures": {
         "Temperature1": {
             "Name": "Temperature1",

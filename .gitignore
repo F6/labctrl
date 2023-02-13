@@ -1,4 +1,4 @@
-# this project
+# == this project ==
 # old scripts, just for dev reference
 deprecated/
 # user inputed lists, probably useful for other users so commented out
@@ -7,15 +7,18 @@ deprecated/
 last_config.json
 last_stat.json
 scandata/*
+logs/*.csv
+logs/*.txt
+logs/*.log
 servers/cameras/EMCCD/raw/*.sif
 # proprietary programs or files from providers
 servers/linear_stages/AeroTech_THz/Proprietary/*
 servers/linear_stages/CRD507/Proprietary/*
-# portable python(32bit) for 32bit library, the user need to get their own, or decompress python.7z
+# portable python(32bit) for 32bit library, the users need to get their own, or decompress python.7z
 servers/linear_stages/PMC48MT6_fsTopas/python
 # software for tweaking motor driver (SigmaWinPlus), you can download it from yaskawa website
 servers/linear_stages/ETHGASN/docs/SGDV_1R6A05A/*.zip
-# end of this project
+# == end of this project ==
 
 
 # Byte-compiled / optimized / DLL files

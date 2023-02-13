@@ -341,7 +341,7 @@ class BundleImageRGBA(AbstractBundleImageRGBA):
         view[:, :, 0] = new_img[:, :, 2]  # copy red channel
         view[:, :, 1] = new_img[:, :, 1]  # copy blue channel
         view[:, :, 2] = new_img[:, :, 0]  # copy green channel
-        view[:, :, 3] = 255
+        view[:, :, 3] = 255 # Alpha channel
         new_data = dict()
         new_data['image'] = [img]
         new_data['x'] = [xmin]
