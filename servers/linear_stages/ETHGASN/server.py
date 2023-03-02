@@ -21,8 +21,8 @@ from ETHGASN import controller
 SOFTMIN = -999
 SOFTMAX = 999
 
-LEISAI_SOFTMIN = -268
-LEISAI_SOFTMAX = 135
+LEISAI_SOFTMIN = -360
+LEISAI_SOFTMAX = 20
 
 app = Flask(__name__)
 

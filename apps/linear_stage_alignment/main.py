@@ -117,13 +117,13 @@ class AlignExperiment:
 
         @lcfg.update_config
         def __callback_align_min(attr, old, new):
-            app_config["AlignMin"] = self.align_min.value
+            app_config["AlignMin"] = eval_float(self.align_min.value)
 
         self.align_min.on_change('value', __callback_align_min)
 
         @lcfg.update_config
         def __callback_align_max(attr, old, new):
-            app_config["AlignMax"] = self.align_max.value
+            app_config["AlignMax"] = eval_float(self.align_max.value)
 
         self.align_max.on_change('value', __callback_align_max)
 

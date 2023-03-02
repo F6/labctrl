@@ -37,7 +37,7 @@ class Ensemble:
     def getpos(self):
         return self.send_command("PFBK X\n")
 
-ip = '192.168.8.6'
+ip = '192.168.0.246'
 port = 8000
 
 ensemble = Ensemble(ip, port)

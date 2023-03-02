@@ -74,7 +74,7 @@ class Axis:
 
 class ETHGASN:
     def __init__(self) -> None:
-        self.ip = '192.168.0.1'
+        self.ip = '192.168.0.42'
         print("Opening ETHGASN Card...")
         res = 0
         res += gas.GA_SetCardNo(1)
