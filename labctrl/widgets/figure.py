@@ -21,6 +21,7 @@ from typing import Union, NewType, Any
 from bokeh.plotting import Figure as BokehFigure
 from bokeh.plotting import figure
 from bokeh.models import ColumnDataSource, HoverTool, ColorBar, LinearColorMapper, Range1d, Whisker, LinearAxis
+from bokeh.palettes import viridis
 from tornado import gen
 
 from labctrl.labconfig import LabConfig
@@ -211,6 +212,7 @@ class BundleFigure1D_DatetimeX(AbstractBundleFigure1D):
 class BundleFigure1D_MultipleLines(AbstractBundleFigure1D):
     def __init__(self, title: str, x_name: str, y_name: str, n_y: int, plot_width: int, plot_height: int) -> None:
         spectrum_tools = "box_zoom,pan,undo,redo,reset,save,crosshair"
+        color_cycle = viridis(n_y)
         length = 100  # the length does not matter because every update resets the length
         self.figure = figure(title=title, x_axis_label=x_name,
                              y_axis_label=y_name, plot_width=plot_width,
@@ -222,7 +224,7 @@ class BundleFigure1D_MultipleLines(AbstractBundleFigure1D):
         self.ds = ColumnDataSource(data=dict(x=self.x, **self.ys))
         for i in range(n_y):
             self.line = self.figure.line(
-                'x', str(i), line_width=1, source=self.ds)
+                'x', str(i), line_width=1, source=self.ds, color=color_cycle[i])
         ht = HoverTool(
             tooltips=[
                 (x_name, '@x{0.000000}'),
@@ -266,22 +268,24 @@ class BundleFigure1D_MultipleLines(AbstractBundleFigure1D):
 class BundleFigure1D_MultipleY(AbstractBundleFigure1D):
     def __init__(self, title: str, x_name: str, y_names: list[str], plot_width: int, plot_height: int) -> None:
         spectrum_tools = "box_zoom,pan,undo,redo,reset,save,crosshair"
+        color_cycle = viridis(len(y_names))
         length = 100  # the length does not matter because every update resets the length
         self.figure = figure(title=title, x_axis_label=x_name,
                              y_axis_label=y_names[0], plot_width=plot_width,
                              plot_height=plot_height, tools=spectrum_tools)
         self.ys = dict()
-        for s in y_names:
+        for i, s in enumerate(y_names):
             # first y_range is automatically placed at left side, so only add
             # extra ranges here
             self.figure.extra_y_ranges[s] = Range1d(start=-1, end=1)
             self.ys[s] = np.zeros(length)
-            self.figure.add_layout(LinearAxis(y_range_name=s), 'right')
+            self.figure.add_layout(LinearAxis(y_range_name=s, axis_line_color=color_cycle[i]), 'right')
         self.x = np.array(range(length))
         self.ds = ColumnDataSource(data=dict(x=self.x, **self.ys))
-        for s in y_names:
+        for i, s in enumerate(y_names):
             self.line = self.figure.line(
-                'x', s, line_width=1, source=self.ds, y_range_name=s)
+                'x', s, line_width=1, source=self.ds, 
+                y_range_name=s, legend_label=s, color=color_cycle[i])
         ht = HoverTool(
             tooltips=[
                 (x_name, '@x{0.000000}'),
