@@ -19,7 +19,10 @@ from labctrl.labstat import lstat
 from labctrl.main_doc import doc
 from labctrl.widgets.figure import (FactoryFigure, AbstractBundleFigure,
                                     BundleFigure1D, BundleFigure1DWithWhiskers, 
-                                    BundleFigure2D, BundleImageRGBA)
+                                    BundleFigure2D, BundleImageRGBA,
+                                    BundleFigure1D_DatetimeX,
+                                    BundleFigure1D_MultipleLines,
+                                    BundleFigure1D_MultipleY)
 
 config = lcfg.config["tests"]["figures_bokeh"]
 
@@ -54,6 +57,23 @@ class FigureWidgetTester():
                     upper = 1.0 * y + 0.2
                     lower = 0.9 * y - 0.2
                     i.update(x, y, base, upper, lower, lstat)
+                elif isinstance(i, BundleFigure1D_DatetimeX):
+                    x = np.linspace(0, 6*np.pi, 100)
+                    y = np.sin(x + self.phase)
+                    t = time.time() + np.linspace(0, 3600, 100)
+                    i.update(t, y, lstat)
+                elif isinstance(i, BundleFigure1D_MultipleLines):
+                    x = np.linspace(0, 6*np.pi, 100)
+                    y1 = np.sin(x + self.phase)
+                    y2 = np.sin(x + self.phase * 2) * np.sin(self.phase)
+                    y3 = np.sin(x + self.phase * 3) * np.sin(self.phase * 2)
+                    i.update(x, [y1, y2, y3], lstat)
+                elif isinstance(i, BundleFigure1D_MultipleY):
+                    x = np.linspace(0, 6*np.pi, 100)
+                    y1 = np.sin(x + self.phase)
+                    y2 = np.sin(x + self.phase * 2) * np.sin(self.phase)
+                    y3 = np.sin(x + self.phase * 3) * np.sin(self.phase * 2)
+                    i.update(x, {"yname1":y1, "yname2":y2, "yname3": y3}, lstat)
                 elif isinstance(i, BundleFigure2D):
                     x = np.linspace(0, 6*np.pi, 100)
                     y = np.linspace(0, 6*np.pi, 100)

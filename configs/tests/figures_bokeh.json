@@ -60,6 +60,36 @@
       "YName": "Image Test Y Name",
       "PlotWidth": 640,
       "PlotHeight": 360
+    },
+    {
+      "Name": "figures_bokeh_test_1d_datetime_X",
+      "FigureType": "1D",
+      "DatetimeX": true,
+      "Title": "1D Figure Test Title, X is timestamp",
+      "XName": "X Name (Time)",
+      "YName": "Y Name",
+      "PlotWidth": 640,
+      "PlotHeight": 360
+    },
+    {
+      "Name": "figures_bokeh_test_1d_multiple_lines",
+      "FigureType": "1D",
+      "MultipleLines": 3,
+      "Title": "1D Figure Test Title, multiple lines, 3 lines",
+      "XName": "X Name",
+      "YName": "Y Name",
+      "PlotWidth": 640,
+      "PlotHeight": 360
+    },
+    {
+      "Name": "figures_bokeh_test_1d_multiple_Y",
+      "FigureType": "1D",
+      "MultipleY": ["yname1", "yname2", "yname3"],
+      "Title": "1D Figure Test Title, multiple Y, 3 Y's",
+      "XName": "X Name",
+      "YName": "Y Name",
+      "PlotWidth": 640,
+      "PlotHeight": 360
     }
   ]
 }
