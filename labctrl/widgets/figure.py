@@ -20,7 +20,8 @@ from abc import ABC, abstractmethod
 from typing import Union, NewType, Any
 from bokeh.plotting import Figure as BokehFigure
 from bokeh.plotting import figure
-from bokeh.models import ColumnDataSource, HoverTool, ColorBar, LinearColorMapper, Range1d, Whisker
+from bokeh.models import ColumnDataSource, HoverTool, ColorBar, LinearColorMapper, Range1d, Whisker, LinearAxis
+from bokeh.palettes import viridis
 from tornado import gen
 
 from labctrl.labconfig import LabConfig
@@ -44,8 +45,9 @@ class AbstractBundleFigure1D(AbstractBundleFigure):
         pass
 
     @abstractmethod
-    def stream(self, x, y, lstat: LabStat, rollover = None):
+    def stream(self, x, y, lstat: LabStat, rollover=None):
         pass
+
 
 class AbstractBundleFigure1DWithWhiskers(AbstractBundleFigure):
     @abstractmethod
@@ -95,7 +97,17 @@ class FactoryFigure:
                 return BundleFigure1DWithWhiskers(title, x_name, y_name, plot_width, plot_height)
         if "DatetimeX" in config:
             if config["DatetimeX"]:
-                return BundleFigureDatetimeX1D(title, x_name, y_name, plot_width, plot_height)
+                return BundleFigure1D_DatetimeX(title, x_name, y_name, plot_width, plot_height)
+        if "MultipleLines" in config:
+            if config["MultipleLines"] >= 1:
+                return BundleFigure1D_MultipleLines(title, x_name, y_name, config["MultipleLines"], plot_width, plot_height)
+            else:
+                raise ValueError("MultipleLines type figure specified, however, line number is smaller than 1.")
+        if "MultipleY" in config:
+            if len(config["MultipleY"]) >= 1:
+                return BundleFigure1D_MultipleY(title, x_name, config["MultipleY"], plot_width, plot_height)
+            else:
+                raise ValueError("Too few Y names for MultipleY plots.")
         return BundleFigure1D(title, x_name, y_name, plot_width, plot_height)
 
     def generate_bundle_figure_2d(self, config: dict):
@@ -149,8 +161,16 @@ class BundleFigure1D(AbstractBundleFigure1D):
     def update(self, x, y, lstat: LabStat):
         lstat.doc.add_next_tick_callback(partial(self.callback_update, x, y))
 
+    @gen.coroutine
+    def callback_stream(self, x, y, rollover=None):
+        self.ds.stream({'x': x, 'y': y}, rollover=rollover)
 
-class BundleFigureDatetimeX1D(AbstractBundleFigure1D):
+    def stream(self, x, y, lstat: LabStat, rollover=None):
+        lstat.doc.add_next_tick_callback(
+            partial(self.callback_stream, x, y, rollover))
+
+
+class BundleFigure1D_DatetimeX(AbstractBundleFigure1D):
     def __init__(self, title: str, x_name: str, y_name: str, plot_width: int, plot_height: int) -> None:
         spectrum_tools = "box_zoom,pan,undo,redo,reset,save,crosshair"
         self.figure = figure(title=title, x_axis_label=x_name, x_axis_type='datetime',
@@ -179,13 +199,138 @@ class BundleFigureDatetimeX1D(AbstractBundleFigure1D):
 
     def update(self, x, y, lstat: LabStat):
         lstat.doc.add_next_tick_callback(partial(self.callback_update, x, y))
-    
+
     @gen.coroutine
     def callback_stream(self, x, y, rollover=None):
         self.ds.stream({'x': x, 'y': y}, rollover=rollover)
-    
+
     def stream(self, x, y, lstat: LabStat, rollover=None):
-        lstat.doc.add_next_tick_callback(partial(self.callback_stream, x, y, rollover))
+        lstat.doc.add_next_tick_callback(
+            partial(self.callback_stream, x, y, rollover))
+
+
+class BundleFigure1D_MultipleLines(AbstractBundleFigure1D):
+    def __init__(self, title: str, x_name: str, y_name: str, n_y: int, plot_width: int, plot_height: int) -> None:
+        spectrum_tools = "box_zoom,pan,undo,redo,reset,save,crosshair"
+        color_cycle = viridis(n_y)
+        length = 100  # the length does not matter because every update resets the length
+        self.figure = figure(title=title, x_axis_label=x_name,
+                             y_axis_label=y_name, plot_width=plot_width,
+                             plot_height=plot_height, tools=spectrum_tools)
+        self.ys = dict()
+        for i in range(n_y):
+            self.ys[str(i)] = np.zeros(length)
+        self.x = np.array(range(length))
+        self.ds = ColumnDataSource(data=dict(x=self.x, **self.ys))
+        for i in range(n_y):
+            self.line = self.figure.line(
+                'x', str(i), line_width=1, source=self.ds, color=color_cycle[i])
+        ht = HoverTool(
+            tooltips=[
+                (x_name, '@x{0.000000}'),
+                *[(str(i), '@{yi}{{0.000000}}'.format(yi=i)) for i in range(n_y)],
+            ],
+            # display a tooltip whenever the cursor is vertically in line with a glyph
+            mode='vline'
+        )
+        self.figure.add_tools(ht)
+
+    @gen.coroutine
+    def callback_update(self, x, ys):
+        """
+        Expect:
+        x: array
+        y: list[array]
+        """
+        new_data = dict()
+        new_data['x'] = x
+        for i in range(len(ys)):
+            new_data[str(i)] = ys[i]
+        self.ds.data = new_data
+
+    def update(self, x, y, lstat: LabStat):
+        lstat.doc.add_next_tick_callback(partial(self.callback_update, x, y))
+
+    @gen.coroutine
+    def callback_stream(self, x, ys, rollover=None):
+        new_data = dict()
+        new_data['x'] = x
+        for i in range(len(ys)):
+            new_data[str(i)] = ys[i]
+        self.ds.stream(new_data, rollover=rollover)
+
+    def stream(self, x, y, lstat: LabStat, rollover=None):
+        lstat.doc.add_next_tick_callback(
+            partial(self.callback_stream, x, y, rollover))
+
+
+
+class BundleFigure1D_MultipleY(AbstractBundleFigure1D):
+    def __init__(self, title: str, x_name: str, y_names: list[str], plot_width: int, plot_height: int) -> None:
+        spectrum_tools = "box_zoom,pan,undo,redo,reset,save,crosshair"
+        color_cycle = viridis(len(y_names))
+        length = 100  # the length does not matter because every update resets the length
+        self.figure = figure(title=title, x_axis_label=x_name,
+                             y_axis_label=y_names[0], plot_width=plot_width,
+                             plot_height=plot_height, tools=spectrum_tools)
+        self.ys = dict()
+        for i, s in enumerate(y_names):
+            # first y_range is automatically placed at left side, so only add
+            # extra ranges here
+            self.figure.extra_y_ranges[s] = Range1d(start=-1, end=1)
+            self.ys[s] = np.zeros(length)
+            self.figure.add_layout(LinearAxis(y_range_name=s, axis_line_color=color_cycle[i]), 'right')
+        self.x = np.array(range(length))
+        self.ds = ColumnDataSource(data=dict(x=self.x, **self.ys))
+        for i, s in enumerate(y_names):
+            self.line = self.figure.line(
+                'x', s, line_width=1, source=self.ds, 
+                y_range_name=s, legend_label=s, color=color_cycle[i])
+        ht = HoverTool(
+            tooltips=[
+                (x_name, '@x{0.000000}'),
+                *[(s, '@{y_name}{{0.000000}}'.format(y_name=s)) for s in y_names],
+            ],
+            # display a tooltip whenever the cursor is vertically in line with a glyph
+            mode='vline'
+        )
+        self.figure.add_tools(ht)
+
+    @gen.coroutine
+    def callback_update(self, x, ys):
+        """
+        Expect:
+        x: array
+        ys: dict[name, array]
+        """
+        # update data
+        new_data = {'x': x, **ys}
+        self.ds.data = new_data
+        # update ranges according to new data
+        overlimit = 0.05 # 5% blank margin at top and bottom
+        for y_name in ys:
+            ymin = np.min(ys[y_name])
+            ymax = np.max(ys[y_name])
+            d = ymax - ymin
+            mid = (ymax + ymin) * 0.5
+            ymin = mid - d * (0.5 + overlimit)
+            ymax = mid + d * (0.5 + overlimit)            
+            self.figure.extra_y_ranges[y_name].start = ymin
+            self.figure.extra_y_ranges[y_name].reset_start = ymin
+            self.figure.extra_y_ranges[y_name].end = ymax
+            self.figure.extra_y_ranges[y_name].reset_end = ymax
+
+    def update(self, x, y, lstat: LabStat):
+        lstat.doc.add_next_tick_callback(partial(self.callback_update, x, y))
+
+    @gen.coroutine
+    def callback_stream(self, x, ys, rollover=None):
+        new_data = {'x': x, **ys}
+        self.ds.stream(new_data, rollover=rollover)
+
+    def stream(self, x, y, lstat: LabStat, rollover=None):
+        lstat.doc.add_next_tick_callback(
+            partial(self.callback_stream, x, y, rollover))
 
 
 class BundleFigure1DWithWhiskers(AbstractBundleFigure1DWithWhiskers):
@@ -341,7 +486,7 @@ class BundleImageRGBA(AbstractBundleImageRGBA):
         view[:, :, 0] = new_img[:, :, 2]  # copy red channel
         view[:, :, 1] = new_img[:, :, 1]  # copy blue channel
         view[:, :, 2] = new_img[:, :, 0]  # copy green channel
-        view[:, :, 3] = 255 # Alpha channel
+        view[:, :, 3] = 255  # Alpha channel
         new_data = dict()
         new_data['image'] = [img]
         new_data['x'] = [xmin]
