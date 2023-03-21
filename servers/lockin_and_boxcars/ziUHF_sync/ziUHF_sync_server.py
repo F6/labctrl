@@ -60,6 +60,7 @@ def get_new_data(sample_count):
         res['message'] = "Timeout waiting for {} samples! Check trigger or other connection issues.".format(
             sample_count)
         res['result'] = base64.b64encode(r).decode()
+        return Response(res, status=200, mimetype='application/json')
 
 
 @app.route("/setDelayBackgroundSampling/<delay>")

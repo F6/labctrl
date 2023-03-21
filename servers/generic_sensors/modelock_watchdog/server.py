@@ -43,8 +43,12 @@ def get_sensor_data():
     times.append(timestamp_last)
     counter_values_first = counter_values.pop(0)
     timestamp_first = times.pop(0)
-    frequency = (counter_values_last - counter_values_first) / (timestamp_last - timestamp_first)
-    # print("Calculated Frequency: {} kHz".format(frequency/1000))
+    try:
+        frequency = (counter_values_last - counter_values_first) / (timestamp_last - timestamp_first)
+        # print("Calculated Frequency: {} kHz".format(frequency/1000))
+    except ZeroDivisionError:
+        frequency = -888
+        print("Timestamp did not change during last 10 cycles, is the sensor still connected?")
     # ========= END TEMPORARY =========
     res = dict()
     res['success'] = True

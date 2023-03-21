@@ -145,6 +145,6 @@ class THzExpData:
         tosave = np.array(self.fft_freqs)
         np.savetxt(filename, tosave, delimiter=',')
 
-        filename = filestem + "-Pump-Probe-Delays.csv"
-        tosave = np.array(self.pp_delays)
-        np.savetxt(filename, tosave, delimiter=',')
+        # filename = filestem + "-Pump-Probe-Delays.csv"
+        # tosave = np.array(self.pp_delays)
+        # np.savetxt(filename, tosave, delimiter=',')

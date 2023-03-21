@@ -46,6 +46,14 @@ Time         : {t}
 """
 
 
+class ModelockWatchdogAlarm:
+    def __init__(self, lcfg: LabConfig, lstat: LabStat) -> None:
+        self.last_frequencies = []
+
+    def check_frequency(self, frequency: float):
+        self.last_frequencies.append(frequency)
+        
+
 class ModelockWatchdogApplication:
     def __init__(self, lcfg: LabConfig, lstat: LabStat) -> None:
         self.lcfg = lcfg

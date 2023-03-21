@@ -1,0 +1,34 @@
+{
+    "Name": "THz_absorption",
+    "Comment": "Terahertz absorption experiment, see app comment for more",
+    "FourierTransformDelayLine": "AeroTech_THz",
+    "Boxcar": "ziUHF_sync",
+    "SinglePointSampleSize": 1024,
+    "SignalFigure":{
+        "Name": "Boxcar Signal (E-Field)",
+        "FigureType": "1D",
+        "Title": "Time Domain Boxcar Signal (E-Field)",
+        "XName": "Time (ps)",
+        "YName": "Intensity (V)",
+        "PlotWidth": 640,
+        "PlotHeight": 360
+    },
+    "FourierTransformSignalFigure":{
+        "Name": "Fourier Transform THz Spectrum (Signal)",
+        "FigureType": "1D",
+        "Title": "Fourier Transform THz Spectrum (Signal)",
+        "XName": "Frequency (THz)",
+        "YName": "Intensity (V.ps)",
+        "PlotWidth": 640,
+        "PlotHeight": 360
+    },
+    "OriginalSignalFigure":{
+        "Name": "Boxcar Signal (Original)",
+        "FigureType": "1D",
+        "Title": "Boxcar Signal (Original)",
+        "XName": "Data #",
+        "YName": "Intensity (V)",
+        "PlotWidth": 640,
+        "PlotHeight": 360
+    }
+}

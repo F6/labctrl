@@ -1,8 +1,8 @@
 {
     "State": "Idle",
     "Pins": "P",
-    "MachineX": 7.6,
-    "MachineY": -2.2,
+    "MachineX": 7.35,
+    "MachineY": -2.85,
     "MachineZ": 0.0,
     "CurrentFeedRate": 0.0,
     "CurrentSpindleSpeed": 0.0,

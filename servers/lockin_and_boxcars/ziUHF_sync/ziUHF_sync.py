@@ -68,6 +68,7 @@ class ziUHF:
         while self.sync_thread_running:
             data = self.daq.poll(self.poll_length, self.poll_timeout,
                                  self.poll_flags, self.poll_return_flat_dict)
+            # print(data, self.buffer.current_data_index)
             try:
                 sample = data[cfg["SamplePath"]]
                 value = sample["value"]
@@ -92,14 +93,25 @@ probably misconfigured SamplePath or node not subscribed".format(e, e.args))
         then istart will always be one of 8, 16, 24, 32...
         """
         istart = self.buffer.current_data_index
-        istart = istart // keep_phase_period + keep_phase_period
-        istop = (istart + sample_count) % self.buffer.length
+        icurrent = istart
+        iintegrate = istart
+        istart = istart % keep_phase_period + istart
+        istop = istart + sample_count
         tstart = time.time()
-        while self.buffer.current_data_index < istop:
+        # print(self.buffer.current_data_index, istart, istop, self.buffer.length)
+        while True:
+            iprevious = icurrent
+            icurrent = self.buffer.current_data_index
+            idelta = (icurrent - iprevious) % self.buffer.length
+            iintegrate = iintegrate + idelta
+            if iintegrate > istop:
+                break
+            # print(self.buffer.current_data_index, istart, istop, self.buffer.length)
             time.sleep(0.01)
             tnow = time.time()
             if (tnow - tstart) > timeout:
                 raise TimeoutError
+    
         return self.buffer.get_slice(istart, istop)
     
     def get_value(self, sample_count: int = 1000, timeout: float = 30.0):
