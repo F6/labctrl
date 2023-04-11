@@ -54,68 +54,39 @@ from bokeh.layouts import column, row
 from bokeh.models.widgets import Button, Div
 from bokeh.models import Panel, Tabs
 
-from labctrl.labconfig import lcfg
-from labctrl.labstat import lstat
+from labctrl.labconfig import lcfg, LabConfig
+from labctrl.labstat import lstat, LabStat
 from labctrl.components.linear_stages.factory import FactoryLinearStage
 from labctrl.components.linear_image_sensors.factory import FactoryLinearImageSensor
 from labctrl.main_doc import doc
 from labctrl.dashboard import taskoverview
 from labctrl.methods.generic import FactoryGenericMethods
-from labctrl.widgets.figure import FactoryFigure1D, FactoryFigure2D
+from labctrl.widgets.figure import FactoryFigure
 
-doc.template_variables["app_name"] = "frog"
+from .frog_data import FROGExpData
 
-
-# META SETTINGS
-delay_stage = 'ETHGASN_leisai'
-# delay_stage = 'USB1020'
-spectrometer_sensor = 'FX2000'
+app_name = "frog"
+doc.template_variables["app_name"] = app_name
+app_config = lcfg.config["apps"][app_name]
+delay_stage_name: str = app_config["DelayStage"]
+linear_detector_name: str = app_config["LinearDetector"]
+# Create a reference to app_config in lstat so that other modules can access it
+lstat.stat[app_name] = app_config
 
 
 class FROGPreviewFigure:
     def __init__(self) -> None:
-        factory = FactoryFigure1D()
-        self.signal = factory.generate_fig1d(
-            "Real Time Spectrum", "Linear Array Pixel", "Intensity (counts)", 2048)
-        self.delay = factory.generate_fig1d(
-            "Time-Domain Intensity Autocorrelation", "Time Delay (ps)", "Intensity (counts)", 40)
-        factory = FactoryFigure2D()
-        self.twodim = factory.generate_fig2d(
-            "FROG Raw Intensity", "Linear Array Pixel", "Time Delay Point #", "Intensity (counts)")
+        factory = FactoryFigure(lcfg, lstat)
+        figure_bundle_config = {"BundleType": "Bokeh",
+                                "Config": app_config["SignalFigure"]}
+        self.signal = factory.generate_bundle(figure_bundle_config)
+        figure_bundle_config = {"BundleType": "Bokeh",
+                                "Config": app_config["IntensityCorrelationFigure"]}
+        self.delay = factory.generate_bundle(figure_bundle_config)
+        figure_bundle_config = {"BundleType": "Bokeh",
+                                "Config": app_config["FrogFigure"]}
+        self.frog = factory.generate_bundle(figure_bundle_config)
 
-
-class FROGExpData:
-    """Holds all temporary data generated in the experiment.
-    The data memory are reallocated according to labconfig just before experiment
-     starts. So it is necessary for the init to read the labconfig.
-    """
-
-    def __init__(self, lcfg, lstat) -> None:
-        # save a reference for later use. Each time lcfg get updated, expdata
-        # instances are always lazy generated just before experiment starts,
-        #  so no need to bother copying lcfg
-        self.lcfg = lcfg
-        self.delays = lstat.stat[delay_stage]["ScanList"]
-        self.npixels = lcfg.config["linear_image_sensors"][spectrometer_sensor]["NumberOfPixels"]
-        self.pixels_list = np.arange(self.npixels)
-        self.xmin = np.min(self.pixels_list)
-        self.xmax = np.max(self.pixels_list)
-        self.ymin = np.min(self.delays)
-        self.ymax = np.max(self.delays)
-        self.sig = np.zeros((len(self.delays), self.npixels), dtype=np.float64)
-        self.sigsum = np.zeros(
-            (len(self.delays), self.npixels), dtype=np.float64)
-
-    def export(self, filestem: str) -> None:
-        filename = filestem + "-Signal.csv"
-        tosave = self.sig
-        np.savetxt(filename, tosave, delimiter=',')
-        filename = filestem + "-Sum-Signal.csv"
-        tosave = self.sigsum
-        np.savetxt(filename, tosave, delimiter=',')
-        filename = filestem + "-Delays.csv"
-        tosave = np.array(self.delays)
-        np.savetxt(filename, tosave, delimiter=',')
 
 
 class FROGExperiment:
@@ -124,93 +95,105 @@ class FROGExperiment:
     tasks for the experiment
     """
 
-    def __init__(self) -> None:
-        init_str = 'Initialize at {}'.format(self)
+    def __init__(self, lcfg:LabConfig, lstat:LabStat) -> None:
+        self.lcfg = lcfg
+        self.lstat = lstat
+        config = lcfg.config
         self.start = Button(label="Start FROG Scan", button_type='success')
         # self.pause = Button(label="Pause Kerr Gate Scan", button_type='warning')
         self.terminate = Button(
             label="Terminate FROG Scan", button_type='warning')
         self.preview = FROGPreviewFigure()
-        self.data = FROGExpData(lcfg, lstat)
-        factory = FactoryLinearStage()
-        self.linear_stage = factory.generate_bundle(delay_stage, lcfg, lstat)
+        factory = FactoryLinearStage(self.lcfg, self.lstat)
+        frog_stage_bundle_config = {
+            "BundleType": "Bokeh",
+            "Config": config["linear_stages"][delay_stage_name],
+        }
+        self.linear_stage = factory.generate_bundle(
+            frog_stage_bundle_config)
         factory = FactoryLinearImageSensor()
-        self.sensor = factory.generate_bundle(spectrometer_sensor, lcfg, lstat)
+        self.sensor = factory.generate_bundle(
+            linear_detector_name, self.lcfg, self.lstat)
+        self.data = FROGExpData(app_config, self.lcfg, self.lstat)
         factory = FactoryGenericMethods()
-        self.generic = factory.generate(lcfg, lstat)
+        self.generic = factory.generate(self.lcfg, self.lstat)
         self.flags = {
             "RUNNING": False,
             # "PAUSE": False,
             "TERMINATE": False,
             "FINISH": False,
         }
+    
+    
+        @self.generic.scan_round
+        @self.linear_stage.scan_range
+        def unit_operation(meta=dict()):
+            if self.flags["TERMINATE"]:
+                meta["TERMINATE"] = True
+                lstat.expmsg(
+                    "FROG operation received signal TERMINATE, trying graceful Thread exit")
+                return
+            self.lstat.expmsg("Retriving signal from sensor...")
+            sig = self.sensor.get_image()
+            lstat.expmsg("Adding latest signal to dataset...")
+            delay_stat = self.lstat.stat[delay_stage_name]
+            self.data.sig[delay_stat["iDelay"], :] = sig
+            self.data.sigsum[delay_stat["iDelay"], :] += sig
+            self.preview.signal.update(self.data.pixels_list, sig, lstat)
+            self.preview.delay.update(
+                delay_stat["ScanList"], np.sum(self.data.sig, axis=1), lstat)
+
+            # if this the end of delay scan, call export
+            if delay_stat["iDelay"] + 1 == len(delay_stat["ScanList"]):
+                self.preview.frog.update(
+                    self.data.sig,
+                    self.data.xmin,
+                    self.data.xmax,
+                    self.data.ymin,
+                    self.data.ymax,
+                    lstat
+                )
+                self.lstat.expmsg("End of delay scan round, exporting data...")
+                self.data.export("scandata/" + self.lcfg.config["basic"]["FileStem"] +
+                                "-Round{rd}".format(rd=self.lstat.stat["basic"]["iRound"]))
 
 
-frog = FROGExperiment()
+        def task():
+            self.lstat.expmsg("Allocating memory for experiment")
+            self.data = FROGExpData(app_config, self.lcfg, self.lstat)
+            self.lstat.expmsg("Starting experiment")
+            meta = dict()
+            meta["TERMINATE"] = False
+            unit_operation(meta=meta)
+            self.flags["FINISH"] = True
+            self.flags["RUNNING"] = False
+            self.lstat.expmsg("Experiment done")
 
 
-@frog.generic.scan_round
-@frog.linear_stage.scan_delay
-def unit_operation(meta=dict()):
-    if frog.flags["TERMINATE"]:
-        meta["TERMINATE"] = True
-        lstat.expmsg(
-            "FROG operation received signal TERMINATE, trying graceful Thread exit")
-        return
-    lstat.expmsg("Retriving signal from sensor...")
-    sig = frog.sensor.get_image()
-    lstat.expmsg("Adding latest signal to dataset...")
-    stat = lstat.stat[delay_stage]
-    frog.data.sig[stat["iDelay"], :] = sig
-    frog.data.sigsum[stat["iDelay"], :] += sig
-    lstat.doc.add_next_tick_callback(
-        partial(frog.preview.signal.callback_update, frog.data.pixels_list, sig))
-    lstat.doc.add_next_tick_callback(
-        partial(frog.preview.delay.callback_update,
-                stat["ScanList"], np.sum(frog.data.sig, axis=1))
-    )
-    # if this the end of delay scan, call export
-    if stat["iDelay"] + 1 == len(stat["ScanList"]):
-        lstat.doc.add_next_tick_callback(
-            partial(frog.preview.twodim.callback_update, frog.data.sig,
-                    frog.data.xmin, frog.data.xmax, frog.data.ymin, frog.data.ymax)
-        )
-        lstat.expmsg("End of delay scan round, exporting data...")
-        frog.data.export("scandata/" + lcfg.config["basic"]["FileStem"] +
-                         "-Round{rd}".format(rd=lstat.stat["basic"]["iRound"]))
+        def __callback_start():
+            self.flags["TERMINATE"] = False
+            self.flags["FINISH"] = False
+            self.flags["RUNNING"] = True
+            thread = Thread(target=task)
+            thread.start()
 
 
-def task():
-    lstat.expmsg("Allocating memory for experiment")
-    frog.data = FROGExpData(lcfg, lstat)
-    lstat.expmsg("Starting experiment")
-    meta = dict()
-    meta["TERMINATE"] = False
-    unit_operation(meta=meta)
-    frog.flags["FINISH"] = True
-    frog.flags["RUNNING"] = False
-    lstat.expmsg("Experiment done")
+        self.start.on_click(__callback_start)
 
 
-def __callback_start():
-    frog.flags["TERMINATE"] = False
-    frog.flags["FINISH"] = False
-    frog.flags["RUNNING"] = True
-    thread = Thread(target=task)
-    thread.start()
+        def __callback_terminate():
+            self.lstat.expmsg("Terminating current job")
+            self.flags["TERMINATE"] = True
+            self.flags["FINISH"] = False
+            self.flags["RUNNING"] = False
 
 
-frog.start.on_click(__callback_start)
+        self.terminate.on_click(__callback_terminate)
 
 
-def __callback_terminate():
-    lstat.expmsg("Terminating current job")
-    frog.flags["TERMINATE"] = True
-    frog.flags["FINISH"] = False
-    frog.flags["RUNNING"] = False
+frog = FROGExperiment(lcfg, lstat)
 
 
-frog.terminate.on_click(__callback_terminate)
 
 
 # roots: ["dashboard", "setup", "params", "schedule", "reports", "messages"]
@@ -222,16 +205,22 @@ doc.add_root(dashboard_tabs)
 
 # ================ params ================
 foo = column(
+    Div(text="<b>Pump Probe Delay Line:</b>"),
     frog.linear_stage.scan_mode,
-    frog.linear_stage.scan_zero,
-    frog.linear_stage.scan_start,
-    frog.linear_stage.scan_stop,
-    frog.linear_stage.scan_step,
-    frog.linear_stage.scan_file
+    frog.linear_stage.working_unit,
+    frog.linear_stage.range_scan_start,
+    frog.linear_stage.range_scan_stop,
+    frog.linear_stage.range_scan_step,
+    frog.linear_stage.external_scan_list_file
 )
 param_tab1 = Panel(child=foo, title="Linear Stage")
 param_tabs = Tabs(tabs=[param_tab1], name="param")
 doc.add_root(param_tabs)
+
+# region messages
+# ================ Experiment Message ================
+doc.add_root(lstat.pre_exp_msg)
+# endregion messages
 
 # ================ manual ================
 foo = column(
@@ -259,9 +248,9 @@ doc.add_root(schedule_tabs)
 
 # ================ reports ================
 foo = column(
-    frog.preview.signal.fig,
-    frog.preview.delay.fig,
-    frog.preview.twodim.fig
+    frog.preview.signal.figure,
+    frog.preview.delay.figure,
+    frog.preview.frog.figure
 )
 reports_tab1 = Panel(child=foo, title="FROG")
 reports_tabs = Tabs(tabs=[reports_tab1], name="reports")

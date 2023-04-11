@@ -144,7 +144,7 @@ class THzExperiment:
             lstat.expmsg("[THz][ziUHF Only] Retriving Signal from sensor...")
             while True:
                 try:
-                    print("Getting Data")
+                    # print("Getting Data")
                     self.data.original_signal = self.boxcar.get_boxcar_data(
                     single_point_sample_size)
                     break

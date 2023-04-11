@@ -1,0 +1,34 @@
+{
+    "Name": "Frequency Resolved Optical Gating",
+    "Comment": "Measures pulse width and more",
+    "DelayStage": "ETHGASN_leisai",
+    "LinearDetector": "FX2000",
+    "SignalFigure":{
+        "Name": "Linear Detector Signal",
+        "FigureType": "1D",
+        "Title": "Real Time Spectrum",
+        "XName": "Linear Array Pixel",
+        "YName": "Intensity (counts)",
+        "PlotWidth": 640,
+        "PlotHeight": 360
+    },
+    "IntensityCorrelationFigure":{
+        "Name": "Autocorrelation Figure",
+        "FigureType": "1D",
+        "Title": "Time-Domain Intensity Autocorrelation",
+        "XName": "Time Delay (ps)",
+        "YName": "Intensity (counts)",
+        "PlotWidth": 640,
+        "PlotHeight": 360
+    },
+    "FrogFigure":{
+        "Name": "FROG Figure",
+        "FigureType": "2D",
+        "Title": "FROG Raw Intensity",
+        "XName": "Linear Array Pixel",
+        "YName": "Time Delay Point #",
+        "DataName": "Intensity (counts)",
+        "PlotWidth": 640,
+        "PlotHeight": 360
+    }
+}
