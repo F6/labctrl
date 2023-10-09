@@ -15,13 +15,11 @@ import numpy as np
 from flask import Flask, Response
 
 from modelock_watchdog_HAL import ModelockWatchdog
-watchdog = ModelockWatchdog(com="COM6")
+from unit_conversions import rh_to_ah
+watchdog = ModelockWatchdog(com="COM3")
 watchdog.start_continuous_read()
 
 app = Flask(__name__)
-
-counter_values = [0] * 10
-times = [0.0] * 10
 
 @app.route("/")
 def online():
@@ -36,25 +34,25 @@ def online():
 
 @app.route("/getSensorData")
 def get_sensor_data():
-    # ========= TEMPORARY =========
-    counter_values_last = watchdog.status["Counter"]
-    timestamp_last = watchdog.status["Timestamp"]
-    counter_values.append(counter_values_last)
-    times.append(timestamp_last)
-    counter_values_first = counter_values.pop(0)
-    timestamp_first = times.pop(0)
-    try:
-        frequency = (counter_values_last - counter_values_first) / (timestamp_last - timestamp_first)
-        # print("Calculated Frequency: {} kHz".format(frequency/1000))
-    except ZeroDivisionError:
-        frequency = -888
-        print("Timestamp did not change during last 10 cycles, is the sensor still connected?")
-    # ========= END TEMPORARY =========
     res = dict()
     res['success'] = True
     res['message'] = "data:dict"
-    res['data'] = watchdog.status
-    res['data']['Frequency'] = frequency
+    data = watchdog.status.copy()
+    # ============ BEGIN TEMPORARY ============
+    # This part should be put into HAL
+    # Intensity = 0 for now because adc is not enabled in
+    # firmware yet.
+    data['Intensity'] = 0
+    data['AbsoluteHumidity1'] = rh_to_ah(
+        data['Temperature1'] + 273.15,
+        data["Humidity1"],
+        )
+    data['AbsoluteHumidity2'] = rh_to_ah(
+        data['Temperature2'] + 273.15,
+        data["Humidity2"],
+        )
+    # ============ END TEMPORARY ============
+    res['data'] = data
     res = json.dumps(res)
     return Response(res, status=200, mimetype='application/json')
 

@@ -6,7 +6,7 @@ This is a simple control panel for modelock watchdog generated with bokeh librar
 
 __author__ = "Zhi Zi"
 __email__ = "x@zzi.io"
-__version__ = "20221227"
+__version__ = "20230711"
 
 import time
 import json
@@ -35,14 +35,26 @@ app_config = lcfg.config["apps"][app_name]
 sensor_name = app_config["Sensor"]
 
 
-sensor_values_report_template = """Current Sensor Values:
-Temperature 1: {t1} °C
-Temperature 2: {t2} °C
-Humidity 1   : {h1} %RH
-Humidity 2   : {h2} %RH
-Frequency    : {f} Hz
-Intensity    : {i} V
-Time         : {t}
+sensor_values_report_template = """================================
+Current Sensor Values:
+================================
+Temperature 1  : {t1:.3f} °C
+Temperature 2  : {t2:.3f} °C
+Humidity 1     : {h1:.3f} %RH
+Humidity 2     : {h2:.3f} %RH
+Air Pressure 1 : {ap1} kPa
+Air Pressure 2 : {ap2} kPa
+Pulse Counter  : {pc}
+RTC Ticks      : {rtc}
+================================
+Calculated Values:
+================================
+Abs. Humidity 1: {ah1:.3f} kg/m3
+Abs. Humidity 2: {ah2:.3f} kg/m3
+Frequency      : {f:.6f} Hz
+Intensity      : {i:.3f} V
+Time           : {t}
+================================
 """
 
 
@@ -80,7 +92,9 @@ class ModelockWatchdogApplication:
             text_display_bundle_config)
         self.current_sensor_values_report.update(
             sensor_values_report_template.format(
-                t1='', t2='', h1='', h2='', f='', i='', t=''),
+                t1=0, t2=0, h1=0, h2=0,
+                ap1=0, ap2=0, pc=0, rtc=0,
+                ah1=0, ah2=0, f=0, i=0, t=''),
             self.lstat)
         self.watchdog_task_running = False
         self.watchdog_thread = None
@@ -108,32 +122,16 @@ class ModelockWatchdogApplication:
         self.disable_watchdog.on_click(__callback_disable_watchdog)
         # endregion disable_watchdog
 
-    def parse_data(self, data):
-        """
-        [NOTE]: This should be done at server side, but we temporarily put
-        it here for some dev flexibility
-        [TODO]: Update and move this to server side later 
-        """
-        parsed = dict()
-        parsed["Temperature1"] = data["Temperature1"] / 1000
-        parsed["Temperature2"] = data["Temperature2"] / 1000
-        parsed["Humidity1"] = data["Humidity1"] / 1000
-        parsed["Humidity2"] = data["Humidity2"] / 1000
-        parsed["Frequency"] = data["Frequency"]
-        parsed["Intensity"] = 0  # no intensity data yet
-        parsed["Time"] = datetime.fromtimestamp(data["Timestamp"])
-        return parsed
-
     def watchdog_task(self):
         plot_length = 3600*24  # around 1 day
         response = self.sensor_bundle.get_sensor_data()
         self.lstat.fmtmsg(response)
-        data = self.parse_data(response["data"])
+        data = response["data"]
         df = pd.DataFrame(data=data, index=[0])
         while self.watchdog_task_running:
             response = self.sensor_bundle.get_sensor_data()
             self.lstat.fmtmsg(response)
-            data = self.parse_data(response["data"])
+            data = response["data"]
             new_row = pd.Series(data)
             df = pd.concat([df, new_row.to_frame().T], ignore_index=True)
             # save data every hour
@@ -145,38 +143,39 @@ class ModelockWatchdogApplication:
                 df.to_csv('logs/modelock_watchdog_{}.csv'.format(savename))
                 # clear dataframe after save
                 df = pd.DataFrame(data=data, index=[0])
+            t_for_plot = datetime.fromtimestamp(data["Timestamp"])
             watchdog_app.data_preview_figures["Temperature1"].stream(
-                [data["Time"]],
+                [t_for_plot],
                 [data["Temperature1"]],
                 self.lstat,
                 rollover=plot_length
             )
             watchdog_app.data_preview_figures["Temperature2"].stream(
-                [data["Time"]],
+                [t_for_plot],
                 [data["Temperature2"]],
                 self.lstat,
                 rollover=plot_length
             )
             watchdog_app.data_preview_figures["Humidity1"].stream(
-                [data["Time"]],
+                [t_for_plot],
                 [data["Humidity1"]],
                 self.lstat,
                 rollover=plot_length
             )
             watchdog_app.data_preview_figures["Humidity2"].stream(
-                [data["Time"]],
+                [t_for_plot],
                 [data["Humidity2"]],
                 self.lstat,
                 rollover=plot_length
             )
             watchdog_app.data_preview_figures["Frequency"].stream(
-                [data["Time"]],
+                [t_for_plot],
                 [data["Frequency"]],
                 self.lstat,
                 rollover=plot_length
             )
             watchdog_app.data_preview_figures["Intensity"].stream(
-                [data["Time"]],
+                [t_for_plot],
                 [data["Intensity"]],
                 self.lstat,
                 rollover=plot_length
@@ -187,9 +186,16 @@ class ModelockWatchdogApplication:
                     t2=data["Temperature2"],
                     h1=data["Humidity1"],
                     h2=data["Humidity2"],
+                    ap1='', 
+                    ap2='', 
+                    pc='', 
+                    rtc='',
+                    ah1=data["AbsoluteHumidity1"], 
+                    ah2=data["AbsoluteHumidity2"], 
                     f=data["Frequency"],
                     i=data["Intensity"],
-                    t=data["Time"]),
+                    t=data["Time"],
+                    ),
                 self.lstat
             )
             time.sleep(1)  # 1fps

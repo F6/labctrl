@@ -1,5 +1,5 @@
 """
-USB Protocol defined for Firmware-STM32G431-DRV2665
+USB Protocol defined for Firmware-STM32G431-Modelock_Watchdog
 
 I'm planing to use JSON as standard transmission object for
 the protocol, 
@@ -42,7 +42,7 @@ H = Header Byte
 S = Size Byte
 C = Command Byte
 X = Content Byte
-G = Garbage Byte, Garbage inserted to buffer because transmission
+G = Garbage Byte, Garbage inserted to buffer because of transmission
      error or other software accidental write
 T = Tail Byte
 
@@ -57,15 +57,16 @@ BUFFER: ------------------------------------------------------------------
 
 """
 
-# Just using some arbitrary numbers as header and tail
-# header = 114514
-# tail = 1919810
 import serial
 from threading import Thread
+from datetime import datetime
 import struct
 import time
 
 
+# Just using some arbitrary numbers as header and tail
+# header = 1 1 4 5 1 4
+# tail = 1 9 1 9 8 1 0
 USB_COMMAND_HEADER = [0x01, 0x01, 0x04, 0x05, 0x01, 0x04]
 USB_COMMAND_TAIL = [0x01, 0x09, 0x01, 0x09, 0x08, 0x01, 0x00]
 # USB commands
@@ -189,6 +190,11 @@ def parse_status_temperature(temperature_data, status: dict = dict()) -> dict:
     """
     Parse USB_REPORT_TEMPERATURE_DATA messages
 
+    The temperature data from SHT31 sensor is in unit Degree Celsius, and multiplied
+    by 1000 to transmit as a 32-bit interger.
+    So we divide the interger with 1000 to get actual temperature in Degree Celsius,
+    as a floating point number.
+
     If given a status dict, the function updates values in
     the dict, if not, the function creates and returns a new 
     status dict to hold parsed results.
@@ -198,14 +204,21 @@ def parse_status_temperature(temperature_data, status: dict = dict()) -> dict:
     sensor_2 = temperature_data[4:8]
     status["Temperature1"] = (
         sensor_1[0] << 24) + (sensor_1[1] << 16) + (sensor_1[2] << 8) + sensor_1[3]
+    status["Temperature1"] = float(status["Temperature1"]) / 1000
     status["Temperature2"] = (
         sensor_2[0] << 24) + (sensor_2[1] << 16) + (sensor_2[2] << 8) + sensor_2[3]
+    status["Temperature2"] = float(status["Temperature2"]) / 1000
     return status
 
 
 def parse_status_humidity(humidity_data, status: dict = dict()) -> dict:
     """
     Parse USB_REPORT_HUMIDITY_DATA messages
+
+    The humidity data from SHT31 is relative humidity value multiplied by 1000
+    so that it can be transmitted as a 32-bit interger.
+    We need to divide the value by 1000 to get the original relative humidity
+    value in floating point number format.
 
     If given a status dict, the function updates values in
     the dict, if not, the function creates and returns a new 
@@ -214,10 +227,12 @@ def parse_status_humidity(humidity_data, status: dict = dict()) -> dict:
     assert len(humidity_data) == 8, "Corrupted data"
     sensor_1 = humidity_data[0:4]
     sensor_2 = humidity_data[4:8]
-    status["Humidity1"] = (sensor_1[0] << 24) + \
+    humidity_1 = (sensor_1[0] << 24) + \
         (sensor_1[1] << 16) + (sensor_1[2] << 8) + sensor_1[3]
-    status["Humidity2"] = (sensor_2[0] << 24) + \
+    status["Humidity1"] = humidity_1 / 1000
+    humidity_2 = (sensor_2[0] << 24) + \
         (sensor_2[1] << 16) + (sensor_2[2] << 8) + sensor_2[3]
+    status["Humidity2"] = humidity_2 / 1000
     return status
 
 
@@ -235,6 +250,9 @@ def parse_status_frequency(frequency_data, status: dict = dict()) -> dict:
     return status
 
 
+counter_values = [0] * 10
+times = [0.0] * 10
+
 def parse_status_counter(counter_data, status: dict = dict()) -> dict:
     """
     Parse USB_REPORT_COUNTER_DATA messages.
@@ -246,7 +264,32 @@ def parse_status_counter(counter_data, status: dict = dict()) -> dict:
     assert len(counter_data) == 4, "Corrupted Counter Data"
     status["Counter"] = (counter_data[0] << 24) + (counter_data[1]
                                                    << 16) + (counter_data[2] << 8) + counter_data[3]
+    # ========= START TEMPORARY =========
+    # Calculate frequency by computer timestamp.
+    #  This is inaccurate because of unstable data transmission latency
+    #   between controller and computer via USB interface.
+    #  The correct method is calculate the frequency using both pulse counter
+    #   and RTC counter values from controller, however, RTC counter is not
+    #   implemented in the controller firmware yet, so we temporarily use
+    #   computer RTC as a timer source.
     status["Timestamp"] = time.time()
+    status["Time"] = str(
+        datetime.fromtimestamp(status["Timestamp"]))
+    
+    counter_values_last = status["Counter"]
+    timestamp_last = status["Timestamp"]
+    counter_values.append(counter_values_last)
+    times.append(timestamp_last)
+    counter_values_first = counter_values.pop(0)
+    timestamp_first = times.pop(0)
+    try:
+        frequency = (counter_values_last - counter_values_first) / (timestamp_last - timestamp_first)
+    except ZeroDivisionError:
+        frequency = 0.0
+    status["Frequency"] = frequency
+    # print("Calculated Frequency: {} kHz".format(frequency/1000))
+    # ========= END TEMPORARY =========
+
     return status
 
 
