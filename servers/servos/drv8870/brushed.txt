@@ -1,0 +1,11 @@
+position loop
+
+p 0.01
+i 0.002
+d 0.009
+
+velocity loop
+
+p 1.2
+i 0.002
+d 0.009

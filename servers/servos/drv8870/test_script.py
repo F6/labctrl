@@ -1,0 +1,96 @@
+from drv8870_HAL import DRV8870
+from drv8870_HAL import SERVO_MODE_OPEN_LOOP, SERVO_MODE_POSITION_LOOP, SERVO_MODE_VELOCITY_LOOP
+
+dev = DRV8870("COM9")
+print("Connecting to device...")
+dev.start()
+
+print("Reading status from channel 0...")
+dev.read_status(0)
+print("==== Current Status ====")
+print(dev.status)
+print("==== End of Current Status ====")
+
+print("Reading parameters of channel 0...")
+dev.read_parameters(0)
+print("==== Current Parameters ====")
+print(dev.parameters)
+print("==== End of Current Parameters ====")
+
+print("Setting target of channel 0 to 5...")
+dev.set_target(0, 5)
+dev.read_status(0)
+print("==== Current Status ====")
+print(dev.status)
+print("==== End of Current Status ====")
+
+print("Setting target of channel 0 to 10...")
+dev.set_target(0, 10)
+dev.read_status(0)
+print("==== Current Status ====")
+print(dev.status)
+print("==== End of Current Status ====")
+
+print("Setting target of channel 0 to -3...")
+dev.set_target(0, -3)
+dev.read_status(0)
+print("==== Current Status ====")
+print(dev.status)
+print("==== End of Current Status ====")
+
+print("Setting target of channel 0 to 0...")
+dev.set_target(0, 0)
+dev.read_status(0)
+print("==== Current Status ====")
+print(dev.status)
+print("==== End of Current Status ====")
+
+print("Setting target of channel 0 to 20...")
+dev.set_target(0, 20)
+dev.read_status(0)
+print("==== Current Status ====")
+print(dev.status)
+print("==== End of Current Status ====")
+
+print("Setting PID parameters of channel 0 to P=1.0, I=0.5, D=0.2 ...")
+dev.set_pid_parameters(0, 1.0, 0.5, 0.2)
+dev.read_parameters(0)
+print("==== Current Parameters ====")
+print(dev.parameters)
+print("==== End of Current Parameters ====")
+
+print("Setting servo working mode of channel 0 to OPEN LOOP ...")
+dev.set_working_mode(0, SERVO_MODE_OPEN_LOOP)
+dev.read_status(0)
+print("==== Current Status ====")
+print(dev.status)
+print("==== End of Current Status ====")
+
+print("Setting servo working mode of channel 0 to POSITION LOOP ...")
+dev.set_working_mode(0, SERVO_MODE_POSITION_LOOP)
+dev.read_status(0)
+print("==== Current Status ====")
+print(dev.status)
+print("==== End of Current Status ====")
+
+print("Setting servo working mode of channel 0 to VELOCITY LOOP ...")
+dev.set_working_mode(0, SERVO_MODE_VELOCITY_LOOP)
+dev.read_status(0)
+print("==== Current Status ====")
+print(dev.status)
+print("==== End of Current Status ====")
+
+print("Trying to shutdown...")
+dev.shutdown()
+
+print("Trying to re-connect...")
+dev.start()
+
+print("Reading status from channel 0 again...")
+dev.read_status(0)
+print("==== Current Status ====")
+print(dev.status)
+print("==== End of Current Status ====")
+
+print("Trying to shutdown again...")
+dev.shutdown()
