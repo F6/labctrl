@@ -46,6 +46,7 @@ from threading import Thread
 # Configure logging
 lg = logging.getLogger(__name__)
 
+
 class SerialMockerError(Exception):
     pass
 
@@ -173,13 +174,13 @@ class SerialMocker:
     def mock_response_task(self):
         while self.mock_response:
             wrote = self.wrote_queue.get()
+            if wrote is None:
+                break
             if wrote in self.response_map:
                 to_read = self.response_map[wrote]
                 for c in to_read:
                     self.to_read_queue.put(c)
                     self.in_waiting += 1
-            if wrote == None:
-                break
 
     def mock_stream_task(self):
         i = 0
@@ -213,4 +214,3 @@ class SerialMocker:
             else:
                 # if no bytes to send, t_prev does not need to be updated
                 pass
-
