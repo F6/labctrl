@@ -18,6 +18,8 @@ servers/linear_stages/CRD507/Proprietary/*
 servers/linear_stages/PMC48MT6_fsTopas/python
 # software for tweaking motor driver (SigmaWinPlus), you can download it from yaskawa website
 servers/linear_stages/ETHGASN/docs/SGDV_1R6A05A/*.zip
+# VS Code settings
+.vscode
 # == end of this project ==
 
 

@@ -116,7 +116,7 @@ class SerialManager:
         # close serial port
         self.ser.close()
 
-    def receive(self) -> (int, bytes):
+    def receive(self) -> tuple[int, bytes]:
         """
         Gets earlist message in the buffer queue.
         
