@@ -1,3 +1,6 @@
 [submodule "toolbox"]
 	path = toolbox
 	url = https://github.com/F6/labctrl-toolbox
+[submodule "widgetbox"]
+	path = widgetbox
+	url = https://github.com/F6/labctrl-widgetbox.git
