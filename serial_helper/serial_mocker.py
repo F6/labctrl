@@ -42,7 +42,7 @@ import time
 import struct
 from queue import Queue, Empty
 from threading import Thread
-
+from typing import Callable
 # Configure logging
 lg = logging.getLogger(__name__)
 
@@ -58,7 +58,8 @@ class SerialMocker:
 
     def __init__(self, port: str, timeout: float = 1.0, baudrate: int = 9600,
                  will_throw: bool = False, response_map: dict[bytes, bytes] = {},
-                 mock_stream_content: bytes = b'', mock_stream_bps: int = 0) -> None:
+                 mock_stream_content: bytes = b'', mock_stream_bps: int = 0,
+                 response_generator: Callable[[bytes], bytes] = lambda x:b'') -> None:
         # ==== Basic serial port params, just like the real serial port. ====
         self.port = port
         self.timeout = timeout
@@ -68,6 +69,9 @@ class SerialMocker:
         self.will_throw = will_throw
         # get a custom response when given pattern is wrote to device
         self.response_map = response_map
+        # if it does not match anything in response_map, then the response_generator generates a response.
+        # if no response is needed, return a b'' (empty byte) for it in response_generator to skip.
+        self.response_generator = response_generator
         self.mock_response = False
         # mocks data streams sent from device.
         # feeds data from mock_stream_content at rate of mock_stream_bps to read_queue.
@@ -177,7 +181,11 @@ class SerialMocker:
             if wrote is None:
                 break
             if wrote in self.response_map:
+                # Match response_map first
                 to_read = self.response_map[wrote]
+            else:
+                to_read = self.response_generator(wrote)
+            if to_read:
                 for c in to_read:
                     self.to_read_queue.put(c)
                     self.in_waiting += 1

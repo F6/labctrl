@@ -10,18 +10,20 @@ class TestingLogFormatter(logging.Formatter):
     color_warning = "\x1b[38;5;226m{}" + reset
     color_error = "\x1b[38;5;196m{}" + reset
     color_critical = "\x1b[38;5;201m{}" + reset
+    color_threadName = "\x1b[38;5;82m{}" + reset
 
     fmt_asctime = color_ascname.format("[%(asctime)s]")
     fmt_name = color_name.format("[%(name)s]")
+    fmt_threadName = color_threadName.format("[%(threadName)s]")
 
-    format = "[%(asctime)s][%(name)s]"
+    fmt = fmt_asctime + fmt_name + fmt_threadName
 
     FORMATS = {
-        logging.DEBUG: fmt_asctime + fmt_name + color_debug.format("[%(levelname)s] %(message)s"),
-        logging.INFO: fmt_asctime + fmt_name + color_info.format("[%(levelname)s] %(message)s"),
-        logging.WARNING: fmt_asctime + fmt_name + color_warning.format("[%(levelname)s] %(message)s"),
-        logging.ERROR: fmt_asctime + fmt_name + color_error.format("[%(levelname)s] %(message)s"),
-        logging.CRITICAL: fmt_asctime + fmt_name + color_critical.format("[%(levelname)s] %(message)s"),
+        logging.DEBUG: fmt + color_debug.format("[%(levelname)s] %(message)s"),
+        logging.INFO: fmt + color_info.format("[%(levelname)s] %(message)s"),
+        logging.WARNING: fmt + color_warning.format("[%(levelname)s] %(message)s"),
+        logging.ERROR: fmt + color_error.format("[%(levelname)s] %(message)s"),
+        logging.CRITICAL: fmt + color_critical.format("[%(levelname)s] %(message)s"),
     }
 
     def format(self, record):
