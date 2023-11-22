@@ -1,0 +1,36 @@
+version: 1
+disable_existing_loggers: False
+formatters:
+  default:
+    "()": logging_helper.UvicornDefaultFormatter
+    # format: '[%(asctime)s][%(name)s][%(levelname)s] %(message)s'
+    # use_colors: yes
+  access:
+    "()": logging_helper.UvicornAccessFormatter
+    # format: '[%(asctime)s][%(name)s][%(levelname)s] %(message)s'
+    # use_colors: yes
+handlers:
+  default:
+    formatter: default
+    class: logging.StreamHandler
+    stream: ext://sys.stderr
+  access:
+    formatter: access
+    class: logging.StreamHandler
+    stream: ext://sys.stdout
+loggers:
+  uvicorn.error:
+    level: INFO
+    handlers:
+      - default
+    propagate: no
+  uvicorn.access:
+    level: INFO
+    handlers:
+      - access
+    propagate: no
+root:
+  level: INFO
+  handlers:
+    - default
+  propagate: no

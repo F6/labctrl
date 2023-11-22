@@ -121,7 +121,7 @@ class SerialMocker:
         interrupted.
         """
         bytes_to_write = len(to_write)
-        lg.info("Mocked write called, requested bytes to write: {}".format(
+        lg.debug("Mocked write called, requested bytes to write: {}".format(
             bytes_to_write))
         if self.is_open:
             time_to_wait = bytes_to_write / self.baudrate * 8
@@ -150,7 +150,7 @@ class SerialMocker:
         False, because in this case there's no way the function can return the required number of bytes and the error 
         cannot be ignored.
         """
-        lg.info("Mocked read called, requested bytes to read: {}".format(
+        lg.debug("Mocked read called, requested bytes to read: {}".format(
             bytes_to_read))
         try:
             mocked_response = list()
