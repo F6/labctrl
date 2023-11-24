@@ -1,3 +1,11 @@
+# -*- coding: utf-8 -*-
+
+"""test_serial_mocker.py:
+"""
+
+__author__ = "Zhi Zi"
+__email__ = "x@zzi.io"
+__version__ = "20231123"
 
 import unittest
 
@@ -8,14 +16,15 @@ import logging
 from serial_helper import SerialMocker
 from logging_helper import TestingLogFormatter
 
-
-lg = logging.getLogger("serial_helper")
+# configure root logger to output all logs to stdout
+lg = logging.getLogger()
 lg.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
-
 ch.setFormatter(TestingLogFormatter())
 lg.addHandler(ch)
+# configure logger for this module.
+lg = logging.getLogger(__name__)
 
 
 class TestSerialMocker(unittest.TestCase):

@@ -22,17 +22,24 @@ serial port is inherently packet-less, meaning that we don't have real 'message'
 Data for the same message may be sticked togather in a single 'message', or may be seperated in different 'message's.
 The only promise is that when 'message's are joined togather, the original byte sequence is kept. 
 So it is the user's responsibility to parse their data by reading the stream.
+
+To extract complete message frames from the stream, you need to use a framing algorithm to mark packet boundaries.
+There're two options provided by labctrl: 
+
+1. The standard COBS algorithm. See cobs_framer.py
+
+2. The length-content-pattern framer. See pattern_framer.py
 """
 
 __author__ = "Zhi Zi"
 __email__ = "x@zzi.io"
-__version__ = "20231009"
+__version__ = "20231123"
 
 
 # std libs
 import logging
 import time
-from queue import Queue
+from queue import Queue, Empty
 from threading import Thread
 from typing import Callable, Optional
 
@@ -116,27 +123,31 @@ class SerialManager:
         # close serial port
         self.ser.close()
 
-    def receive(self) -> tuple[int, bytes]:
+    def receive(self, timeout: float | None = None) -> tuple[int, bytes]:
         """
         Gets earlist message in the buffer queue.
-        
+
         Returns: (
             time_ns : int, the time when message is received, unit in ns, since epoch. 
             message : bytes, the message
             )
-        
-        This method blocks until a message arrives if received_queue is empty, so check
-        for queue size before calling if blocking is not desired.
+            or (None, None) if timeout exceeds
+
+        This method blocks until a message arrives if received_queue is empty, or until timeout,
+        so check for queue size before calling if blocking is not desired.
         """
-        item = self.received_queue.get()
-        self.received_queue.task_done()
-        return item
+        try:
+            item = self.received_queue.get(timeout=timeout)
+            self.received_queue.task_done()
+            return item
+        except Empty:
+            return (None, None)
 
     def send(self, to_send: bytes, sent_id: int = 0) -> int:
         """
         Adds a message to the send queue. If message is empty, nothing happens.
         This method will not block. If you need to wait for confirmation, use sent_id.
-        
+
         Optional: a sent_id number can be passed in. If the sent_id is non-zero, after the message is sent, the sent_id
             and a timestamp is put into a sent_id_queue. The user can monitor the sent_id_queue to check if a specific 
             message has been written to serial port and when is the writing done.
