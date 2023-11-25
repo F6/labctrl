@@ -65,8 +65,8 @@ class SerialManager:
         self.timeout = timeout
         self.ser = None
         # multithread channels and flags
-        self.received_queue = Queue()
-        self.to_send_queue = Queue()
+        self.received_queue: Queue[tuple[int | None, bytes | None]] = Queue()
+        self.to_send_queue: Queue[tuple[bytes, int] | None] = Queue()
         self.sent_id_queue = Queue()
         self.is_manager_running = False
         self.serial_read_thread = Thread(target=self.serial_read_task)
@@ -143,18 +143,18 @@ class SerialManager:
         except Empty:
             return (None, None)
 
-    def send(self, to_send: bytes, sent_id: int = 0) -> int:
+    def send(self, message: bytes, message_id: int = 0) -> int:
         """
         Adds a message to the send queue. If message is empty, nothing happens.
-        This method will not block. If you need to wait for confirmation, use sent_id.
+        This method will not block. If you need to wait for confirmation, use message_id.
 
-        Optional: a sent_id number can be passed in. If the sent_id is non-zero, after the message is sent, the sent_id
-            and a timestamp is put into a sent_id_queue. The user can monitor the sent_id_queue to check if a specific 
+        Optional: a message_id number can be passed in. If the message_id is non-zero, after the message is sent, the message_id
+            and a timestamp is put into a message_id_queue. The user can monitor the message_id_queue to check if a specific 
             message has been written to serial port and when is the writing done.
         """
-        if to_send:
-            self.to_send_queue.put((to_send, sent_id))
-            return len(to_send)
+        if message:
+            self.to_send_queue.put((message, message_id))
+            return len(message)
         else:
             return 0
 
@@ -169,11 +169,11 @@ class SerialManager:
         while self.is_manager_running:
             send_task = self.to_send_queue.get()
             if send_task:
-                to_write, sent_id = send_task[0], send_task[1]
+                to_write, message_id = send_task[0], send_task[1]
                 self.ser.write(to_write)
-                if sent_id:
+                if message_id:
                     current_time_ns = time.time_ns()
-                    self.sent_id_queue.put((current_time_ns, sent_id))
+                    self.sent_id_queue.put((current_time_ns, message_id))
                 self.to_send_queue.task_done()
             else:
                 # send_task = None indicates the producer is closing the queue, thread ends.

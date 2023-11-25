@@ -46,6 +46,7 @@ lg = logging.getLogger(__name__)
 class COBSFramer():
     def __init__(self, ser_mgr: SerialManager) -> None:
         self.ser_mgr = ser_mgr
+        self.frame_id = 1
         self.stream_content = b''
         self.received_packets: Queue[bytes] = Queue()
         self.framer_thread_running = False
@@ -86,10 +87,22 @@ class COBSFramer():
                 self.received_packets.put(decoded_packet)
         self.stream_content = encoded_packets[-1]
 
-    def send_frame(self, msg: bytes):
+    def send_frame(self, msg: bytes, timeout: float | None = None):
         encoded_packet = cobs.encode(msg)
         packet = encoded_packet + b'\x00'
-        self.ser_mgr.send(packet)
+        self.ser_mgr.send(packet, message_id=self.frame_id)
+        # wait for sending confirmation
+        t_send, msg_id = self.ser_mgr.sent_id_queue.get(timeout=timeout)
+        if msg_id == self.frame_id:
+            pass
+        else:
+            lg.warning(
+                "Got other msg_id from sent_id_queue, are there other threads writing?")
+            lg.warning(
+                "When using a framer, it is recommanded to manage all serial writes with the framer to avoid data corruption."
+            )
+        self.frame_id += 1
+        return len(msg)
 
     def receive_frame(self, timeout: float | None = None):
         try:

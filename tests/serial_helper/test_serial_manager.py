@@ -61,7 +61,7 @@ class TestSerialManager(unittest.TestCase):
             self.mgr.sent_id_queue.qsize()))
         t0 = time.time()
         lg.info("Time started: {}".format(t0))
-        result = self.mgr.send(b'0' * 11520, sent_id=888)
+        result = self.mgr.send(b'0' * 11520, message_id=888)
         lg.info("Message put to queue!")
         t1 = time.time()
         lg.info("Time: {}, {} seconds elapsed, {} bytes sent to queue.".format(
@@ -76,7 +76,7 @@ class TestSerialManager(unittest.TestCase):
     def test_command_and_response(self):
         lg.debug("==== START test_command_and_responses ====")
         lg.info("Asynchronously writing command defined in my_device_response: 'foo'")
-        self.mgr.send(b'foo', sent_id=123)
+        self.mgr.send(b'foo', message_id=123)
         lg.info("Waiting for message to be sent...")
         t1, result = self.mgr.sent_id_queue.get()
         lg.info("Data wrote to serial port, time={}, id={}".format(t1, result))
@@ -95,7 +95,7 @@ class TestSerialManager(unittest.TestCase):
         lg.debug("==== START test_command_and_response_binary ====")
         lg.info(
             "Asynchronously writing command defined in my_device_response: 0x(1, 1, 4, 5, 1, 4)")
-        self.mgr.send(b'\x01\x01\x04\x05\x01\x04', sent_id=123)
+        self.mgr.send(b'\x01\x01\x04\x05\x01\x04', message_id=123)
         lg.info("Waiting for message to be sent...")
         t1, result = self.mgr.sent_id_queue.get()
         lg.info("Data wrote to serial port, time={}, id={}".format(t1, result))
@@ -121,7 +121,7 @@ class TestSerialManager(unittest.TestCase):
         for i in range(99):
             result += self.mgr.send(b'hello?')
         # send last item with a sent_id to track the time sending finishes
-        result += self.mgr.send(b'hello?', sent_id=100)
+        result += self.mgr.send(b'hello?', message_id=100)
         t1 = time.time()
         lg.info("Time: {}, {} seconds elapsed, {} bytes sent to queue.".format(
             t1, t1-t0, result))
