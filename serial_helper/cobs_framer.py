@@ -83,8 +83,12 @@ class COBSFramer():
         encoded_packets = self.stream_content.split(b'\x00')
         for i in range(len(encoded_packets)-1):
             if encoded_packets[i]:
-                decoded_packet = cobs.decode(encoded_packets[i])
-                self.received_packets.put(decoded_packet)
+                try:
+                    decoded_packet = cobs.decode(encoded_packets[i])
+                    self.received_packets.put(decoded_packet)
+                except cobs.DecodeError as e:
+                    lg.error("Malformed data encountered when decoding {} with COBS decoder, error: {}.".format(
+                        encoded_packets[i], e))
         self.stream_content = encoded_packets[-1]
 
     def send_frame(self, msg: bytes, timeout: float | None = None):
@@ -93,6 +97,7 @@ class COBSFramer():
         self.ser_mgr.send(packet, message_id=self.frame_id)
         # wait for sending confirmation
         t_send, msg_id = self.ser_mgr.sent_id_queue.get(timeout=timeout)
+        self.ser_mgr.sent_id_queue.task_done()
         if msg_id == self.frame_id:
             pass
         else:
@@ -111,3 +116,17 @@ class COBSFramer():
             return item
         except Empty:
             return None
+
+    def clean_up(self):
+        """
+        Empties packets buffer and stream buffer.
+        Useful if the user needs to get the latest message and does not care about messages in the middle.
+        This function may block forever and fail, because it empties the queue by removing items one by one, which is a thread-safe method but if the other ends are putting stuff in the queue faster than while True, the loop will never end. However, if while True fails to handle so many items, the program cannot work properly anyway so we don't need to concern about this.
+        """
+        while True:
+            try:
+                _ = self.received_packets.get(block=False)
+                self.received_packets.task_done()
+            except Empty:
+                break
+        self.stream_content = b''

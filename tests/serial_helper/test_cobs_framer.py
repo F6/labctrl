@@ -35,7 +35,8 @@ class TestCOBSFramer(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         lg.info("Constructing COBS debugging echoer")
-        def echoer(b:bytes) -> bytes:
+
+        def echoer(b: bytes) -> bytes:
             lg.debug("COBS Echoer received: {}".format(b))
             return b
         lg.info("Constructing echoer SerialMocker object.")
@@ -64,13 +65,14 @@ class TestCOBSFramer(unittest.TestCase):
         r = self.framer.receive_frame(timeout=0.2)
         lg.info("Received: {}".format(r))
         self.assertEqual(r, b'Hello\x00World!')
-    
+
     def test_seperate_multiple_frame_in_stream(self):
         lg.debug("==== START test_seperate_multiple_frame_in_stream ====")
         lg.info("Sending 3 frames directly with serial manager.")
         lg.info("These frames are sticked together in the stream.")
         lg.info("The framer should be able to seperate the stream into 3 packets.")
-        self.mgr.send(b'\x06Hello\x07World!\x00\x06Hello\x07World!\x00\x06Hello\x07World!\x00')
+        self.mgr.send(
+            b'\x06Hello\x07World!\x00\x06Hello\x07World!\x00\x06Hello\x07World!\x00')
         for i in range(3):
             r = self.framer.receive_frame(timeout=0.2)
             lg.info("Received: {}".format(r))
@@ -88,11 +90,13 @@ class TestCOBSFramer(unittest.TestCase):
         r = self.framer.receive_frame(timeout=0.2)
         lg.info("Received: {}".format(r))
         self.assertEqual(r, b'Hello\x00World!')
-    
+
     def test_half_sticked_message(self):
         lg.debug("==== START test_half_sticked_message ====")
-        lg.info("Sending 2 frames with serial manager, but seperated in non-boundary byte.")
-        lg.info("The framer should be able to combine it and seperate into two packets.")
+        lg.info(
+            "Sending 2 frames with serial manager, but seperated in non-boundary byte.")
+        lg.info(
+            "The framer should be able to combine it and seperate into two packets.")
         self.mgr.send(b'\x06Hello\x07')
         self.mgr.send(b'World!\x00\x06Hello\x07World!\x00')
         r = self.framer.receive_frame(timeout=0.2)
@@ -109,3 +113,51 @@ class TestCOBSFramer(unittest.TestCase):
         r = self.framer.receive_frame(timeout=0.2)
         lg.info("Received: {}".format(r))
         self.assertEqual(r, b'Hello\x00World!')
+
+    def test_malformed_data(self):
+        lg.debug("==== START test_malformed_data ====")
+        lg.info(
+            "Sending 5 frames with serial manager, but 2 of the frames are malformed.")
+        lg.info("The framer should be able to read the first and last packet and report a issue on the second, the third and the fourth messages.")
+        self.mgr.send(b'\x06Hello\x07World!\x00')
+        # too few bytes
+        self.mgr.send(b'\x06Helo\x07World!\x00')
+        # too many bytes
+        self.mgr.send(b'\x06Helllo\x07World!\x00')
+        # replaced bytes
+        self.mgr.send(b'\x06Hello\x08World!\x00')
+        self.mgr.send(b'\x06Hello\x07World!\x00')
+        for i in range(5):
+            r = self.framer.receive_frame(timeout=0.2)
+            lg.info("Received: {}".format(r))
+
+    def test_clean_up(self):
+        lg.debug("==== START test_clean_up ====")
+        lg.info("Sending 5 frames with serial manager, but don't receive.")
+        for i in range(5):
+            self.framer.send_frame(b'Hello\x00World!')
+        time.sleep(0.5)
+        lg.info("Packets now in received_packets queue: {}".format(self.framer.received_packets.qsize()))
+        lg.info("Content of stream: {}".format(self.framer.stream_content))
+        self.assertEqual(self.framer.received_packets.qsize(), 5)
+        self.assertEqual(self.framer.stream_content, b'')
+        lg.info("Now call clean_up")
+        self.framer.clean_up()
+        lg.info("Packets now in received_packets queue: {}".format(self.framer.received_packets.qsize()))
+        lg.info("Content of stream: {}".format(self.framer.stream_content))
+        self.assertEqual(self.framer.received_packets.qsize(), 0)
+        self.assertEqual(self.framer.stream_content, b'')
+        lg.info("Sending 2 frames with serial manager, don't receive, and the last frame is incomplete.")
+        self.framer.send_frame(b'Hello\x00World!')
+        self.mgr.send(b'\x06Hello\x07')
+        time.sleep(0.5)
+        lg.info("Packets now in received_packets queue: {}".format(self.framer.received_packets.qsize()))
+        lg.info("Content of stream: {}".format(self.framer.stream_content))
+        self.assertEqual(self.framer.received_packets.qsize(), 1)
+        self.assertEqual(self.framer.stream_content, b'\x06Hello\x07')
+        lg.info("Now call clean_up")
+        self.framer.clean_up()
+        lg.info("Packets now in received_packets queue: {}".format(self.framer.received_packets.qsize()))
+        lg.info("Content of stream: {}".format(self.framer.stream_content))
+        self.assertEqual(self.framer.received_packets.qsize(), 0)
+        self.assertEqual(self.framer.stream_content, b'')
