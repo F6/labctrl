@@ -45,11 +45,23 @@ class TestSerialMocker(unittest.TestCase):
             if b'echo' in b:
                 return b
             return b''
+
+        lg.info("Constructing burst message generator")
+
+        def _bmg() -> bytes:
+            i = 0
+            while True:
+                yield b'BURST:' + (i % 256).to_bytes()
+                i = i + 1
+
+        bmg = _bmg()
+
         lg.info("Constructing SerialMocker object.")
         cls.ser = SerialMocker("COM1", timeout=1, baudrate=115200,
                                response_map=my_device_response,
                                mock_stream_content=bytes(range(256)), mock_stream_bps=0,
-                               response_generator=r)
+                               response_generator=r,
+                               burst_message_generator=lambda: next(bmg), burst_message_interval=0.1)
 
     @classmethod
     def tearDownClass(cls):
@@ -218,6 +230,18 @@ class TestSerialMocker(unittest.TestCase):
             result = self.ser.read(self.ser.in_waiting)
             lg.info("Read result: {}".format(result))
             self.assertEqual(result, 'echo {}'.format(i).encode())
+
+    def test_burst_mode(self):
+        lg.info("Testing burst mode, starting burst mode")
+        self.ser.start_burst_message()
+        for i in range(10):
+            time.sleep(0.2)
+            result = self.ser.read(self.ser.in_waiting)
+            lg.info("Read result: {}".format(result))
+        self.ser.stops_burst_message()
+        time.sleep(1)
+        result = self.ser.read(self.ser.in_waiting)
+        lg.info("Read result: {}".format(result))
 
 if __name__ == '__main__':
     unittest.main()

@@ -59,7 +59,9 @@ class SerialMocker:
     def __init__(self, port: str, timeout: float = 1.0, baudrate: int = 9600,
                  will_throw: bool = False, response_map: dict[bytes, bytes] = {},
                  mock_stream_content: bytes = b'', mock_stream_bps: int = 0,
-                 response_generator: Callable[[bytes], bytes] = lambda x:b'') -> None:
+                 response_generator: Callable[[bytes], bytes] = lambda x: b'',
+                 burst_message_generator: Callable[[], bytes] = lambda: b'foo',
+                 burst_message_interval: float = 1.0) -> None:
         # ==== Basic serial port params, just like the real serial port. ====
         self.port = port
         self.timeout = timeout
@@ -81,16 +83,23 @@ class SerialMocker:
         self.mock_stream_content_len = len(self.mock_stream_content)
         self.mock_stream_bps = mock_stream_bps
         self.mock_stream = False
+        # mocks data bursts sent from device, like sensor data packets.
+        # burst_message_generator is called to get the message to send.
+        self.burst_message_generator = burst_message_generator
+        self.burst_message_interval = burst_message_interval
+        self.mock_burst_message = False
         # ==== Internal states ====
         self.bytes_written = 0
         self.bytes_read = 0
         # Bytes waiting in the buffer to be read
         self.in_waiting = 0
-        self.to_read_queue = Queue()  # queue of int
-        self.wrote_queue = Queue()  # queue of bytes
+        self.to_read_queue: Queue[int] = Queue()
+        self.wrote_queue: Queue[bytes] = Queue()
         # handles what data to return when read() called.
         self.mock_response_thread = Thread(target=self.mock_response_task)
         self.mock_stream_thread = Thread(target=self.mock_stream_task)
+        self.mock_burst_message_thread = Thread(
+            target=self.mock_burst_message_task)
         self.open()
         lg.info("Created SerialMocker object, com_port: {}, timeout: {}, baudrate: {}".format(
             port, timeout, baudrate))
@@ -222,3 +231,22 @@ class SerialMocker:
             else:
                 # if no bytes to send, t_prev does not need to be updated
                 pass
+
+    def mock_burst_message_task(self):
+        while self.mock_burst_message:
+            time.sleep(self.burst_message_interval)
+            to_burst = self.burst_message_generator()
+            for c in to_burst:
+                self.to_read_queue.put(c)
+                self.in_waiting += 1
+
+    def start_burst_message(self):
+        lg.info("Starting burst mode.")
+        self.mock_burst_message = True
+        self.mock_burst_message_thread.start()
+
+    def stops_burst_message(self):
+        lg.info("Stopping burst mode.")
+        self.mock_burst_message = False
+        self.mock_burst_message_thread.join()
+        lg.info("Burst mode stopped.")
