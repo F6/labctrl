@@ -123,6 +123,7 @@ class COBSFramer():
         Useful if the user needs to get the latest message and does not care about messages in the middle.
         This function may block forever and fail, because it empties the queue by removing items one by one, which is a thread-safe method but if the other ends are putting stuff in the queue faster than while True, the loop will never end. However, if while True fails to handle so many items, the program cannot work properly anyway so we don't need to concern about this.
         """
+        lg.info("Cleaning up framer buffer.")
         while True:
             try:
                 _ = self.received_packets.get(block=False)
@@ -130,3 +131,4 @@ class COBSFramer():
             except Empty:
                 break
         self.stream_content = b''
+        lg.info("Framer buffer is cleaned.")

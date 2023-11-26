@@ -245,7 +245,7 @@ class SerialMocker:
         self.mock_burst_message = True
         self.mock_burst_message_thread.start()
 
-    def stops_burst_message(self):
+    def stop_burst_message(self):
         lg.info("Stopping burst mode.")
         self.mock_burst_message = False
         self.mock_burst_message_thread.join()
