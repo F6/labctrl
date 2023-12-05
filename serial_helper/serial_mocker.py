@@ -61,7 +61,8 @@ class SerialMocker:
                  mock_stream_content: bytes = b'', mock_stream_bps: int = 0,
                  response_generator: Callable[[bytes], bytes] = lambda x: b'',
                  burst_message_generator: Callable[[], bytes] = lambda: b'foo',
-                 burst_message_interval: float = 1.0) -> None:
+                 burst_message_interval: float = 1.0,
+                 open_by_default: bool = True) -> None:
         # ==== Basic serial port params, just like the real serial port. ====
         self.port = port
         self.timeout = timeout
@@ -93,22 +94,25 @@ class SerialMocker:
         self.bytes_read = 0
         # Bytes waiting in the buffer to be read
         self.in_waiting = 0
+        self.is_open = False
         self.to_read_queue: Queue[int] = Queue()
         self.wrote_queue: Queue[bytes] = Queue()
         # handles what data to return when read() called.
-        self.mock_response_thread = Thread(target=self.mock_response_task)
-        self.mock_stream_thread = Thread(target=self.mock_stream_task)
-        self.mock_burst_message_thread = Thread(
-            target=self.mock_burst_message_task)
-        self.open()
+        self.mock_response_thread = None
+        self.mock_stream_thread = None
+        self.mock_burst_message_thread = None
+        if open_by_default:
+            self.open()
         lg.info("Created SerialMocker object, com_port: {}, timeout: {}, baudrate: {}".format(
             port, timeout, baudrate))
 
     def open(self):
         lg.info("Opening mocked serial connection")
         self.is_open = True
+        self.mock_response_thread = Thread(target=self.mock_response_task)
         self.mock_response = True
         self.mock_response_thread.start()
+        self.mock_stream_thread = Thread(target=self.mock_stream_task)
         self.mock_stream = True
         self.mock_stream_thread.start()
 
@@ -208,7 +212,7 @@ class SerialMocker:
                 # However, we will update t_prev to current time because if it is not updated, then the next time user
                 # changes bps to a non-zero value, t_delta will be huge because it counted all time since last byte sent
                 t_prev = time.time()
-                time.sleep(0.01)
+                time.sleep(0.05)
                 continue
             # calculate how many bytes from stream to send to to_read_queue
             t_now = time.time()
@@ -242,11 +246,14 @@ class SerialMocker:
 
     def start_burst_message(self):
         lg.info("Starting burst mode.")
+        self.mock_burst_message_thread = Thread(
+            target=self.mock_burst_message_task)
         self.mock_burst_message = True
         self.mock_burst_message_thread.start()
 
     def stop_burst_message(self):
         lg.info("Stopping burst mode.")
         self.mock_burst_message = False
-        self.mock_burst_message_thread.join()
+        if self.mock_burst_message_thread is not None and self.mock_burst_message_thread.is_alive():
+            self.mock_burst_message_thread.join()
         lg.info("Burst mode stopped.")
